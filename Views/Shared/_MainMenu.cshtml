@@ -1,0 +1,91 @@
+﻿@*<form action="#" method="get" class="sidebar-form">
+    <div class="input-group  ">
+        <input type="text" name="q" class="form-control search-menu-box" placeholder="Search">
+        <span class="input-group-btn">
+            <button type="submit" name="search" id="search-btn" class="btn btn-flat">
+                <i class="fa fa-search"></i>
+            </button>
+        </span>
+    </div>
+</form>*@
+<ul class="sidebar-menu" data-widget="tree" id="myMenu">
+
+    <li class="box box-danger"><a href="@Url.Action("Index", "Home")"> <i class="fa fa-home"></i><span>Home</span></a></li>
+    <li class="treeview box box-danger">
+        <a href="#">
+            <i class="fa fa-th"></i><span>Masters</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="@Url.Action("EmployeeIndex", "Master")"><i class="fa fa-angle-right"></i>Employee Master</a></li>
+            <li><a href="@Url.Action("DesignationIndex", "Master")"><i class="fa fa-angle-right"></i>Designation Master</a></li>
+            <li><a href="@Url.Action("ProjectIndex", "Master")"><i class="fa fa-angle-right"></i>Project Master</a></li>
+            <li><a href="@Url.Action("SiteIndex", "Master")"><i class="fa fa-angle-right"></i>Site Master</a></li>
+        </ul>
+        <a href="#">
+            <i class="fa fa-table"></i> <span>Payroll</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="@Url.Action("AttendanceIndex", "Payroll")"><i class="fa fa-angle-right"></i>Attendance</a></li>
+        </ul>
+        <a href="#">
+            <i class="fa fa-list-ul"></i><span>Reports</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="@Url.Action("Index", "Reports")"><i class="fa fa-angle-right"></i>Attendance Report (Excel)</a></li>
+            <li><a href="@Url.Action("ReportSummary", "Reports")"><i class="fa fa-angle-right"></i>Attendance Matrix Report</a></li>
+            <li><a href="@Url.Action("ReportDetail", "Reports")"><i class="fa fa-angle-right"></i>Attendance Detail Report</a></li>
+        </ul>
+        <a href="#">
+            <i class="fa fa-server"></i><span>Security</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="@Url.Action("UserIndex", "Security")"><i class="fa fa-angle-right"></i>Users</a></li>
+        </ul>
+        <a href="#">
+            <i class="fa fa-list-ul"></i> <span>Settings</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="@Url.Action("Index", "Settings")">Company Information</a></li>
+        </ul>
+        <a href="#">
+            <i class="fa fa-laptop-code"></i> <span>Utilities</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="@Url.Action("Backup", "Utilities")"><i class="fa fa-angle-right"></i>Backup</a></li>
+            <li><a href="@Url.Action("Restore", "Utilities")"><i class="fa fa-angle-right"></i>Restore</a></li>
+            <li><a href="@Url.Action("Index", "Utilities")"><i class="fa fa-angle-right"></i>Erase Data</a></li>
+        </ul>
+    </li>
+</ul>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script>
+
+    $(".search-menu-box").on('input', function () {
+        var filter = $(this).val();
+        $(".sidebar-menu > li").each(function () {
+            if ($(this).text().search(new RegExp(filter, "i")) < 0) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        });
+    });
+</script>

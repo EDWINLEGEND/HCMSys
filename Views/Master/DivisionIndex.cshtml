@@ -1,0 +1,485 @@
+﻿@model IEnumerable<HCMSys.Models.vmHCM_Division>
+@using Microsoft.AspNetCore.Http;
+@{
+    string detailsUrl = Url.Action("DownloadExcel", "Common", new { id = 5 });
+}
+@* <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> *@
+
+<script src="~/lib/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+<link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+<script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+<style>
+    html {
+        font-size: 14px; /* Default is usually 16px */
+    };
+    #loading {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.8);
+        z-index: 1000;
+    }
+
+    #loadingcontent {
+        display: table;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    #loadingspinner {
+        display: table-cell;
+        vertical-align: middle;
+        width: 100%;
+        text-align: center;
+        font-size: larger;
+        padding-top: 80px;
+    }
+</style>
+<section class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <div class="d-sm-flex align-items-end pull-right mb-4">
+                <div style="display:flex; justify-content:flex-start; width:100%; padding:0;">DIVISION MASTER</div>
+                <div class="flex-box-2">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-sm btn-primary shadow-sm w-100 w-md-50 rounded-lg">
+                        <i class="fas fa-home fa-sm text-white-50"></i> Home
+                    </a>
+                </div>
+                &nbsp;
+                <div class="flex-box-2">
+                    <a href="#" class="btn btn-sm btn-warning shadow-sm w-100 w-md-50 rounded-lg" onclick="clearFieldsWithModal()" data-toggle="modal" data-target="#Master-modal">
+                        <i class="fas fa-file-excel fa-sm text-white-50"></i> Import
+                    </a>
+                </div>
+                &nbsp;
+                <div class="flex-box-2">
+                    <a href="@detailsUrl" class="btn btn-sm btn-secondary shadow-sm w-100 w-md-50 rounded-lg">
+                        <i class="fas fa-file-excel fa-sm text-white-50"></i> Export
+                    </a>
+                </div>
+                &nbsp;
+                <div class="flex-box-2">
+                    <a class="btn btn-sm btn-success shadow-sm w-100 w-md-50 rounded-lg" href="#" onclick="clearFieldsWithModal()" data-toggle="modal" data-target="#Division-modal">
+                        <i class="fas fa-plus fa-sm text-white-50"></i> New
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Main content -->
+<section class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tblDivision" class="table table-bordered table-striped" style="width:100%;table-layout: fixed;">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Id</th>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Created By</th>
+                            <th>Created Date</th>
+                            <th>Modified By</th>
+                            <th>Modified Date</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="text-align: center;">
+                                    <a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Division-modal">
+                                        <i class="fas fa-edit fa-sm fa-fw mr-2 text-gray-600"></i>
+                                    </a>
+                                    @*             <a href="#">
+                                <i class="fas fa-print fa-sm fa-fw mr-2 text-gray-600"></i>
+                                </a> *@
+                                    <a href="#" class="remove-item-btn">
+                                        <i class="fas fa-trash-alt fa-sm fa-fw mr-2 text-gray-600 "></i>
+                                    </a>
+
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.iMasterId)</td>
+                                <td>@Html.DisplayFor(modelItem => item.sCode)</td>
+                                <td>@Html.DisplayFor(modelItem => item.sName)</td>
+                                <td>@Html.DisplayFor(modelItem => item.CreatedBy)</td>
+                                <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
+                                <td>@Html.DisplayFor(modelItem => item.ModifiedBy)</td>
+                                <td>@Html.DisplayFor(modelItem => item.ModifiedDate)</td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Add and Update Modal -->
+    <div class="modal fade" id="Division-modal" aria-labelledby="Division-modal-label" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color:#0E8388">
+                    <h6 class="modal-title  text-white" id="Division-modal-label" style="">Add New Division</h6>
+                    <a href="#" class=" text-white" id="btn-close-modal" data-dismiss="modal"
+                       aria-label="Close" onclick="clearFieldsWithModal()">X</a>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label" for="code-field">Code</label>
+                            <input type="text" class="form-control" placeholder="Enter Code" id="code-field" required readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="name-field">Name</label>
+                            <input type="text" class="form-control" placeholder="Enter Name" id="name-field" required>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-success" id="add-btn">+ Add</button>
+                            <button type="submit" hidden class="btn btn-success" id="update-btn">Update</button>
+                            <input type="hidden" class="form-control" placeholder="id" id="id-field">
+                            <input type="hidden" class="form-control" placeholder="createdby" id="createdby-field">
+                            <input type="hidden" class="form-control" placeholder="createddate" id="createddate-field">
+                            <input type="hidden" class="form-control" placeholder="modifiedby" id="modifiedby-field">
+                            <input type="hidden" id="userid" name="userid" value="@Context.Session.GetString("userid")" />
+                            <input type="hidden" class="form-control" placeholder="modifieddate" id="modifieddate-field">
+                            &nbsp;
+                            <button class="btn btn-danger ms-2" data-dismiss="modal" aria-label="Close" onclick="clearFieldsWithModal()">Close</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="background-color:#0E8388">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Import Modal -->
+    @{
+        using (Html.BeginForm("", "", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <div class="modal fade" id="Master-modal" aria-labelledby="Master-modal-label" aria-hidden="true" role="dialog">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color:#0E8388">
+                            <h6 class="modal-title  text-white" id="Master-modal-label" style="">Import Masters</h6>
+                            <a href="#" class=" text-white" id="btn-close-modal" data-dismiss="modal"
+                               aria-label="Close" onclick="clearFieldsWithModal()">X</a>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label" for="code-field">Select The Excel File</label>
+                                    <input type="file" class="form-control" id="file-field" required>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-success" id="import-btn" onclick="importDataFromExcel()">Import</button>
+
+                                    &nbsp;
+                                    <button class="btn btn-danger ms-2" data-dismiss="modal" aria-label="Close" onclick="clearFieldsWithModal()">Close</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer" style="background-color:#0E8388">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+</section>
+<section>
+    <div id="loading">
+        <div id="loadingcontent">
+            <p id="loadingspinner">
+                <img alt="" src="~/dist/ajax-loader1.gif" />
+            </p>
+        </div>
+    </div>
+</section>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script defer src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script defer src="https://cdn.datatables.net/rowgroup/1.2.0/js/dataTables.rowGroup.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#tblDivision').DataTable({
+            order: [[1, 'desc']],
+
+        });
+        //rowGroup: {
+        //    startRender: function (rows, group) { return group },
+        //    endRender: function (rows, group) {
+        //        return group + ' (' + rows.count() + ')';
+        //    },
+        //    dataSrc: 3
+        //}
+        getNo();
+        LoginId = $("#userid").val();
+    });
+    function clearFields() {
+
+        $('#code-field').val("");
+        $('#name-field').val("");
+        $('#file-field').val("");
+        $('#id-field').val(0);
+        $('#add-btn').text("+ Add");
+        $('#Division-modal-label').text('Add New Division');
+        $('#code-field').prop("disabled", false);
+    }
+    function importDataFromExcel() {
+        debugger;
+        var flg = 0;
+        var i = 1;
+        $("#loading").fadeIn();
+
+        var formData = new FormData();
+        formData.append('postedFile', $('#file-field')[0].files[0]);
+        formData.append('UserId', LoginId);
+        formData.append('iModuleId', 5);
+        $.ajax({
+            url: "@Url.Action("ImportMasterDataWithCodeAndName", "Common")",
+            type: 'POST',
+            data: formData,
+            processData: false,  // tell jQuery not to process the data
+            contentType: false,  // tell jQuery not to set contentType
+            success: function (r) {
+                if (r != null && r != "") {
+                    if (r == "Invalid Session") {
+                        location.href = '@Url.Action("Logout", "Login")';
+                    }
+                    else {
+                        alertify.log(r, "error", 600);
+                    }
+                }
+                else {
+                    alertify.set({ delay: 600 });
+                    alertify.log("Data Imported Successfully", "success", 600);
+                    window.location.href = '@Url.RouteUrl(new { Controller = "Common", Action = "Download"})';
+
+                    flg = 1;
+                }
+            },
+            error: function () {
+                alertify.log("Error in update...", "error", 600);
+            },
+            complete: function () {
+                if (flg == 1) {
+                    $('#Master-modal').modal('hide');
+                    clearFields();
+                    $('#loading').fadeOut();
+                    location.href = '@Url.Action("DivisionIndex", "Master")';
+                }
+                else {
+                    $('#loading').fadeOut();
+                }
+                return;
+            }
+        });
+    }
+    function clearFieldsWithModal() {
+        getNo();
+        $('#code-field').val("");
+        $('#name-field').val("");
+        $('#id-field').val(0);
+        $('#add-btn').text("+ Add");
+        $('#Division-modal-label').text('Add New Division');
+        $('#code-field').prop("disabled", false);
+    }
+    function getNo() {
+        debugger;
+        $('#loading').fadeIn();
+        var fdata = { id: 5 }
+        $.ajax({
+            url: "@Url.Action("getCode", "Common")",
+            method: 'GET',
+            data: fdata,
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                $('#code-field').val(response);
+            },
+            complete: function () {
+                $('#loading').fadeOut();
+            }
+
+        });
+    }
+    $(document).on('click', 'a.edit-item-btn', function () {
+        debugger;
+        currentRow = $(this).closest("tr");
+        event.preventDefault();
+        clearFields();
+        $('#add-btn').text("Update");
+        $('#Division-modal-label').text('Update Division');
+        var sCode = currentRow.find("TD").eq(2).html().replace(/&amp;/g, '&').trim();
+        var sName = currentRow.find("TD").eq(3).html().replace(/&amp;/g, '&').trim();
+        var id = currentRow.find("TD").eq(1).html().replace(/&amp;/g, '&').trim();
+
+        $('#code-field').prop("disabled", true);
+        $('#code-field').val(sCode);
+        $('#name-field').val(sName);
+        $('#id-field').val(id);
+
+        return false;
+    });
+
+
+    $('#add-btn').click(function () {
+        debugger;
+
+        var code = $("#code-field").val();
+        var id = $('#id-field').val();
+        var name = $("#name-field").val();
+        var sts = $(this).text();
+        var flg = 0;
+        if (code == null || code == "") {
+            alertify.log("Code cannot be blank", "error", 600);
+            $('#loading').fadeOut();
+            return false;
+        }
+        $('#loading').fadeIn();
+        if (name == null || name == "") {
+            alertify.log("Name cannot be blank", "error", 600);
+            $('#loading').fadeOut();
+            return false;
+        }
+        var arrList = {};
+        arrList.iMasterId = id; arrList.sCode = code; arrList.sName = name; arrList.iCreatedby = LoginId; arrList.iModifiedBy = LoginId;
+
+        if (sts == "Update") {
+            var fdata = arrList;
+            console.log('Code-' + code); console.log('Name-' + name);
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("UpdateDivision", "Master")",
+                data: fdata,
+                dataType: "json",
+                success: function (r) {
+                    if (r != null && r != "") {
+                        $("#name-field").focus();
+                        $("#name-field").select();
+                        if (r == "Invalid Session") {
+                            location.href = '@Url.Action("Logout", "Login")';
+                        }
+                        else {
+                            alertify.log(r, "error", 600);
+                        }
+                    }
+                    else {
+                        alertify.set({ delay: 600 });
+                        alertify.log(code + " - Division Updated Successfully", "success", 600);
+                        location.href = '@Url.Action("DivisionIndex", "Master")';
+                        flg = 1;
+                    }
+                },
+                error: function () {
+                    alertify.log("Error in update...", "error", 600);
+                },
+                complete: function () {
+                    if (flg == 1) {
+                        $('#Division-modal').modal('hide');
+                        clearFields();
+                        $('#loading').fadeOut();
+                    }
+                    return;
+                }
+            });
+        }
+        else {
+            var fdata = arrList;
+            console.log('Code-' + code); console.log('Name-' + name);
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("CreateDivision", "Master")",
+                data: fdata,
+                dataType: "json",
+                success: function (r) {
+                    if (r != null && r != "") {
+                        $("#code-field").focus();
+                        $("#code-field").select();
+                        if (r == "Invalid Session") {
+                            location.href = '@Url.Action("Logout", "Login")';
+                        }
+                        else {
+                            alertify.log(r, "error", 600);
+                        }
+                    }
+                    else {
+                        alertify.log(code + " - Division Created Successfully", "success", 600);
+                        location.href = '@Url.Action("DivisionIndex", "Master")';
+                        flg = 1;
+                    }
+                },
+                error: function () {
+                    alertify.log("Error in create...", "error", 600);
+                },
+                complete: function () {
+                    if (flg == 1) {
+                        $('#Division-modal').modal('hide');
+                        clearFields();
+                        $('#loading').fadeOut();
+                    }
+                    return;
+                }
+            });
+        }
+        return false;
+    });
+    $(document).on('click', 'a.remove-item-btn', function () {
+        debugger;
+        currentRow = $(this).closest("tr");
+        event.preventDefault();
+        $('#loading').fadeIn();
+        var code = currentRow.find("TD").eq(2).html().replace(/&amp;/g, '&').trim();
+        var name = currentRow.find("TD").eq(3).html().replace(/&amp;/g, '&').trim();
+        var id = currentRow.find("TD").eq(1).html().replace(/&amp;/g, '&').trim();
+
+        var fdata = { iMasterId: id, UserId: LoginId };
+        console.log('Code-' + code); console.log('Name-' + name);
+        $.ajax({
+            method: "POST",
+            url: "@Url.Action("DeleteDivision", "Master")",
+            data: fdata,
+            dataType: "json",
+            success: function (result) {
+                if (result.result != "Division Deleted Successfully") {
+                    alertify.log(code + " - Delete Operation Failed", "error", 600);
+                }
+                else {
+                    alertify.log(code + " - " + result.result, "error", 600);
+                    location.href = '@Url.Action("DivisionIndex", "Master")';
+                    flg = 1;
+                }
+            },
+            error: function () {
+                alertify.log("Error in delete...", "error", 600);
+            },
+            complete: function () {
+                if (flg == 1) {
+                    clearFields();
+                    $('#loading').fadeOut();
+                }
+                return;
+            }
+        });
+        return false;
+    });
+
+</script>

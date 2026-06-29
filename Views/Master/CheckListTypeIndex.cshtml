@@ -1,0 +1,158 @@
+﻿@model IEnumerable<MployTracker.Web.Models.mSer_CheckListTypes>
+<script src="~/lib/jquery.min.js"></script>
+<link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+<script defer src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+<script src="~/lib/sweetalert-dev.js"></script>
+<link href="~/lib/sweetalert.css" rel="stylesheet" />
+<section class="content-header">
+    <h1>
+        CheckListTypes
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index", "Home")"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">CheckListTypes Master</li>
+    </ol>
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-success">
+                <div class="box-header">
+                    <h3 class="box-title">Manage CheckListTypes</h3>
+                    <a href="CreateCheckListType" class="btn btn-primary btn-sm pull-right btnCreate">Create</a>
+                    @*<button type="submit" class="btn btn-info pull-right" action="/Master/CreateCheckListType">Create</button>*@
+                </div>
+                <div class="module">
+
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="table-responsive">
+                            <table id="tblCheckListType" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Created By</th>
+                                        <th>Created Date</th>
+                                        <th>Modified Date</th>
+                                        <th>Edit</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@Html.DisplayFor(modelItem => item.iMasterId)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.sCode)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.sName)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.CreatedBy)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.ModifiedDate)</td>
+                                            <td>
+                                                <p data-placement="top" data-toggle="tooltip" title="Edit">
+                                                    <a href="UpdateCheckListType/@item.iMasterId" class="btn btn-info btn-xs fa fa-pencil-square-o btnView"><i class="menu-icon glyphicon-edit"></i> </a>
+                                                </p>
+
+                                            </td>
+                                            <td>
+                                                <p data-placement="top" data-toggle="tooltip" title="Delete">
+                                                    <a href="" onclick="DeleteCheckListType('@item.iMasterId')" class="btn btn-danger  btn-xs fa fa-trash btnDelete"><i class="menu-icon icon-trash"></i> </a>
+                                                </p>
+                                            </td>
+                                            @*<a href="UpdateCheckListType/@item.iMasterId">Update</a> | <a href="" onclick="DeleteCheckListType('@item.iMasterId')">Delete</a>*@
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+</section>
+
+@*<script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>*@
+
+<script>
+
+    $(document).ready(function () {
+            $('#tblCheckListType').DataTable();
+        });
+
+    function DeleteCheckListType(id) {
+
+        event.preventDefault()
+
+        swal({
+                title: "Are you sure?",
+                text: "Do you want to delete this record?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes",
+                cancelButtonText: "Cancel",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            },
+        function (isConfirm) {
+            if (isConfirm) {
+                $.ajax({
+                dataType: 'json',
+                type: "POST",
+                url: '@Url.Action("DeleteCheckListType", "Master")',
+                async: false,
+                data: {
+                    id: id
+                },
+                    success: function (result) {
+                        console.log(result);
+                        if (result.result) {
+                            swal({
+                                title: "Deleted!",
+                                text: "CheckListType Deleted.",
+                                button: "Close", // Text on button
+                                //icon: "success", //built in icons: success, warning, error, info
+                                timer: 3000, //timeOut for auto-close
+                                buttons: {
+                                    confirm: {
+                                        text: "OK",
+                                        value: true,
+                                        visible: true,
+                                        className: "",
+                                        closeModal: true
+                                    },
+                                    cancel: {
+                                        text: "Cancel",
+                                        value: false,
+                                        visible: true,
+                                        className: "",
+                                        closeModal: true,
+                                    }
+                                }
+                            });
+                            window.location.reload();
+                        }
+                    },
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                        swal("Cancelled", "Something went wrong.", "Error");
+                    }
+
+                });
+            } else {
+                swal.close();
+            }
+
+        });
+
+    }
+
+</script>

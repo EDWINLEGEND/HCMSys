@@ -1,0 +1,259 @@
+﻿@model HCMSys.Models.User
+
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>HCMSys | Log in</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Custom fonts for this template-->
+    <link href="~/dist/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <script src="~/dist/fontawesome-free/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+
+    <!-- Custom styles for this template-->
+    <link href="~/dist/css/sb-admin-2.min.css" rel="stylesheet">
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/dist/jquery/jquery.min.js"></script>
+    <script src="~/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/dist/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/dist/js/sb-admin-2.js"></script>
+
+    <!-- Bootstrap 3.3.7 -->
+    @*    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="~/bower_components/font-awesome/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="~/bower_components/Ionicons/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/dist/css/sb-admin-2.min.css">
+
+    <![endif]-->
+    <!-- Google Font -->*@
+
+    <style>
+        html {
+            font-size: 14px; /* Default is usually 16px */
+        }
+        body {
+            background-image: url('@Url.Content("~/dist/img/payroll.png")');
+            background-color: darkgray;
+            height: 100%; /* Center and scale the image nicely */
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: 100% 100%;
+        }
+
+        div.a {
+            position: relative;
+            width: 400px;
+            height: 200px;
+            top: 200px;
+            border-block-color: red
+        }
+
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .h-custom {
+            height: calc(100% - 73px);
+        }
+
+        @@media (max-width: 450px) {
+            .h-custom {
+                height: 100%;
+            }
+        }
+
+        .left, .right {
+            height: 100%;
+            width: 50%;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            overflow-x: hidden;
+            padding-top: 20px;
+        }
+
+        .left {
+            left: 0;
+            background-color: rgb(255, 255, 255);
+        }
+
+        .right {
+            right: 0;
+            background-color: rgb(255, 255, 255);
+        }
+
+        .centered {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+            .centered img {
+                width: 150px;
+                border-radius: 50%;
+            }
+
+        .center {
+            height: 400px;
+            width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #dbe4ed; /* Border color is optional */
+            overflow: hidden;
+        }
+
+        .imgcenter {
+            height: 100%;
+            width: 100%;
+            object-fit: cover
+        }
+ 
+    </style>
+
+    <script src="~/lib/jquery.min.js"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+
+
+</head>
+<body class="body">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100">
+           @using (Html.BeginForm("Login", "Login", FormMethod.Post))
+            {
+
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class=" col-md-4">
+
+                            <div class="card o-hidden border-0 shadow-lg my-4">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row">
+
+                                        <div class="col-lg-12">
+                                            <div class="p-5  center-block ">
+                                                <span><img class="imgcenter" src="~/img/HCM2.png" /></span>
+                                                <hr>
+                                                <div class="text-center">
+                                                    <h5 class="h5 text-gray-900 mb-4">Sign In</h5>
+                                                </div>
+                                                <hr>
+
+                                                <form class="user">
+                                                    <div class="form-group">
+                                                    <input type="text"
+                                                           class="form-control form-control-user icon-user"
+                                                           name="sUsername"
+                                                           value="@Model?.sUsername"
+                                                           required
+                                                           placeholder="UserName" />
+         
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <a>
+                                                            <input type="password"
+                                                                   class="form-control form-control-user icon-lock"
+                                                                   name="sPassword"
+                                                                   placeholder="Password"
+                                                                   value="@Model?.sPassword"
+                                                                   required />
+                                                        </a>
+                                                    </div>
+                                         @*            <div class="form-group">
+                                                        <select class="form-control select" id="ddlCompany">
+                                                            <option value="0">Test Company</option>
+                                                        </select>
+                                                    </div> *@
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-checkbox small">
+                                                            <input type="checkbox" class="custom-control-input" id="customCheck" style="display:none" value="Remember
+                                                                Me">
+                                                  @*           <label class="custom-control-label" for="customCheck">
+                                                                Remember
+                                                                Me
+                                                            </label> *@
+                                                        </div>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary btn-user btn-block" id="btnSignIn" style="align-items :center  ">Login</button>
+                                       
+                                                    <hr>
+
+                                                    <div class="text-center">
+                                                        <a class="small" href="forgot-password.html">Forgot Password?</a>
+
+                                                    </div>
+                                    
+     
+                                
+                                                </form>
+                                                <hr>
+                                                <div class="d-sm-flex align-items-end pull-right mb-4" hidden>
+                                                    <div class="flex-box-2">
+                                                        <a href="@Url.Action("Login", "Login")" class=" btn btn-sm btn-success  w-100 w-md-50   rounded-lg">
+                                                            <i class="fab fa-google fa-sm text-white-100"></i>  
+                                                        </a>
+                                                    </div>
+                                                     &nbsp;
+                                                    <div class="flex-box-2">
+                                                        <a href="@Url.Action("Login", "Login")" class=" btn btn-sm btn-primary w-100 w-md-50   rounded-lg">
+                                                            <i class="fab fa-microsoft fa-sm text-white-100"></i>  
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                       
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Bootstrap core JavaScript-->
+                <script src="~/dist/jquery/jquery.min.js"></script>
+                <script src="~/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <!-- Core plugin JavaScript-->
+                <script src="~/dist/jquery-easing/jquery.easing.min.js"></script>
+
+                <!-- Custom scripts for all pages-->
+                <script src="~/dist/js/sb-admin-2.min.js"></script>
+
+            }
+        </div>
+    </div>
+ 
+
+</body>
+</html>

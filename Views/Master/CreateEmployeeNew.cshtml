@@ -1,0 +1,1335 @@
+﻿<!-- Content Header (Page header) -->
+@using Microsoft.AspNetCore.Http;
+ 
+
+<script src="~/dist/jquery/jquery.slim.min.js"></script>
+<script src="~/dist/bootstrap/js/bootstrap.min.js"></script>
+
+<script src="~/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="~/dist/fontawesome-free/js/fontawesome.min.js"></script>
+
+<link href="~/lib/datepicker/datepicker.css" rel="stylesheet" />
+<script defer src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+<link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+<script src="~/lib/select2/js/select2.min.js" defer></script>
+<link defer href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
+<script src="~/alertify.js/alertify.min.js"></script>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+<style>
+    .flex-box-2 {
+        display: flex;
+ 
+        justify-content: flex-end;
+        outline: 1px grey;
+    }
+    .message-div {
+        text-align: center;
+        color: red;
+        margin: 2px !important;
+    }
+
+    .tabs {
+        --bar-color: red;
+        --background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, #e0e0e0);
+        display: flex;
+        width: 600px;
+        /*border: 1px solid #ddd;*/
+    }
+
+        .tabs > .tab {
+            flex: 1;
+            display: flex;
+        }
+
+    .tab > .tab-input {
+        width: 0;
+        height: 0;
+        margin: 0;
+        display: none;
+    }
+
+    .tab > .tab-box {
+        padding: .5rem;
+        width: 100%;
+        text-align: center;
+        transition: 0.5s;
+        border-bottom: 2px solid rgba(0,0,0,0);
+    }
+
+    .tab > .tab-input:checked + .tab-box {
+        background: var(--background);
+        border-color: var(--bar-color);
+    }
+
+    .form-control {
+        max-width: none;
+    }
+
+    .document-status {
+        width: 100%;
+        border: none;
+        background: red;
+        color: white;
+        border: 1px solid;
+        border-radius: 37px;
+        padding: 5px;
+        cursor: context-menu;
+        display: block;
+        text-align: center;
+    }
+
+    .numeric {
+        border: 1px solid #ccc;
+        padding: 5px;
+        width: 100px;
+        display: inline-block;
+    }
+    .p-20 {
+        padding: 20px;
+    }
+
+    /*.net-amount {
+                border: none;
+                font-size: 18px;
+                font-weight: bolder;
+                text-align: right;
+                box-shadow: none;
+            }*/
+
+    .label-box {
+        border: none !important;
+        box-shadow: none !important;
+        text-align: center !important;
+        font-weight: bold !important;
+        font-size: 20px !important;
+    }
+
+    .net-amount {
+        border: none !important;
+        box-shadow: none !important;
+        font-weight: bolder !important;
+        font-size: 22px !important;
+    }
+
+    .profile-image {
+        height: 125px;
+        padding: 10px;
+        width: 125px;
+        border-radius: 40px;
+    }
+
+    .p-t-5 {
+        padding-top: 5px;
+    }
+
+    .btn-transparent {
+        background: transparent;
+        box-shadow: none;
+        border: none;
+    }
+
+    /*.col-xs-6 {
+                padding-right: 0px !important;
+            }*/
+
+    /*temporary*/
+    .navbar-inverse {
+        display: none;
+    }
+
+    #loading {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.8);
+        z-index: 1000;
+    }
+
+    #loadingcontent {
+        display: table;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    #loadingspinner {
+        display: table-cell;
+        vertical-align: middle;
+        width: 100%;
+        text-align: center;
+        font-size: larger;
+        padding-top: 80px;
+    }
+
+    table {
+        /* font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;*/
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        color: #000;
+    }
+
+    th {
+        border: 1px solid #4e73df;
+        text-align: left;
+        padding: 8px;
+        color: #FFF;
+        position: sticky;
+        top: 0;
+        border-top: 0;
+        background: #ededed;
+    }
+
+    th {
+        background-color: #4e73df;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #ddeedd;
+    }
+
+    thead {
+        color: white;
+        background-color:#4e73df !important;
+        position: sticky;
+        z-index: 100;
+        top: 0;
+    }
+    .with-arrow .nav-link.active {
+        position: relative;
+    }
+
+        .with-arrow .nav-link.active::after {
+            content: '';
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid #2b90d9;
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: block;
+        }
+
+    /* lined tabs */
+
+    .lined .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+
+        .lined .nav-link:hover {
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .lined .nav-link.active {
+            background: none;
+            color: #555;
+            border-color: #2b90d9;
+
+        }
+
+
+    body {
+        background: #304352;
+        background: -webkit-linear-gradient(to right, #304352, #d7d2cc);
+        background: linear-gradient(to right, #304352, #d7d2cc);
+        min-height: 100vh;
+    }
+
+    .nav-pills .nav-link {
+        color: #555;
+    }
+
+    .text-uppercase {
+        letter-spacing: 0.1em;
+    }
+
+    body {
+        background-color: #f5f5f5;
+    }
+
+    .imagePreview {
+        width: 100%;
+        height: 180px;
+        object-fit: contain;
+        background-position: center center;
+        /*background: url(http://cliquecities.com/assets/no-image-e3699ae23f866f6cbdf8ba2443ee5c4e.jpg);*/
+        background-color: #fff;
+        background-size:  contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        box-shadow: 0px -3px 6px 2px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary {
+        display: block;
+        border-radius: 0px;
+        box-shadow: 0px 4px 6px 2px rgba(0,0,0,0.2);
+        margin-top: -5px;
+    }
+
+    .imgUp {
+        margin-bottom: 15px;
+    }
+
+    .del {
+        position: absolute;
+        top: 0px;
+        right: 15px;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        line-height: 30px;
+        background-color: rgba(255,255,255,0.6);
+        cursor: pointer;
+    }
+
+    .imgAdd {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #4bd7ef;
+        color: #fff;
+        box-shadow: 0px 0px 2px 1px rgba(0,0,0,0.2);
+        text-align: center;
+        line-height: 30px;
+        margin-top: 0px;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .row-eq-height-xs {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        flex-direction: row;
+    }
+    .row-eq-height-md {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display:         flex;
+    flex-direction: column;
+    }
+    @@media (min-width:992px) {
+    .row-eq-height-md {
+        flex-direction: row;
+    }
+    @@media (max-width: 768px) {
+        #tblDocuments th, #tblDocuments td {
+            white-space: nowrap;
+        }
+    }
+        #outer {
+            display: grid;
+            grid-template-columns: repeat(5, 90px);
+            grid-auto-rows: 50px;
+            grid-gap: 10px;
+            width: 516px;
+        }
+
+        .big {
+            grid-row: 1 / 3;
+            grid-column: 2 / 3;
+        }
+
+        .div {
+            background-color: white;
+        }
+        .bootstrap-select:not([class*="col-"]):not([class*="form-control"]):not(.input-group-btn) {
+    width:180px;
+    left: 0;
+    /* position: absolute; */ /* This is being removed */
+}
+ 
+}
+</style>
+<section class="content-header"> 
+    <input type="hidden" id="userid" name="userid" value="@Context.Session.GetString("userid")" />
+</section>
+<!-- Main content -->
+<section class="container-fluid">
+    <!-- Header -->
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div class="fw-bold text-primary">EMPLOYEE MASTER</div>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="@Url.Action("Index", "Home")"
+                       class="btn btn-sm btn-info d-flex align-items-center justify-content-center gap-3"
+                       style="width: 80px; height: 40px;">
+                        <i class="fas fa-home"></i>Home
+ 
+                    </a> &nbsp;
+                    <a href="@Url.Action("EmployeeIndex", "Master")"
+                       class="btn btn-sm btn-warning d-flex align-items-center justify-content-center gap-3"
+                       style="width: 80px; height: 40px;">
+                        <i class="fas fa-arrow-left"></i>Back
+      
+                    </a> &nbsp;
+                    <a href="#" onclick="saveData()"
+                       class="btn btn-sm btn-success d-flex align-items-center justify-content-center gap-3"
+                       style="width: 80px; height: 40px;">
+                        <i class="fas fa-save"></i>Save
+            
+                    </a> &nbsp;
+                    <a href="@Url.Action("CreateEmployee", "Master")"
+                       class="btn btn-sm btn-danger d-flex align-items-center justify-content-center gap-3"
+                       style="width: 80px; height: 40px;">
+                        <i class="fas fa-eraser"></i>Clear
+            
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Title -->
+@*     <div class="card shadow mb-4" style="background-color:#0E8388;">
+        <div class="card-body">
+            <h5 class="text-white mb-0">Employee Information</h5>
+        </div>
+    </div> *@
+    <div class="card shadow mb-4 w-100" style="background-color: #0E8388;">
+        <div class="card-body py-2">
+            <h5 class="text-white m-0">Employee Information</h5>
+        </div>
+    </div>
+    <!-- Form & Image -->
+    <div class="row">
+        <!-- Left Column: Form -->
+        <div class="col-12 col-md-8 mb-4">
+            <div class="card shadow p-4">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-danger">Code<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="sCode" name="Code" placeholder="Code">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-danger">Name<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="sName" name="Name" placeholder="Name">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-danger">Hired On<span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="DateofJoin">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-danger">Category<span class="text-danger">*</span></label>
+                        <select class="form-control" id="ddlCategory">
+                            <option value="0">--Select--</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-danger">Date of Revision<span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="DateofRevision">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-danger">Effective On<span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="DateofApplicable">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Profile Photo -->
+        <div class="col-12 col-md-4 mb-4">
+            <div class="card shadow p-3 d-flex align-items-center text-center">
+                <img src="~/dist/img/user2.png" alt="Profile-photo" id="imgPhoto" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                <label class="btn btn-primary">
+                    Upload
+                    <input type="file" id="file-upload" class="d-none rounded-sm">
+                </label>
+            </div>
+        </div>
+
+        <!-- Employee info over -->
+
+    </div>
+</section>
+ 
+<section class="content container-fluid">
+    <!-- Horizontal Form -->
+    <form class="form-horizontal">
+        <div class="card shadow mb-4 w-100" style="background-color: #0E8388;">
+            <div class="card-body py-2">
+                <h5 class="text-white m-0">Personal Information</h5>
+            </div>
+        </div>
+         <div class="card shadow p-3 d-flex align-items-center text-center">
+            <div class="form-group">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Present Address</label>
+                            <textarea class="form-control" id="PresentAddress"></textarea>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Permanent Address</label>
+                            <textarea class="form-control" id="PermenantAddress"></textarea>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Phone No</label>
+                            <input type="tel" class="form-control" id="PhoneNo">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Mobile No</label>
+                            <input type="tel" class="form-control" id="MobileNo">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Email</label>
+                            <input type="email" class="form-control" id="Email">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="DOB">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Gender</label>
+                            <select class="form-control" id="ddlGender">
+                                <option value="0">--Select--</option>
+                                <option value="1">Male</option>
+                                <option value="2">Female</option>
+                                <option value="3">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Marital Status</label>
+                            <select class="form-control" id="ddlMStatus">
+                                <option value="0">--Select--</option>
+                                <option value="1">Married</option>
+                                <option value="2">Unmarried</option>
+                                <option value="3">Divorced</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Nationality</label>
+                            <select class="form-control" id="ddlNationality">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Spouse Name</label>
+                            <input type="text" class="form-control" id="SpouseName">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">No of Dependants</label>
+                            <input type="number" class="form-control" id="NoofDependant">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Reporting To</label>
+                            <select class="form-control" id="ddlReportingTo">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>   
+</section>
+<section class="content container-fluid">
+    <br/>
+</section>
+ <section class="content container-fluid">
+    <!-- Horizontal Form -->
+    <form class="form-horizontal">
+        <div class="card shadow mb-4 w-100" style="background-color: #0E8388;">
+            <div class="card-body py-2">
+                <h5 class="text-white m-0">Official Information</h5>
+            </div>
+        </div>
+        <div class="card shadow p-3 d-flex align-items-center text-center">
+            <div class="form-group">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Job Grade</label>
+                            <select class="form-control select" id="ddlJobGrade">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Designation</label>
+                            <select class="form-control select" id="ddlDesignation">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Project</label>
+                            <select class="form-control select" id="ddlProject">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Location</label>
+                            <select class="form-control select" id="ddlLocation">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Department</label>
+                            <select class="form-control select" id="ddlDepartment">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Payment Type</label>
+                            <select class="form-control select" id="ddlPaymentType">
+                                <option value="0">--Select--</option>
+                                <option value="1">Cash</option>
+                                <option value="2">Bank</option>
+                                <option value="3">Cheque</option>
+                                <option value="4">WPS</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Bank</label>
+                            <select class="form-control select" id="ddlBank">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Bank Branch</label>
+                            <input type="text" class="form-control" id="BankBranch">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Account No</label>
+                            <input type="text" class="form-control" id="AccountNo">
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Health Insurance</label>
+                            <select class="form-control select" id="ddlHInsurance">
+                                <option value="0">--Select--</option>
+                                <option value="1">Yes</option>
+                                <option value="2">No</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Employee Status</label>
+                            <select class="form-control select" id="ddlEmployeeStatus">
+                                <option value="0">--Select--</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="control-label">Date of Termination</label>
+                            <input type="date" class="form-control" id="DOT" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>   
+</section>
+<section class="content container-fluid">
+    <br/>
+</section>
+<section class="content container-fluid">
+    <!-- Horizontal Form -->
+    <form class="form-horizontal">
+
+        <div class="card shadow mb-4 w-100" style="background-color: #0E8388;">
+            <div class="card-body py-2">
+                <h5 class="text-white m-0">Documents</h5>
+            </div>
+        </div>
+        <div class="card shadow p-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-end mb-3">
+                    <a class="btn btn-primary rounded" id="btnAddDocument">
+                        <i class="fas fa-plus"></i>  
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="tblDocuments" class="table table-bordered table-striped table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Sl No</th>
+                                <th>Document Type</th>
+                                <th>Document No</th>
+                                <th>Date of Issue</th>
+                                <th>Date of Expiry</th>
+                                <th>Place of Issue</th>
+                                <th>Remarks</th>
+                                <th style="display: none;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="docBody">
+                            <!-- Table rows dynamically generated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </form>   
+</section>
+<section class="content container-fluid">
+    <br/>
+</section>
+<section class="content container-fluid">
+    <!-- Horizontal Form -->
+    <form class="form-horizontal">
+        <div class="card shadow mb-4 w-100" style="background-color: #0E8388;">
+            <div class="card-body py-2">
+                <h5 class="text-white m-0">Allowances</h5>
+            </div>   
+        </div>
+        <div class="card shadow p-3">
+            <div class="card-body">
+                <h5 class="card-title text-center mb-4">Allowances & Deductions</h5>
+
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <div class="table-responsive">
+                            <table id="tblAllowance" class="table table-bordered table-striped">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="display:none">Id</th>
+                                        <th>Allowance</th>
+                                        <th>Amount</th>
+                                        <th style="display:none;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allowanceBody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <div class="table-responsive">
+                            <table id="tblDeduction" class="table table-bordered table-striped">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="display:none">Id</th>
+                                        <th>Deduction</th>
+                                        <th>Amount</th>
+                                        <th style="display:none;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deductionBody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <label class="control-label">Gross Salary</label>
+                        <input type="number" class="form-control" id="GrossSalary" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>   
+</section>
+<section class="content container-fluid">
+    <br/>
+</section>
+<section class="content container-fluid">
+    <!-- Horizontal Form -->
+    <form class="form-horizontal">
+        <div class="card shadow mb-4 w-100" style="background-color: #0E8388;">
+            <div class="card-body py-2">
+                <h5 class="text-white m-0">Leaves</h5>
+            </div>
+        </div>
+        <div class="card shadow p-3">
+            <div class="card-body">
+                <h5 class="card-title text-center mb-4">Leave Details</h5>
+
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="control-label">Leave Frequency (Days)</label>
+                        <input type="number" class="form-control" id="LeaveFrequency">
+                    </div>
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="control-label">Leave Days (Days)</label>
+                        <input type="number" class="form-control" id="LeaveDays">
+                    </div>
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="control-label">Opening Leave Balance (Days)</label>
+                        <input type="number" class="form-control" id="LeaveBalance">
+                    </div>
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="control-label">Last Return Date</label>
+                        <input type="date" class="form-control" id="ReturnDate">
+                    </div>
+                    <div class="col-12 col-md-4 mb-3">
+                        <label class="control-label">Airline Sector</label>
+                        <select class="form-control select" id="ddlAirlineSector">
+                            <option value="0">--Select--</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tblLeave" class="table table-bordered table-striped">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="display:none">Id</th>
+                                        <th>Leave</th>
+                                        <th>Entitled</th>
+                                        <th style="display:none;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaveBody">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>   
+</section>
+<script>
+    var companyId = 0;
+    var sessionId = "";
+    var LoginId = $("#userid").val();
+
+    $(document).ready(function () {
+        debugger;
+        debugger;
+        var now = new Date();
+        var day = ("0" + now.getDate()).slice(-2);
+        var month = ("0" + (now.getMonth() + 1)).slice(-2);
+        var today = now.getFullYear() + "-" + (month) + "-" + (day);
+        $('#loading').fadeIn();
+        $('#DateofJoin,#DateofRevision,#DOB,#DOT,#DateofApplicable').val(today);
+        getNo();
+        $("#sCode").focus();
+        $('#loading').fadeOut();
+        $('#enable-datepicker').change(function () {
+            $('#DOT').prop('disabled', !this.checked);
+        });
+       
+    });
+    function isNumeric(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+    function checkNumeric() {
+        debugger; 
+        $("#tblLeave > TBODY > tr").each(function () {
+            var t1 = $(this).find('td').eq(2).html().replace(/&amp;/g, '&').trim();
+            if (!isNumeric(t1))
+                $(this).find('td').eq(2).html("0.00");
+            var t2 = $(this).find('td').eq(3).html().replace(/&amp;/g, '&').trim();
+            if (!isNumeric(t2))
+                $(this).find('td').eq(3).html("0.00");
+            // $($columns[col]).append("0.000");
+        });
+        
+    }
+    
+    function totalTables() {
+        debugger;
+ 
+        var totalAllowance = 0; var totalDeduction = 0; var gross = 0;
+
+        $("#tblAllowance > TBODY > tr").each(function () {
+            var t1 = $(this).find('td').eq(2).html().replace(/&amp;/g, '&').trim();
+            if( isNumeric(t1))
+                totalAllowance += (parseFloat(t1));
+            else
+                $(this).find('td').eq(2).html("0.000");
+            // $($columns[col]).append("0.000");
+        });
+        $("#tblDeduction > TBODY > tr").each(function () {
+            var t2 = $(this).find('td').eq(2).html().replace(/&amp;/g, '&').trim();
+            if (isNumeric(t2))
+                totalDeduction += (parseFloat(t2));
+            else
+                $(this).find('td').eq(2).html("0.000");
+        });
+        gross = (parseFloat(totalAllowance) - parseFloat(totalDeduction)).toFixed(3);
+        $('#GrossSalary').val(gross)
+    }
+ 
+    function loadCategory() {
+        debugger;
+        var category;
+        $.ajax({
+            url: "@Url.Action("GetCategories", "Master")",
+                method: 'GET',
+                success: function (response) {
+                    category = response;
+                    var ddlHTML = '<option value="0">--Select--</option>';
+                    if (category != null && category.length != 0) {
+                        $(category).each(function () {
+                            ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                        });
+                    }
+                    $('#ddlCategory').html(ddlHTML);
+                loadEmployeeStatus();
+            }
+        });
+    }
+    function loadEmployeeStatus() {
+        debugger;
+        var employeeStatus;
+        $.ajax({
+            url: "@Url.Action("GetEmployeeStatus", "Master")",
+            method: 'GET',
+            success: function (response) {
+                employeeStatus = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (employeeStatus != null && employeeStatus.length != 0) {
+                    $(employeeStatus).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlEmployeeStatus').html(ddlHTML);
+                loadDesignations();
+            }
+        });
+    }
+    function loadDesignations() {
+        debugger;
+        var designation;
+        $.ajax({
+            url: "@Url.Action("GetDesignations", "Master")",
+            method: 'GET',
+            success: function (response) {
+                designation = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (designation != null && designation.length != 0) {
+                    $(designation).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlDesignation').html(ddlHTML);
+                loadNationality();
+            }
+        });
+    }
+    function loadNationality() {
+        debugger;
+        var nationality;
+        $.ajax({
+            url: "@Url.Action("GetNationalities", "Master")",
+            method: 'GET',
+            success: function (response) {
+                nationality = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (nationality != null && nationality.length != 0) {
+                    $(nationality).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlNationality').html(ddlHTML);
+                loadDepartments();
+            }
+        });
+    }
+    function loadDepartments() {
+        debugger;
+        var department;
+        $.ajax({
+            url: "@Url.Action("GetDepartments", "Master")",
+            method: 'GET',
+            success: function (response) {
+                department = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (department != null && department.length != 0) {
+                    $(department).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlDepartment').html(ddlHTML);
+                loadJobGrade();
+            }
+        });
+    }
+    function loadJobGrade() {
+        debugger;
+        var jobgrade;
+        $.ajax({
+            url: "@Url.Action("GetJobGrades", "Master")",
+            method: 'GET',
+            success: function (response) {
+                jobgrade = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (jobgrade != null && jobgrade.length != 0) {
+                    $(jobgrade).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlJobGrade').html(ddlHTML);
+                loadLocation();
+            }
+        });
+    }
+    function loadLocation() {
+        debugger;
+        var location;
+        $.ajax({
+            url: "@Url.Action("GetLocations", "Master")",
+            method: 'GET',
+            success: function (response) {
+                location = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (location != null && location.length != 0) {
+                    $(location).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlLocation').html(ddlHTML);
+                loadProject();
+            }
+        });
+    }
+    function loadProject() {
+        debugger;
+        var project;
+        $.ajax({
+            url: "@Url.Action("GetProjects", "Master")",
+            method: 'GET',
+            success: function (response) {
+                project = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (project != null && project.length != 0) {
+                    $(project).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlProject').html(ddlHTML);
+                loadBanks();
+            }
+        });
+    }
+    function loadBanks() {
+        debugger;
+        var bank;
+        $.ajax({
+            url: "@Url.Action("GetBanks", "Master")",
+            method: 'GET',
+            success: function (response) {
+                bank = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (bank != null && bank.length != 0) {
+                    $(bank).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlBank').html(ddlHTML);
+                loadEmployees();
+            }
+        });
+    }
+    function loadEmployees() {
+        debugger;
+        var employee;
+        $.ajax({
+            url: "@Url.Action("GetEmployee", "Master")",
+            method: 'GET',
+            success: function (response) {
+                employee = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (employee != null && employee.length != 0) {
+                    $(employee).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlReportingTo').html(ddlHTML);
+            }
+        });
+    }
+    function getNo() {
+        debugger;
+        $('#loading').fadeIn();
+        var fdata = { id: 20 }
+        $.ajax({
+            url: "@Url.Action("getCode", "Common")",
+            method: 'GET',
+            data: fdata,
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                $('#sCode').val(response);
+                loadCategory();
+            },
+            complete: function () {
+                $('#loading').fadeOut();
+            }
+            
+        });
+    }
+    function saveData() {
+        var flg = 0;
+        $('#loading').fadeIn();
+        var employee = {};var employeeDoc = new Array(); var employeeImg = {}; var employeeLeave = {};
+        var employeePersonal = {};var employeeOffical = {};var employeeElement = new Array(); 
+        var sCode = $("#sCode").val();
+        if (sCode == null || sCode == "" || sCode == 0) {
+            alertify.log("Code cannot be blank", "error", 600);
+            $("#sCode").focus();
+            $('#loading').fadeOut();
+            return false;
+        }
+        var sName = $("#sName").val();
+        if (sName == null || sName == "" || sName == 0) {
+            alertify.log("Name cannot be blank", "error", 600);
+            $("#sName").focus();
+            $('#loading').fadeOut();
+            return false;
+        }
+        if ($("#DateofRevision").val() < $("#DateofJoin").val()) {
+            alertify.log("Date of revision cannot be less than date of join", "error", 600);
+            $("#DateofRevision").focus();
+            $('#loading').fadeOut();
+            return false;
+        }
+        if ($("#DateofApplicable").val() < $("#DateofRevision").val()) {
+            alertify.log("Effective date cannot be less than date of revision", "error", 600);
+            $("#DateofApplicable").focus();
+            $('#loading').fadeOut();
+            return false;
+        }
+
+        var iCategory = $("#ddlCategory").val();
+        if (iCategory == null || iCategory == "" || iCategory == 0) {
+            alertify.log("Category cannot be blank", "error", 600);
+            $("#ddlCategory").focus();
+            $('#loading').fadeOut();
+            return false;
+        }
+        var iDesignation = $("#ddlDesignation").val();
+        var iEmployeeStatus = $("#ddlEmployeeStatus").val();
+ 
+        var rowCount = $('#tblAllowance  tr').length - 1;
+
+        if (rowCount >= 0) {
+            $("#tblAllowance #allowanceBody TR").each(function () {
+                var row = $(this);
+                var element = {};
+                element.iType = 1;
+                element.iCategory = iCategory;
+                element.iMasterId = row.find("td").eq(0).html();
+                element.dAmount = row.find("td").eq(2).html();
+                employeeElement.push(element);
+                flg++;
+            });
+        }
+        var rowCount = $('#tblDeduction  tr').length - 1;
+
+        if (rowCount >= 0) {
+            $("#tblDeduction #deductionBody TR").each(function () {
+                var row = $(this);
+                var element = {};
+                element.iType = 2;
+                element.iCategory = iCategory;
+                element.iMasterId = row.find("td").eq(0).html();
+                element.dAmount = row.find("td").eq(2).html();
+                employeeElement.push(element);
+                flg++;
+            });
+        }
+
+        rowCount = $('#tblLeave  tr').length - 1;
+
+        if (rowCount >= 0) {
+            $("#tblLeave #leaveBody TR").each(function () {
+                var row = $(this);
+                var element = {};
+                element.iType = 4;
+                element.iCategory = iCategory;
+                element.iMasterId = row.find("td").eq(0).html();
+                element.dAmount = row.find("td").eq(2).html();
+                employeeElement.push(element);
+                flg++;
+            });
+        }
+ 
+        rowCount = $('#tblDocuments  tr').length - 1;
+
+        if (rowCount >= 0) {
+            $("#tblDocuments #docBody TR").each(function () {
+                var row = $(this);
+                var doc = {};
+                doc.iType = 4;
+                doc.iCategory = iCategory;
+                doc.iMasterId = row.find("td").eq(0).html();
+                doc.dAmount = row.find("td").eq(2).html();
+                employeeDoc.push(doc);
+                flg++;
+            });
+        }
+        employee.sCode = sCode; employee.sName = sName; employee.iCategory = iCategory; employee.iEmployeeStatus = iEmployeeStatus; employee.iDesignation = iDesignation;
+        employee.RevisionDate = $("#DateofRevision").val(); employee.EffectiveDate = $("#DateofApplicable").val(); employee.JoiningDate = $("#DateofJoin").val();
+        employee.iCreatedBy = LoginId;
+
+        employeeOffical.iProject=$("#ddlProject").val();employeeOffical.iPaymentType=$("#ddlPaymentType").val();employeeOffical.iLocation=$("#ddlLocation").val();
+        employeeOffical.iDesignation=$("#ddlDesignation").val();employeeOffical.iDepartment=$("#ddlDepartment").val();employeeOffical.dDateOfTermination=$("#DOT").val();
+        employeeOffical.iBank=$("#ddlBank").val();employeeOffical.iEmployeeStatus=$("#ddlEmployeeStatus").val();employeeOffical.iHealthInsurance=$("#ddlHInsurance").val();
+        employeeOffical.iJobGrade=$("#ddlJobGrade").val();employeeOffical.sBankBranch=$("#BankBranch").val();employeeOffical.sAccountNo=$("#AccountNo").val();
+
+        employeePersonal.sPermenantAddress=$("#PermenantAddress").val();employeePersonal.sPresentAddress=$("#PresentAddress").val();employeePersonal.sEmail=$("#Email").val();
+        employeePersonal.sMobileNo=$("#MobileNo").val();employeePersonal.sPhoneNo=$("#PhoneNo").val();employeePersonal.dDateofBirth=$("#DOB").val();
+        employeePersonal.iGender=$("#ddlGender").val();employeePersonal.iMaritalStatus=$("#ddlMStatus").val();employeePersonal.iNationality=$("#ddlNationality").val();
+        employeePersonal.sSpouseName=$("#SpouseName").val();employeePersonal.iNoofDependant=$("#NoofDependant").val();employeePersonal.iReportingTo=$("#ddlReportingTo").val();
+
+        employeeImg.Photo=$('#imgPhoto').attr('src').split(',')[1];
+
+        var fdata = { employee: employee, employeeElement: employeeElement };
+        $.ajax({
+            url: '@Url.Action("CreateEmployee", "Master")',
+            method: "POST",
+            data: fdata,
+            dataType: "json",
+            success: function (r) {
+                if (r == "Employee Created!!!") {
+                    alertify.log(r, "success", 600);
+                    location.href = '@Url.Action("CreateEmployee", "Master")';
+                }
+                else if (r == "Invalid Session")
+                    location.href = '@Url.Action("Logout", "Login")';
+                else
+                    alertify.log(r, "error", 600);
+                $("#loading").fadeOut();
+            },
+            error: function () {
+                alertify.log("Error in saving employee master..", "error", 600);
+                $("#loading").fadeOut();
+                return;
+            },
+            complete: function () {
+                $("#loading").fadeOut();
+            }
+        });
+    }
+ 
+ 
+    $(function() {
+        $(document).on("change",".uploadFile", function()
+        {
+    		    var uploadFile = $(this);
+            var files = !!this.files ? this.files : [];
+            if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+ 
+            if (/^image/.test( files[0].type)){ // only image file
+                var reader = new FileReader(); // instance of the FileReader
+                reader.readAsDataURL(files[0]); // read the local file
+ 
+                reader.onloadend = function(){ // set image data as background of div
+                    //alert(uploadFile.closest(".upimage").find('.imagePreview').length);
+                uploadFile.closest(".imgUp").find('.imagePreview').css("background-image", "url("+this.result+")");
+                }
+            }
+      
+        });
+    });
+    // $(".numeric").on("keypress keyup blur", function (event) {
+    //     $(this).val($(this).val().replace(/[^\d].+/, ""));
+    //     if ((event.which < 48 || event.which > 57)) {
+    //         event.preventDefault();
+    //     }
+    // });
+    function checkNumbersInTable(event) {
+        if ((event.keyCode >= 48 && event.keyCode <= 57) || event.keyCode === 46) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+    $('#file-upload').change(function () {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imgPhoto').attr('src', e.target.result);
+        }
+        reader.readAsDataURL(this.files[0]);
+    });
+    $("#ddlCategory").change(function () {
+        var selectedValue = $(this).val(); var rowcount = 0;
+        console.log("Selected value: " + selectedValue);
+        debugger;
+        var elements;
+        $('#loading').fadeIn();
+
+
+        $('#tblAllowance tbody').empty();
+        $('#tblDeduction tbody').empty();
+        $('#tblLeave tbody').empty();
+ 
+        $.ajax({
+            url: "@Url.Action("GetPreferences", "Settings")",
+            method: 'GET',
+            data: { Id: selectedValue },
+            success: function (response) {
+                elements = response;
+                if (elements != null && elements.length != 0) {
+
+
+                    $(elements).each(function () {
+                        if (this.iType == 1) {
+                            var iMasterId = this.iMasterId;
+                            var sName = this.sName;
+                            var markup = "<tr  style='border: 1px thin grey; border - collapse: collapse; '>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse;display:none '>" + iMasterId + "</td>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse; '>" + sName + "</td>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse; ' contenteditable='true'  oninput='totalTables(this);'  onfocusout = 'totalTables()'>0.000</td>" +                                
+                                "</tr>";
+                            // 
+                            $("#tblAllowance #allowanceBody").append(markup);
+                        }
+                        else if (this.iType == 2) {
+                            var iMasterId = this.iMasterId;
+                            var sName = this.sName;
+                            var markup = "<tr  style='border: 1px thin grey; border - collapse: collapse; '>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse;display:none '>" + iMasterId + "</td>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse; '>" + sName + "</td>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse; ' contenteditable='true' oninput='totalTables();' onfocusout = 'totalTables()'>0.000</td>" +
+                                "</tr>";
+                            $("#tblDeduction #deductionBody").append(markup);
+                        }
+                        else if (this.iType == 4) {
+                            var iMasterId = this.iMasterId;
+                            var sName = this.sName;
+                            var markup = "<tr  style='border: 1px thin grey; border - collapse: collapse; '>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse;display:none '>" + iMasterId + "</td>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse; '>" + sName + "</td>" +
+                                "<td style='border: 1px thin grey; border - collapse: collapse; ' contenteditable='true' oninput='checkNumeric();'>0.00</td>" +
+                                "</tr>";
+                            $("#tblLeave #leaveBody").append(markup);
+                        }
+
+
+                    });
+                }
+
+            },
+            error: function () {
+                alertify.log("Error in getting the data...", "error", 600);
+            },
+            complete: function () {
+                $('#loading').fadeOut();
+                return;
+            }
+
+        });
+    });
+</script>

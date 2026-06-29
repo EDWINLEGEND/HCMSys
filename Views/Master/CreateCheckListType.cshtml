@@ -1,0 +1,181 @@
+﻿<!-- Content Header (Page header) -->
+<script src="~/lib/jquery.min.js"></script>
+<link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+<script defer src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+<script src="~/lib/sweetalert-dev.js"></script>
+<link href="~/lib/sweetalert.css" rel="stylesheet" />
+<script src="~/scripts/FClient.js"></script>
+
+<section class="content-header">
+    <h1>
+        CheckListTypes
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index", "Home")"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="@Url.Action("CheckListTypeIndex", "Master")">CheckListTypes List</a></li>
+        <li class="active">CheckListTypes</li>
+    </ol>
+</section>
+<!-- Main content -->
+<section class="content container-fluid">
+    <!-- Horizontal Form -->
+    <div class="box box-success">
+        <div class="box-header with-border">
+            <h3 class="box-title">Add CheckListType</h3>
+        </div>
+        <!-- /.box-header -->
+        <!-- form start -->
+        <form class="form-horizontal">
+            <div class="box-body">
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">Code</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" name="Code" placeholder="Code" id="sCode">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">Name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" name="Name" placeholder="Name" id="sName">
+                    </div>
+                </div>
+ 
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <button type="button" id="btnCancel" class="btn btn-default">Cancel</button>
+                <button type="button" id="btnCreate" class="btn btn-info pull-right">Create</button>
+            </div>
+            <!-- /.box-footer -->
+        </form>
+    </div>
+    <!-- /.box -->
+</section>
+<script>
+        var companyId = 0;
+        var sessionId = "";
+        var LoginId = 0;
+        $(document).ready(function () {
+            debugger;
+            getLoginDetails();
+            $("#sCode").focus();
+        });
+        function getLoginDetails() {
+            Focus8WAPI.getGlobalValue("getLoginDetailsCallback", "", 1);
+        }
+        function getLoginDetailsCallback(response) {
+            try {
+                console.log("response", response);
+                companyId = response.data.CompanyId;
+                sessionId = response.data.SessionId;
+                LoginId = response.data.LoginId;
+
+            } catch (e) {
+                console.log(e)
+            }
+        }
+
+    $('#btnCancel').click(function () {
+        location.href ='@Url.Action("CheckListTypeIndex", "Master")';
+    });
+    $('#btnCreate').click(function () {
+        debugger;
+        var iMId = $('#iMasterId').val();
+        var Name = $('#sName').val();
+        var stdhrs = $('#StdHrs').val();
+        var Code = $('#sCode').val();
+        var instr = $('#Instrs').val();
+        if (Code == null || Code == "") {
+            swal({
+                title: "",
+                text: "Code Cannot Be Empty",
+                button: "Close", // Text on button
+                type: "warning", //built in icons: success, warning, error, info
+                timer: 10000, //timeOut for auto-close
+                buttons: {
+                    confirm: {
+                        text: "OK",
+                        value: true,
+                        visible: true,
+                        className: "",
+                        closeModal: true
+                    }
+                }
+            });
+            $("#sCode").focus();
+        }
+        else if (Name == null || Name == "") {
+            swal({
+                title: "",
+                text: "Name Cannot Be Empty",
+                button: "Close", // Text on button
+                type: "warning", //built in icons: success, warning, error, info
+                timer: 10000, //timeOut for auto-close
+                buttons: {
+                    confirm: {
+                        text: "OK",
+                        value: true,
+                        visible: true,
+                        className: "",
+                        closeModal: true
+                    }
+                }
+            });
+            $("#sName").focus();
+        }
+        else {
+            var fdata = { iMasterId: iMId, sCode: Code, sName: Name,   SessionId: sessionId, UserId: LoginId };
+            console.log(iMId);
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("CreateCheckListType", "Master")",
+                data:  fdata ,
+                dataType: "json",
+                success: function (r) {
+                    if (r != null && r != "") {
+                        swal({
+                            title: "",
+                            text: r,
+                            button: "Close", // Text on button
+                            type: "warning", //built in icons: success, warning, error, info
+                            timer: 10000, //timeOut for auto-close
+                            buttons: {
+                                confirm: {
+                                    text: "OK",
+                                    value: true,
+                                    visible: true,
+                                    className: "",
+                                    closeModal: true
+                                }
+                            }
+                        });
+                        $("#sCode").focus();
+                        $("#sCode").select();
+                    }
+                    else
+                        location.href = '@Url.Action("CheckListTypeIndex", "Master")';
+                },
+                error: function () {
+                    swal({
+                        title: "",
+                        text: "Error in create...",
+                        button: "Close", // Text on button
+                        type: "warning",//built in icons: success, warning, error, info
+                        timer: 10000, //timeOut for auto-close
+                        buttons: {
+                            confirm: {
+                                text: "OK",
+                                value: true,
+                                visible: true,
+                                className: "",
+                                closeModal: true
+                            }
+                        }
+                    });
+                     return;
+                }
+            });
+        }
+
+        });
+</script>

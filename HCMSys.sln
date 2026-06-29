@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HCMSys", "HCMSys.csproj", "{8D1F9765-1874-48C9-A57D-A894F3DEDD3B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D1F9765-1874-48C9-A57D-A894F3DEDD3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D1F9765-1874-48C9-A57D-A894F3DEDD3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D1F9765-1874-48C9-A57D-A894F3DEDD3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D1F9765-1874-48C9-A57D-A894F3DEDD3B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C3633B7-B3F8-4D06-B9B8-85F37470EE2D}
+	EndGlobalSection
+EndGlobal

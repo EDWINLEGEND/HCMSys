@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\AuthController.cs" />
+    <Compile Remove="Controllers\MployController.cs" />
+    <Compile Remove="Controllers\ReportsController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Home\Index2.cshtml" />
+    <Content Remove="Views\Home\Index5.cshtml" />
+    <Content Remove="Views\Login\Index1.cshtml" />
+    <Content Remove="Views\Login\Index2.cshtml" />
+    <Content Remove="Views\Master\AccountIndex.cshtml" />
+    <Content Remove="Views\Master\CategoryIndex1.cshtml" />
+    <Content Remove="Views\Master\CheckListIndex.cshtml" />
+    <Content Remove="Views\Master\CheckListTypeIndex.cshtml" />
+    <Content Remove="Views\Master\CityIndex.cshtml" />
+    <Content Remove="Views\Master\CompanyIndex1.cshtml" />
+    <Content Remove="Views\Master\ComplaintIndex.cshtml" />
+    <Content Remove="Views\Master\CreateAccount.cshtml" />
+    <Content Remove="Views\Master\CreateCheckList.cshtml" />
+    <Content Remove="Views\Master\CreateCheckListType.cshtml" />
+    <Content Remove="Views\Master\CreateComplaint.cshtml" />
+    <Content Remove="Views\Master\CreateDesignation.cshtml" />
+    <Content Remove="Views\Master\CreateEmployeeNew.cshtml" />
+    <Content Remove="Views\Master\CreateProject.cshtml" />
+    <Content Remove="Views\Master\CreateSite.cshtml" />
+    <Content Remove="Views\Master\DivisionIndex.cshtml" />
+    <Content Remove="Views\Master\LocationIndex.cshtml" />
+    <Content Remove="Views\Master\PaymentTypeIndex.cshtml" />
+    <Content Remove="Views\Master\PositionIndex.cshtml" />
+    <Content Remove="Views\Master\StateIndex.cshtml" />
+    <Content Remove="Views\Master\UpdateCheckList.cshtml" />
+    <Content Remove="Views\Master\UpdateCheckListType.cshtml" />
+    <Content Remove="Views\Master\UpdateComplaint.cshtml" />
+    <Content Remove="Views\Shared\_LoginLayout.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+    <PackageReference Include="EPPlus" Version="8.2.1" />
+    <PackageReference Include="EPPlus.Interfaces" Version="8.1.0" />
+    <PackageReference Include="EPPlus.System.Drawing" Version="8.1.0" />
+    <PackageReference Include="Google.Api.CommonProtos" Version="2.17.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="9.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <PackageReference Include="Nancy" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="NSwag.ApiDescription.Client" Version="14.6.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="OfficeOpenXml.Core.ExcelPackage" Version="1.0.0" />
+    <PackageReference Include="Rotativa.AspNetCore" Version="1.4.0" />
+    <PackageReference Include="System.Data.OleDb" Version="9.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\Uploads\" />
+  </ItemGroup>
+
+</Project>

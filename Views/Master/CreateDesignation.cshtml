@@ -1,0 +1,767 @@
+﻿<!-- Content Header (Page header) -->
+@using Microsoft.AspNetCore.Http;
+
+
+<script src="~/dist/jquery/jquery.slim.min.js"></script>
+<script src="~/dist/bootstrap/js/bootstrap.min.js"></script>
+
+<script src="~/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="~/dist/fontawesome-free/js/fontawesome.min.js"></script>
+<script src="~/lib/sweetalert-dev.js"></script>
+<link href="~/lib/sweetalert.css" rel="stylesheet" />
+<link href="~/lib/datepicker/datepicker.css" rel="stylesheet" />
+<script defer src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+<link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+<script src="~/lib/select2/js/select2.min.js" defer></script>
+<link defer href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
+<style>
+    .flex-box-2 {
+        display: flex;
+        justify-content: flex-end;
+        outline: 1px gray;
+    }
+
+    .message-div {
+        text-align: center;
+        color: red;
+        margin: 2px !important;
+    }
+
+    .tabs {
+        --bar-color: red;
+        --background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, #e0e0e0);
+        display: flex;
+        width: 600px;
+        /*border: 1px solid #ddd;*/
+    }
+
+        .tabs > .tab {
+            flex: 1;
+            display: flex;
+        }
+
+    .tab > .tab-input {
+        width: 0;
+        height: 0;
+        margin: 0;
+        display: none;
+    }
+
+    .tab > .tab-box {
+        padding: .5rem;
+        width: 100%;
+        text-align: center;
+        transition: 0.5s;
+        border-bottom: 2px solid rgba(0,0,0,0);
+    }
+
+    .tab > .tab-input:checked + .tab-box {
+        background: var(--background);
+        border-color: var(--bar-color);
+    }
+
+    .form-control {
+        max-width: none;
+    }
+
+    .document-status {
+        width: 100%;
+        border: none;
+        background: red;
+        color: white;
+        border: 1px solid;
+        border-radius: 37px;
+        padding: 5px;
+        cursor: context-menu;
+        display: block;
+        text-align: center;
+    }
+
+    .p-20 {
+        padding: 20px;
+    }
+
+    /*.net-amount {
+                    border: none;
+                    font-size: 18px;
+                    font-weight: bolder;
+                    text-align: right;
+                    box-shadow: none;
+                }*/
+
+    .label-box {
+        border: none !important;
+        box-shadow: none !important;
+        text-align: center !important;
+        font-weight: bold !important;
+        font-size: 20px !important;
+    }
+
+    .net-amount {
+        border: none !important;
+        box-shadow: none !important;
+        font-weight: bolder !important;
+        font-size: 22px !important;
+    }
+
+    .profile-image {
+        height: 125px;
+        padding: 10px;
+        width: 125px;
+        border-radius: 40px;
+    }
+
+    .p-t-5 {
+        padding-top: 5px;
+    }
+
+    .btn-transparent {
+        background: transparent;
+        box-shadow: none;
+        border: none;
+    }
+
+    /*.col-xs-6 {
+                    padding-right: 0px !important;
+                }*/
+
+    /*temporary*/
+    .navbar-inverse {
+        display: none;
+    }
+
+    #loading {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.8);
+        z-index: 1000;
+    }
+
+    #loadingcontent {
+        display: table;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    #loadingspinner {
+        display: table-cell;
+        vertical-align: middle;
+        width: 100%;
+        text-align: center;
+        font-size: larger;
+        padding-top: 80px;
+    }
+
+    table {
+        /* font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;*/
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        color: #000;
+    }
+
+    th {
+        border: 1px solid #4e73df;
+        text-align: left;
+        padding: 8px;
+        color: #FFF;
+        position: sticky;
+        top: 0;
+        border-top: 0;
+        background: #ededed;
+    }
+
+    th {
+        background-color: #4e73df;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #ddeedd;
+    }
+
+    thead {
+        color: white;
+        background-color: #4e73df !important;
+        position: sticky;
+        z-index: 100;
+        top: 0;
+    }
+
+    .with-arrow .nav-link.active {
+        position: relative;
+    }
+
+        .with-arrow .nav-link.active::after {
+            content: '';
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid #2b90d9;
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: block;
+        }
+
+    /* lined tabs */
+
+    .lined .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+
+        .lined .nav-link:hover {
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .lined .nav-link.active {
+            background: none;
+            color: #555;
+            border-color: #2b90d9;
+        }
+
+
+    body {
+        background: #304352;
+        background: -webkit-linear-gradient(to right, #304352, #d7d2cc);
+        background: linear-gradient(to right, #304352, #d7d2cc);
+        min-height: 100vh;
+    }
+
+    .nav-pills .nav-link {
+        color: #555;
+    }
+
+    .text-uppercase {
+        letter-spacing: 0.1em;
+    }
+
+    body {
+        background-color: #f5f5f5;
+    }
+
+    .imagePreview {
+        width: 100%;
+        height: 180px;
+        object-fit: contain;
+        background-position: center center;
+        /*background: url(http://cliquecities.com/assets/no-image-e3699ae23f866f6cbdf8ba2443ee5c4e.jpg);*/
+        background-color: #fff;
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        box-shadow: 0px -3px 6px 2px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary {
+        display: block;
+        border-radius: 0px;
+        box-shadow: 0px 4px 6px 2px rgba(0,0,0,0.2);
+        margin-top: -5px;
+    }
+
+    .imgUp {
+        margin-bottom: 15px;
+    }
+
+    .del {
+        position: absolute;
+        top: 0px;
+        right: 15px;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        line-height: 30px;
+        background-color: rgba(255,255,255,0.6);
+        cursor: pointer;
+    }
+
+    .imgAdd {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #4bd7ef;
+        color: #fff;
+        box-shadow: 0px 0px 2px 1px rgba(0,0,0,0.2);
+        text-align: center;
+        line-height: 30px;
+        margin-top: 0px;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .row-eq-height-xs {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .row-eq-height-md {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        flex-direction: column;
+    }
+
+    @@media (min-width:992px) {
+        .row-eq-height-md {
+            flex-direction: row;
+        }
+
+        #outer {
+            display: grid;
+            grid-template-columns: repeat(5, 90px);
+            grid-auto-rows: 50px;
+            grid-gap: 10px;
+            width: 516px;
+        }
+
+        .big {
+            grid-row: 1 / 3;
+            grid-column: 2 / 3;
+        }
+
+        .div {
+            background-color: white;
+        }
+
+        .bootstrap-select:not([class*="col-"]):not([class*="form-control"]):not(.input-group-btn) {
+            width: 180px;
+            left: 0;
+            /* position: absolute; */ /* This is being removed */
+        }
+    }
+</style>
+<section class="content-header">
+    <input type="hidden" id="userid" name="userid" value="@Context.Session.GetString("userid")" />
+</section>
+<!-- Main content -->
+<section class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <div class="d-md-flex flex-row align-items-end pull-right mb-4">
+                <div style="display:flex; justify-content:flex-start; width:100%; padding:0;">DESIGNATION MASTER</div>
+                <div class="flex-box-2">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-sm btn-primary shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50"></i> Home
+                    </a>
+                </div>
+                &nbsp;
+                <div class="flex-box-2">
+                    <a href="@Url.Action("DesignationIndex", "Master")" class="btn btn-sm btn-info shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back
+                    </a>
+                </div>
+                &nbsp;
+                <div class="flex-box-2">
+                    <a href="@Url.Action("CreateDesignation", "Master")" class="btn btn-sm btn-success shadow-sm">
+                        <i class="fas fa-save fa-sm text-white-50"></i> Save
+                    </a>
+                </div>
+                &nbsp;
+   @*              <div class="flex-box-2">
+                    <a href="@Url.Action("CreateDesignation", "Master")" class="btn btn-sm btn-warning shadow-sm">
+                        <i class="fas fa-print fa-sm text-white-50"></i> Print
+                    </a>
+                </div>
+                &nbsp; *@
+                <div class="flex-box-2">
+                    <a href="@Url.Action("CreateDesignation", "Master")" class="btn btn-sm btn-danger shadow-sm">
+                        <i class="fas fa-eraser fa-sm text-white-50"></i> Clear
+                    </a>
+                </div>
+                @*        &nbsp;
+                <div class="flex-box-2">
+                <a href="@Url.Action("CreateDesignation", "Master")" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
+                <i class="fas fa-trash fa-sm text-white-50"></i> Delete
+                </a>
+                </div>*@
+            </div>
+        </div>
+        <span class="badge badge-primary">General Information</span>
+        <div class="form-group">
+            <div class="container">
+
+                <br>
+                <div class="row">
+                    <div class="col-md-12">
+                        @*     <div class="pb-3">
+
+                        </div>*@
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="control-label">Code</label>
+                                <input type="text" class="form-control" name="Code" placeholder="Code" id="sCode">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="control-label">Name</label>
+                                <input type="text" class="form-control" name="Name" placeholder="Name" id="sName">
+                            </div>
+
+                            <br>
+                        </div>
+                        
+
+                        <br>
+                    </div>
+                   
+                </div>
+
+
+            </div>
+        </div>
+
+      
+
+    </div>
+
+</section>
+
+ 
+<script>
+    var companyId = 0;
+    var sessionId = "";
+    var LoginId = $("#userid").val();
+
+    $(document).ready(function () {
+        debugger;
+        //$("#ddlDesignations").select2();
+        //loadDesignations();
+        //$('select:not(.normal)').each(function () {
+        //    $(this).select2({
+        //        dropdownParent: $(this).parent()
+        //    });
+        //});
+        $("#sCode").focus();
+
+    });
+    function loadDesignations() {
+        debugger;
+        var designation;
+        $.ajax({
+            url: "@Url.Action("GetDesignations", "Master")",
+            method: 'GET',
+            success: function (response) {
+                designation = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (designation != null && designation.length != 0) {
+                    $(designation).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlDesignations').html(ddlHTML);
+            }
+        });
+    }
+    $('#btnCancel').click(function () {
+        location.href = '@Url.Action("DesignationIndex", "Master")';
+    });
+    $('#btnCreate').click(function () {
+        debugger;
+        var Name = $('#sName').val();
+        var Designation = $('#ddlDesignations').val();
+        var Code = $('#sCode').val();
+        if (Code == null || Code == "") {
+            swal({
+                title: "",
+                text: "Code Cannot Be Empty",
+                button: "Close", // Text on button
+                type: "warning", //built in icons: success, warning, error, info
+                timer: 10000, //timeOut for auto-close
+                buttons: {
+                    confirm: {
+                        text: "OK",
+                        value: true,
+                        visible: true,
+                        className: "",
+                        closeModal: true
+                    }
+                }
+            });
+            $("#sCode").focus();
+        }
+        else if (Name == null || Name == "") {
+            swal({
+                title: "",
+                text: "Name Cannot Be Empty",
+                button: "Close", // Text on button
+                type: "warning", //built in icons: success, warning, error, info
+                timer: 10000, //timeOut for auto-close
+                buttons: {
+                    confirm: {
+                        text: "OK",
+                        value: true,
+                        visible: true,
+                        className: "",
+                        closeModal: true
+                    }
+                }
+            });
+            $("#sName").focus();
+        }
+        else {
+            var fdata = { sCode: Code, sName: Name, designation: Designation, UserId: LoginId };
+
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("CreateDesignation", "Master")",
+                data: fdata,
+                dataType: "json",
+                success: function (r) {
+                    if (r != null && r != "") {
+
+                        swal({
+                            title: "",
+                            text: r,
+                            button: "Close", // Text on button
+                            type: "warning", //built in icons: success, warning, error, info
+                            timer: 10000, //timeOut for auto-close
+                            buttons: {
+                                confirm: {
+                                    text: "OK",
+                                    value: true,
+                                    visible: true,
+                                    className: "",
+                                    closeModal: true
+                                }
+                            }
+                        });
+                        $("#sCode").focus();
+                        $("#sCode").select();
+                        if (r == "Invalid Session")
+                            location.href = '@Url.Action("Logout", "Login")';
+                    }
+                    else
+                        location.href = '@Url.Action("DesignationIndex", "Master")';
+                },
+                error: function () {
+                    swal({
+                        title: "",
+                        text: "Error in create...",
+                        button: "Close", // Text on button
+                        type: "warning",//built in icons: success, warning, error, info
+                        timer: 10000, //timeOut for auto-close
+                        buttons: {
+                            confirm: {
+                                text: "OK",
+                                value: true,
+                                visible: true,
+                                className: "",
+                                closeModal: true
+                            }
+                        }
+                    });
+                    return;
+                }
+            });
+        }
+    });
+    //$(".imgAdd").click(function(){
+    //    $(this).closest(".row").find('.imgAdd').before('<div class="col-sm-2 imgUp"><div class="imagePreview"></div><label class="btn btn-primary">Upload<input type="file" class="uploadFile img" value="Upload Photo" style="width:0px;height:0px;overflow:hidden;"></label><i class="fa fa-times del"></i></div>');
+    //});
+    //$(document).on("click", "i.del" , function() {
+    // $(this).parent().remove();
+    //});
+    $(function () {
+        $(document).on("change", ".uploadFile", function () {
+            var uploadFile = $(this);
+            var files = !!this.files ? this.files : [];
+            if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+
+            if (/^image/.test(files[0].type)) { // only image file
+                var reader = new FileReader(); // instance of the FileReader
+                reader.readAsDataURL(files[0]); // read the local file
+
+                reader.onloadend = function () { // set image data as background of div
+                    //alert(uploadFile.closest(".upimage").find('.imagePreview').length);
+                    uploadFile.closest(".imgUp").find('.imagePreview').css("background-image", "url(" + this.result + ")");
+                }
+            }
+
+        });
+    });
+</script>
+
+<script>
+    var companyId = 0;
+    var sessionId = "";
+    var LoginId = $("#userid").val();
+
+    $(document).ready(function () {
+        debugger;
+        //$("#ddlDesignations").select2();
+        //loadDesignations();
+        //$('select:not(.normal)').each(function () {
+        //    $(this).select2({
+        //        dropdownParent: $(this).parent()
+        //    });
+        //});
+        $("#sCode").focus();
+
+    });
+    function loadDesignations() {
+        debugger;
+        var designation;
+        $.ajax({
+            url: "@Url.Action("GetDesignations", "Master")",
+            method: 'GET',
+            success: function (response) {
+                designation = response;
+                var ddlHTML = '<option value="0">--Select--</option>';
+                if (designation != null && designation.length != 0) {
+                    $(designation).each(function () {
+                        ddlHTML += '<option value=' + this.iMasterId + '>' + this.sName + '</option>';
+                    });
+                }
+                $('#ddlDesignations').html(ddlHTML);
+            }
+        });
+    }
+    $('#btnCancel').click(function () {
+        location.href = '@Url.Action("DesignationIndex", "Master")';
+    });
+    $('#btnCreate').click(function () {
+        debugger;
+        var Name = $('#sName').val();
+        var Designation = $('#ddlDesignations').val();
+        var Code = $('#sCode').val();
+        if (Code == null || Code == "") {
+            swal({
+                title: "",
+                text: "Code Cannot Be Empty",
+                button: "Close", // Text on button
+                type: "warning", //built in icons: success, warning, error, info
+                timer: 10000, //timeOut for auto-close
+                buttons: {
+                    confirm: {
+                        text: "OK",
+                        value: true,
+                        visible: true,
+                        className: "",
+                        closeModal: true
+                    }
+                }
+            });
+            $("#sCode").focus();
+        }
+        else if (Name == null || Name == "") {
+            swal({
+                title: "",
+                text: "Name Cannot Be Empty",
+                button: "Close", // Text on button
+                type: "warning", //built in icons: success, warning, error, info
+                timer: 10000, //timeOut for auto-close
+                buttons: {
+                    confirm: {
+                        text: "OK",
+                        value: true,
+                        visible: true,
+                        className: "",
+                        closeModal: true
+                    }
+                }
+            });
+            $("#sName").focus();
+        }
+        else {
+            var fdata = { sCode: Code, sName: Name, designation: Designation, UserId: LoginId };
+
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("CreateDesignation", "Master")",
+                data: fdata,
+                dataType: "json",
+                success: function (r) {
+                    if (r != null && r != "") {
+
+                        swal({
+                            title: "",
+                            text: r,
+                            button: "Close", // Text on button
+                            type: "warning", //built in icons: success, warning, error, info
+                            timer: 10000, //timeOut for auto-close
+                            buttons: {
+                                confirm: {
+                                    text: "OK",
+                                    value: true,
+                                    visible: true,
+                                    className: "",
+                                    closeModal: true
+                                }
+                            }
+                        });
+                        $("#sCode").focus();
+                        $("#sCode").select();
+                        if (r == "Invalid Session")
+                            location.href = '@Url.Action("Logout", "Login")';
+                    }
+                    else
+                        location.href = '@Url.Action("DesignationIndex", "Master")';
+                },
+                error: function () {
+                    swal({
+                        title: "",
+                        text: "Error in create...",
+                        button: "Close", // Text on button
+                        type: "warning",//built in icons: success, warning, error, info
+                        timer: 10000, //timeOut for auto-close
+                        buttons: {
+                            confirm: {
+                                text: "OK",
+                                value: true,
+                                visible: true,
+                                className: "",
+                                closeModal: true
+                            }
+                        }
+                    });
+                    return;
+                }
+            });
+        }
+    });
+    //$(".imgAdd").click(function(){
+    //    $(this).closest(".row").find('.imgAdd').before('<div class="col-sm-2 imgUp"><div class="imagePreview"></div><label class="btn btn-primary">Upload<input type="file" class="uploadFile img" value="Upload Photo" style="width:0px;height:0px;overflow:hidden;"></label><i class="fa fa-times del"></i></div>');
+    //});
+    //$(document).on("click", "i.del" , function() {
+    // $(this).parent().remove();
+    //});
+    $(function () {
+        $(document).on("change", ".uploadFile", function () {
+            var uploadFile = $(this);
+            var files = !!this.files ? this.files : [];
+            if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support
+
+            if (/^image/.test(files[0].type)) { // only image file
+                var reader = new FileReader(); // instance of the FileReader
+                reader.readAsDataURL(files[0]); // read the local file
+
+                reader.onloadend = function () { // set image data as background of div
+                    //alert(uploadFile.closest(".upimage").find('.imagePreview').length);
+                    uploadFile.closest(".imgUp").find('.imagePreview').css("background-image", "url(" + this.result + ")");
+                }
+            }
+
+        });
+    });
+</script>

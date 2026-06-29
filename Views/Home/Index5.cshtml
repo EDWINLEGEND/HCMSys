@@ -1,0 +1,186 @@
+﻿@{
+    ViewData["Title"] = "Payroll Dashboard";
+}
+<script src="~/lib/jquery.min.js"></script>
+<link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
+<script defer src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+<script src="~/lib/sweetalert-dev.js"></script>
+<link href="~/lib/sweetalert.css" rel="stylesheet" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="~/dist/js/sb-admin-2.min.js"></script>
+ 
+<style>
+    html {
+        font-size: 14px; /* Default is usually 16px */
+    };
+    #loading {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.8);
+        z-index: 1000;
+    }
+
+    #loadingcontent {
+        display: table;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    #loadingspinner {
+        display: table-cell;
+        vertical-align: middle;
+        width: 100%;
+        text-align: center;
+        font-size: larger;
+        padding-top: 80px;
+    }
+</style>
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    @* <h1 class="h3 mb-4 text-gray-800">Payroll Dashboard</h1> *@
+
+    <!-- KPI Cards -->
+    <div class="row">
+
+        <!-- Total Employees -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                        Employees</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">245</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Payroll -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                        Payroll (Month)</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">₹12,50,000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approvals -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        Pending Approvals</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Requests -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                        Leave Requests</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+
+        <!-- Salary Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header">Salary Overview</div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="salaryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Pie -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header">Department Payroll</div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="deptChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header">Recent Salary Transactions</div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Month</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>John</td>
+                        <td>April</td>
+                        <td>₹45,000</td>
+                        <td><span class="badge bg-success">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>Anna</td>
+                        <td>April</td>
+                        <td>₹38,000</td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+var ctx = document.getElementById("salaryChart");
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ["Jan", "Feb", "Mar", "Apr"],
+        datasets: [{
+            label: "Payroll",
+            data: [800000, 950000, 1100000, 1250000]
+        }]
+    }
+});
+
+var ctx2 = document.getElementById("deptChart");
+new Chart(ctx2, {
+    type: 'pie',
+    data: {
+        labels: ["HR", "IT", "Finance"],
+        datasets: [{
+            data: [300000, 700000, 250000]
+        }]
+    }
+});
+</script>

@@ -214,6 +214,13 @@
 
         function loadGridData() {
             table.clear();
+            if (!localStorage.getItem('savedLeaveEligibility')) {
+                var sampleData = [
+                    { docNo: 'LE-07-26-00001', date: '18-Jul-2026', employeeName: 'EMP-001 - John Smith', leaveTypeName: 'ANNUAL - Annual Leave', categoryName: 'FULLTIME - Full Time Staff', duration: '20.0', remarks: 'Annual entitlement', comments: 'Eligible balance', status: 'Active' },
+                    { docNo: 'LE-07-26-00002', date: '22-Jul-2026', employeeName: 'EMP-002 - Jane Doe', leaveTypeName: 'CASUAL - Casual Leave', categoryName: 'FULLTIME - Full Time Staff', duration: '10.0', remarks: 'Casual entitlement', comments: 'Eligible balance', status: 'Active' }
+                ];
+                localStorage.setItem('savedLeaveEligibility', JSON.stringify(sampleData));
+            }
             var savedData = JSON.parse(localStorage.getItem('savedLeaveEligibility') || '[]');
             $('#stat-total').text(savedData.length);
 

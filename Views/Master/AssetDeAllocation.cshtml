@@ -151,13 +151,13 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg border-0">
             <div class="modal-header bg-primary text-white py-2">
-                <h6 class="modal-title font-weight-bold"><i class="fas fa-boxes mr-2"></i>In Hand Assets (Select to De-Allocate)</h6>
+                <h6 class="modal-title font-weight-bold"><i class="fas fa-boxes mr-2"></i>In Hand Assets (Select Assets to De-Allocate)</h6>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body px-4 py-3">
                 <div class="form-group mb-3">
                     <label class="form-label">Select Employee <span class="text-danger">*</span></label>
-                    <select class="form-control" id="modal-employee-select" onchange="renderModalAssetsTable()">
+                    <select class="form-control" id="modal-employee-select">
                         <option value="">Select Employee...</option>
                     </select>
                 </div>
@@ -165,7 +165,7 @@
                     <table class="table table-bordered table-striped table-hover mb-0" id="modal-assets-table">
                         <thead class="thead-light">
                             <tr>
-                                <th style="width: 40px; text-align:center;">
+                                <th style="width: 45px; text-align:center;">
                                     <input type="checkbox" id="modal-select-all" onclick="toggleSelectAllAssets(this)" />
                                 </th>
                                 <th>Allocation No</th>
@@ -184,7 +184,7 @@
             <div class="modal-footer py-2 bg-light">
                 <button type="button" class="btn btn-secondary btn-sm px-3" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-success btn-sm px-4" onclick="importSelectedAssets()">
-                    <i class="fas fa-check mr-1"></i> Save / Import Selected
+                    <i class="fas fa-check mr-1"></i> Save / Import to Grid
                 </button>
             </div>
         </div>
@@ -219,8 +219,8 @@
             alertify.log('Failed to load employee data.', 'error', 5000);
         });
 
-        $('#hdr-employee').change(function() {
-            var empId = parseInt($(this).val());
+        $('#hdr-employee').on('change', function() {
+            var empId = $(this).val();
             if (!empId) {
                 $('#hdr-designation, #hdr-department, #hdr-manager').val('');
                 inHandAssets = [];
@@ -228,12 +228,16 @@
                 return;
             }
 
-            var emp = employeesData.find(e => e.id === empId);
+            var emp = employeesData.find(e => e.id == empId);
             if (emp) {
                 $('#hdr-designation').val(emp.designation);
                 $('#hdr-department').val(emp.department);
                 $('#hdr-manager').val(emp.reportingManager);
             }
+        });
+
+        $('#modal-employee-select').on('change', function() {
+            renderModalAssetsTable();
         });
 
         flatpickr(".datepicker", {
@@ -249,10 +253,10 @@
         var mm = String(d.getMonth() + 1).padStart(2, '0');
         var dd = String(d.getDate()).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
-        var yyyy = d.getFullYear();
+        var randId = Math.floor(Math.random() * 90000) + 10000;
         
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('DEA-' + mm + '-' + yy + '-00001');
+        $('#hdr-date').val(dd + '-' + mmm + '-' + d.getFullYear());
+        $('#hdr-docno').val('DEA-' + mm + '-' + yy + '-' + randId);
     }
 
     function populateDropdowns() {
@@ -271,8 +275,9 @@
     function ensureSampleAllocations() {
         if (!localStorage.getItem('savedAssetAllocations')) {
             var sampleAllocations = [
-                { docNo: 'ALL-07-26-00001', date: '23-Jul-2026', employeeId: '1', employeeName: 'John Smith', allocationNo: 'ALL-10001', categoryCode: 'CAT-01', categoryName: 'IT Assets', assetCode: 'AST-101', assetName: 'Dell XPS 15', tagNumber: 'TAG-9901', qty: 1, remarks: 'Standard allocation', status: 'Allocated' },
-                { docNo: 'ALL-07-26-00002', date: '24-Jul-2026', employeeId: '1', employeeName: 'John Smith', allocationNo: 'ALL-10002', categoryCode: 'CAT-02', categoryName: 'Peripherals', assetCode: 'AST-202', assetName: 'Logitech MX Master', tagNumber: 'TAG-8822', qty: 1, remarks: 'Mouse allocation', status: 'Allocated' }
+                { docNo: 'ALL-07-26-10001', date: '23-Jul-2026', employeeId: '1', employeeName: 'John Smith', allocationNo: 'ALL-10001', categoryCode: 'CAT-01', categoryName: 'IT Assets', assetCode: 'AST-101', assetName: 'Dell XPS 15 Laptop', tagNumber: 'TAG-9901', qty: 1, remarks: 'Standard allocation', status: 'Allocated' },
+                { docNo: 'ALL-07-26-10002', date: '24-Jul-2026', employeeId: '1', employeeName: 'John Smith', allocationNo: 'ALL-10002', categoryCode: 'CAT-02', categoryName: 'Peripherals', assetCode: 'AST-202', assetName: 'Logitech MX Master Mouse', tagNumber: 'TAG-8822', qty: 1, remarks: 'Mouse allocation', status: 'Allocated' },
+                { docNo: 'ALL-07-26-10003', date: '25-Jul-2026', employeeId: '2', employeeName: 'Jane Doe', allocationNo: 'ALL-10003', categoryCode: 'CAT-01', categoryName: 'IT Assets', assetCode: 'AST-103', assetName: 'MacBook Pro 16"', tagNumber: 'TAG-7733', qty: 1, remarks: 'Development Laptop', status: 'Allocated' }
             ];
             localStorage.setItem('savedAssetAllocations', JSON.stringify(sampleAllocations));
         }
@@ -300,18 +305,18 @@
         $('#modal-select-all').prop('checked', false);
 
         if (!empId) {
-            tbody.append('<tr><td colspan="7" class="text-center text-muted">Please select an employee above.</td></tr>');
+            tbody.append('<tr><td colspan="7" class="text-center text-muted py-3">Please select an employee above to view allocated in-hand assets.</td></tr>');
             currentModalAllocations = [];
             return;
         }
 
         var allAllocations = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
         currentModalAllocations = allAllocations.filter(function(alloc) {
-            return alloc.employeeId == empId && alloc.status === 'Allocated';
+            return String(alloc.employeeId) === String(empId) && (alloc.status === 'Allocated' || !alloc.status);
         });
 
         if (currentModalAllocations.length === 0) {
-            tbody.append('<tr><td colspan="7" class="text-center text-muted">No active in-hand assets found for this employee.</td></tr>');
+            tbody.append('<tr><td colspan="7" class="text-center text-muted py-3">No active in-hand assets found for this employee.</td></tr>');
             return;
         }
 
@@ -320,7 +325,7 @@
                 <td style="text-align:center;">
                     <input type="checkbox" class="modal-asset-check" data-alloc="${item.allocationNo}" />
                 </td>
-                <td>${item.allocationNo || '-'}</td>
+                <td class="font-weight-bold text-primary">${item.allocationNo || '-'}</td>
                 <td>${item.categoryName || '-'}</td>
                 <td>${item.assetCode || '-'}</td>
                 <td>${item.assetName || '-'}</td>
@@ -342,7 +347,7 @@
         });
 
         if (selectedAllocNos.length === 0) {
-            alertify.log('Please select at least one asset to de-allocate.', 'error', 5000);
+            alertify.log('Please check at least one asset to de-allocate.', 'error', 5000);
             return;
         }
 
@@ -368,7 +373,7 @@
         uTbody.empty();
         
         if(inHandAssets.length === 0) {
-            uTbody.append('<tr><td colspan="8" class="text-center text-muted">No assets selected for de-allocation</td></tr>');
+            uTbody.append('<tr><td colspan="8" class="text-center text-muted py-3">No assets selected for de-allocation</td></tr>');
             return;
         }
 
@@ -376,9 +381,9 @@
             item.gridIndex = index;
             var tr = `<tr>
                 <td class="action-btns" style="text-align:center;">
-                    <a href="#" class="remove-item-btn" title="Don't De-Allocate" onclick="removeFromGrid(${index}); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                    <a href="#" class="remove-item-btn" title="Remove from De-Allocation" onclick="removeFromGrid(${index}); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                 </td>
-                <td>${item.allocationNo || '-'}</td>
+                <td class="font-weight-bold text-primary">${item.allocationNo || '-'}</td>
                 <td>${item.categoryName || '-'}</td>
                 <td>${item.assetCode || '-'}</td>
                 <td>${item.assetName || '-'}</td>
@@ -422,7 +427,7 @@
         
         inHandAssets.forEach(function(asset, idx) {
             var inputRemark = $('.dealloc-remarks[data-idx="'+idx+'"]').val();
-            var match = allAllocations.find(a => a.allocationNo === asset.allocationNo && a.status === 'Allocated');
+            var match = allAllocations.find(a => a.allocationNo === asset.allocationNo && (a.status === 'Allocated' || !a.status));
             if(match) {
                 match.status = 'De-Allocated';
                 match.deAllocDocNo = docNo;

@@ -1,8 +1,7 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Wordprocessing;
-using HCMSys.Helpers;
  
 using HCMSys.Models;
  
@@ -28,7 +27,7 @@ namespace HCMSys.Controllers
 {
     public class MasterController : Controller
     {
-        SMDbContext db = new SMDbContext();
+    
         private readonly IWebHostEnvironment _env;
         public MasterController(  IWebHostEnvironment env )
         {
@@ -42,140 +41,120 @@ namespace HCMSys.Controllers
         /// <returns></returns>
         public ActionResult ProjectIndex()
         {
-            var token = HttpContext.Session.GetString("jwt");
-            if (token == null || JwtHelper.IsTokenExpired(token))
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            return View(db.vmHCM_Project.ToList());
-        }
-        [HttpPost]
-        public JsonResult CreateProject(tmHCM_Project tmMaster)
-        {
-            try
-            {
-                var token = HttpContext.Session.GetString("jwt");
-                if (token == null || JwtHelper.IsTokenExpired(token))
-                {
-                    return Json("Invalid Session");
-                }
-                tmHCM_Project d = new tmHCM_Project();
-                if (tmMaster.sCode != "" && tmMaster.sCode != null)
-                {
-                    tmHCM_Project act = db.tmHCM_Project.Where(s => s.sCode.ToLower() == tmMaster.sCode.ToLower() && s.iStatus < 5).FirstOrDefault();
-                    if (act != null)
-                    {
-                        return Json("Duplicate Code");
-                    }
-                    else
-                    {
-                        if (tmMaster.sName != null)
-                            d.sName = tmMaster.sName;
-                        else
-                            d.sName = "";
-                        d.sCode = tmMaster.sCode;
-                        if (tmMaster.sArabicName != null)
-                            d.sArabicName = tmMaster.sArabicName;
-                        else
-                            d.sArabicName = "";
-                        d.CreatedDate = DateTime.Now;
-                        d.iCreatedBy = tmMaster.iCreatedBy;
-                        d.ModifiedDate = DateTime.Now;
-                        d.iModifiedBy = tmMaster.iModifiedBy;
-                        db.tmHCM_Project.Add(d);
-                        db.SaveChanges();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                return Json(e.Message.ToString());
-            }
-            return Json("");
+
+            return View();
         }
 
-
-        [HttpPost]
-        public JsonResult UpdateProject(tmHCM_Project tmMaster)
+        public ActionResult LeaveApplicationIndex()
         {
-            try
-            {
-                var token = HttpContext.Session.GetString("jwt");
-                if (token == null || JwtHelper.IsTokenExpired(token))
-                {
-                    return Json("Invalid Session");
-                }
-                if (tmMaster.iMasterId != 0)
-                {
-                    tmHCM_Project d = db.tmHCM_Project.Where(s => s.iMasterId == tmMaster.iMasterId).FirstOrDefault();
-                    if (d != null)
-                    {
-                        if (tmMaster.sName != null)
-                            d.sName = tmMaster.sName;
-                        else
-                            d.sName = "";
-                        if (tmMaster.sArabicName != null)
-                            d.sArabicName = tmMaster.sArabicName;
-                        else
-                            d.sArabicName = "";
-                        d.ModifiedDate = DateTime.Now;
-                        d.iModifiedBy = tmMaster.iModifiedBy;
-                        db.tmHCM_Project.Update(d);
-                        db.SaveChanges();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                return Json(e.Message.ToString());
-            }
-            return Json("");
+            return View();
         }
-        [HttpPost]
-        public JsonResult DeleteProject(int iMasterId, Int32 UserId)
+
+        public ActionResult CreateLeaveApplication()
         {
-            bool chk;
-            try
-            {
-                var token = HttpContext.Session.GetString("jwt");
-                if (token == null || JwtHelper.IsTokenExpired(token))
-                {
-                    chk = false;
-                    return Json(new { result = "Invalid Session" });
-                }
-                if (iMasterId > 0)
-                {
-                    tmHCM_Project vMaster = db.tmHCM_Project.Where(s => s.iMasterId == iMasterId).FirstOrDefault();
-                    if (vMaster != null)
-                    {
-                        vMaster.iStatus = 5;
-                        vMaster.ModifiedDate = DateTime.Now;
-                        vMaster.iModifiedBy = UserId;
-                        db.tmHCM_Project.Update(vMaster);
-                        db.SaveChanges();
-                    }
-                }
-                chk = true;
-            }
-            catch (System.Exception)
-            {
-                chk = false;
-            }
-            return Json(new { result = "Project Deleted Successfully" });
+            return View();
+        }
+
+        public ActionResult ClaimIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateClaim()
+        {
+            return View();
+        }
+
+        public ActionResult BusinessTripIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateBusinessTrip()
+        {
+            return View();
+        }
+
+        public ActionResult AssetAllocationIndex()
+        {
+            return View();
+        }
+
+        public ActionResult AssetDeAllocationIndex()
+        {
+            return View();
+        }
+
+        public ActionResult HRRequestIndex()
+        {
+            return View();
+        }
+
+        public ActionResult HRReturnIndex()
+        {
+            return View();
+        }
+
+        public ActionResult HRDocumentIssueIndex()
+        {
+            return View();
+        }
+
+        public ActionResult AssetAllocation()
+        {
+            return View();
+        }
+
+        public ActionResult AssetDeAllocation()
+        {
+            return View();
+        }
+
+        public ActionResult HRRequest()
+        {
+            return View();
+        }
+
+        public ActionResult HRReturn()
+        {
+            return View();
+        }
+
+        public ActionResult HRDocumentIssue()
+        {
+            return View();
+        }
+
+        public ActionResult OpeningLeavesIndex()
+        {
+            return View();
+        }
+
+        public ActionResult OpeningLeaves()
+        {
+            return View();
+        }
+
+        public ActionResult LeaveEligibilityIndex()
+        {
+            return View();
+        }
+
+        public ActionResult LeaveEligibility()
+        {
+            return View();
+        }
+
+        public ActionResult LeaveAdjustmentsIndex()
+        {
+            return View();
+        }
+
+        public ActionResult LeaveAdjustments()
+        {
+            return View();
         }
         
-
-        [HttpGet]
-        public JsonResult GetEmployee()
-        {
-            return Json(db.vmHCM_Employee.ToList());
-        }
-
-      
-        public JsonResult GetProjects()
-        {
-            return Json(db.vmHCM_Project.ToList());
-        }
        
         private class WebClient : System.Net.WebClient
         {

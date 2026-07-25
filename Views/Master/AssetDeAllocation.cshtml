@@ -1,0 +1,447 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .table th, .table td { vertical-align: middle; }
+    .table td.num-col { text-align: right; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-boxes fa-sm text-primary mr-2"></i> Asset De-Allocation
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <button type="button" class="btn btn-info btn-sm shadow-sm ml-2" onclick="openInHandAssetsModal()">
+                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show In hand Assets
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveDeAllocation()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="deAllocationForm" autocomplete="off">
+        <!-- COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">General</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Select Employee...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Comments</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary">Assets to De-Allocate</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="user-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 60px; text-align:center;">Action</th>
+                            <th>Allocation No</th>
+                            <th>Asset Category</th>
+                            <th>Assets Code</th>
+                            <th>Asset Name</th>
+                            <th>Tag Number</th>
+                            <th class="num-col">Qty</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- IN HAND ASSETS MODAL -->
+<div class="modal fade" id="inHandAssetsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white py-2">
+                <h6 class="modal-title font-weight-bold"><i class="fas fa-boxes mr-2"></i>In Hand Assets (Select to De-Allocate)</h6>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div class="form-group mb-3">
+                    <label class="form-label">Select Employee <span class="text-danger">*</span></label>
+                    <select class="form-control" id="modal-employee-select" onchange="renderModalAssetsTable()">
+                        <option value="">Select Employee...</option>
+                    </select>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover mb-0" id="modal-assets-table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 40px; text-align:center;">
+                                    <input type="checkbox" id="modal-select-all" onclick="toggleSelectAllAssets(this)" />
+                                </th>
+                                <th>Allocation No</th>
+                                <th>Asset Category</th>
+                                <th>Asset Code</th>
+                                <th>Asset Name</th>
+                                <th>Tag Number</th>
+                                <th class="num-col">Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer py-2 bg-light">
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success btn-sm px-4" onclick="importSelectedAssets()">
+                    <i class="fas fa-check mr-1"></i> Save / Import Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var employeesData = [];
+    var inHandAssets = [];
+    var currentModalAllocations = [];
+
+    $(document).ready(function() {
+        initHeader();
+
+        $.getJSON('/assets/employee.json').done(function(empRes) {
+            if(Array.isArray(empRes) && empRes.length > 0 && Array.isArray(empRes[0])) {
+                employeesData = empRes[0];
+            } else {
+                employeesData = empRes; 
+            }
+            populateDropdowns();
+            $('#hdr-employee').select2({ width: '100%' });
+            $('#modal-employee-select').select2({ dropdownParent: $('#inHandAssetsModal'), width: '100%' });
+        }).fail(function() {
+            alertify.log('Failed to load employee data.', 'error', 5000);
+        });
+
+        $('#hdr-employee').change(function() {
+            var empId = parseInt($(this).val());
+            if (!empId) {
+                $('#hdr-designation, #hdr-department, #hdr-manager').val('');
+                inHandAssets = [];
+                renderGrid();
+                return;
+            }
+
+            var emp = employeesData.find(e => e.id === empId);
+            if (emp) {
+                $('#hdr-designation').val(emp.designation);
+                $('#hdr-department').val(emp.department);
+                $('#hdr-manager').val(emp.reportingManager);
+            }
+        });
+
+        flatpickr(".datepicker", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today"
+        });
+    });
+
+    function initHeader() {
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        var yyyy = d.getFullYear();
+        
+        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-docno').val('DEA-' + mm + '-' + yy + '-00001');
+    }
+
+    function populateDropdowns() {
+        var empSelect = $('#hdr-employee');
+        var modalEmpSelect = $('#modal-employee-select');
+        
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        modalEmpSelect.empty().append('<option value="">Select Employee...</option>');
+
+        employeesData.forEach(function(emp) {
+            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+            modalEmpSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+        });
+    }
+
+    function ensureSampleAllocations() {
+        if (!localStorage.getItem('savedAssetAllocations')) {
+            var sampleAllocations = [
+                { docNo: 'ALL-07-26-00001', date: '23-Jul-2026', employeeId: '1', employeeName: 'John Smith', allocationNo: 'ALL-10001', categoryCode: 'CAT-01', categoryName: 'IT Assets', assetCode: 'AST-101', assetName: 'Dell XPS 15', tagNumber: 'TAG-9901', qty: 1, remarks: 'Standard allocation', status: 'Allocated' },
+                { docNo: 'ALL-07-26-00002', date: '24-Jul-2026', employeeId: '1', employeeName: 'John Smith', allocationNo: 'ALL-10002', categoryCode: 'CAT-02', categoryName: 'Peripherals', assetCode: 'AST-202', assetName: 'Logitech MX Master', tagNumber: 'TAG-8822', qty: 1, remarks: 'Mouse allocation', status: 'Allocated' }
+            ];
+            localStorage.setItem('savedAssetAllocations', JSON.stringify(sampleAllocations));
+        }
+    }
+
+    function openInHandAssetsModal() {
+        ensureSampleAllocations();
+        populateDropdowns();
+
+        var currentEmpId = $('#hdr-employee').val();
+        if (currentEmpId) {
+            $('#modal-employee-select').val(currentEmpId).trigger('change.select2');
+        } else {
+            $('#modal-employee-select').val('').trigger('change.select2');
+        }
+
+        renderModalAssetsTable();
+        $('#inHandAssetsModal').modal('show');
+    }
+
+    function renderModalAssetsTable() {
+        var empId = $('#modal-employee-select').val();
+        var tbody = $('#modal-assets-table tbody');
+        tbody.empty();
+        $('#modal-select-all').prop('checked', false);
+
+        if (!empId) {
+            tbody.append('<tr><td colspan="7" class="text-center text-muted">Please select an employee above.</td></tr>');
+            currentModalAllocations = [];
+            return;
+        }
+
+        var allAllocations = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+        currentModalAllocations = allAllocations.filter(function(alloc) {
+            return alloc.employeeId == empId && alloc.status === 'Allocated';
+        });
+
+        if (currentModalAllocations.length === 0) {
+            tbody.append('<tr><td colspan="7" class="text-center text-muted">No active in-hand assets found for this employee.</td></tr>');
+            return;
+        }
+
+        currentModalAllocations.forEach(function(item) {
+            var tr = `<tr>
+                <td style="text-align:center;">
+                    <input type="checkbox" class="modal-asset-check" data-alloc="${item.allocationNo}" />
+                </td>
+                <td>${item.allocationNo || '-'}</td>
+                <td>${item.categoryName || '-'}</td>
+                <td>${item.assetCode || '-'}</td>
+                <td>${item.assetName || '-'}</td>
+                <td>${item.tagNumber || '-'}</td>
+                <td class="num-col">${item.qty || 1}</td>
+            </tr>`;
+            tbody.append(tr);
+        });
+    }
+
+    function toggleSelectAllAssets(chk) {
+        $('.modal-asset-check').prop('checked', chk.checked);
+    }
+
+    function importSelectedAssets() {
+        var selectedAllocNos = [];
+        $('.modal-asset-check:checked').each(function() {
+            selectedAllocNos.push($(this).data('alloc'));
+        });
+
+        if (selectedAllocNos.length === 0) {
+            alertify.log('Please select at least one asset to de-allocate.', 'error', 5000);
+            return;
+        }
+
+        var empId = $('#modal-employee-select').val();
+        if (empId) {
+            $('#hdr-employee').val(empId).trigger('change.select2');
+            $('#hdr-employee').trigger('change');
+        }
+
+        var selectedItems = currentModalAllocations.filter(function(a) {
+            return selectedAllocNos.includes(a.allocationNo);
+        });
+
+        inHandAssets = selectedItems;
+        renderGrid();
+
+        $('#inHandAssetsModal').modal('hide');
+        alertify.log(selectedItems.length + ' asset(s) imported to de-allocation grid.', 'success', 5000);
+    }
+
+    function renderGrid() {
+        var uTbody = $('#user-grid-table tbody');
+        uTbody.empty();
+        
+        if(inHandAssets.length === 0) {
+            uTbody.append('<tr><td colspan="8" class="text-center text-muted">No assets selected for de-allocation</td></tr>');
+            return;
+        }
+
+        inHandAssets.forEach(function(item, index) {
+            item.gridIndex = index;
+            var tr = `<tr>
+                <td class="action-btns" style="text-align:center;">
+                    <a href="#" class="remove-item-btn" title="Don't De-Allocate" onclick="removeFromGrid(${index}); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                </td>
+                <td>${item.allocationNo || '-'}</td>
+                <td>${item.categoryName || '-'}</td>
+                <td>${item.assetCode || '-'}</td>
+                <td>${item.assetName || '-'}</td>
+                <td>${item.tagNumber || '-'}</td>
+                <td class="num-col">${item.qty || 1}</td>
+                <td><input type="text" class="form-control form-control-sm dealloc-remarks" data-idx="${index}" value="De-Allocated" /></td>
+            </tr>`;
+            uTbody.append(tr);
+        });
+    }
+
+    function removeFromGrid(index) {
+        inHandAssets.splice(index, 1);
+        renderGrid();
+    }
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 25 * 1024 * 1024) {
+                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
+                input.value = '';
+            }
+        }
+    }
+
+    function saveDeAllocation() {
+        if (inHandAssets.length === 0) {
+            alertify.log('No assets selected for de-allocation.', 'error', 5000);
+            return;
+        }
+
+        if(!$('#hdr-employee').val()) {
+            alertify.log('Please select an Employee.', 'error', 5000);
+            return;
+        }
+
+        var docNo = $('#hdr-docno').val();
+        var date = $('#hdr-date').val();
+
+        var allAllocations = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+        
+        inHandAssets.forEach(function(asset, idx) {
+            var inputRemark = $('.dealloc-remarks[data-idx="'+idx+'"]').val();
+            var match = allAllocations.find(a => a.allocationNo === asset.allocationNo && a.status === 'Allocated');
+            if(match) {
+                match.status = 'De-Allocated';
+                match.deAllocDocNo = docNo;
+                match.deAllocDate = date;
+                match.deAllocRemarks = inputRemark;
+                match.returnDocNo = docNo;
+                match.returnDate = date;
+                match.returnRemarks = inputRemark;
+            }
+        });
+
+        localStorage.setItem('savedAssetAllocations', JSON.stringify(allAllocations));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset De-Allocation saved successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("AssetDeAllocationIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
+    }
+</script>

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HCMSys.Models.vmHCM_Company>
+@model IEnumerable<HCMSys.Models.vmHCM_Company>
 @using Microsoft.AspNetCore.Http;
 @{
     string detailsUrl = Url.Action("DownloadExcel", "Common", new { id = 99 });
@@ -740,11 +740,11 @@
         var flg           = 0;
 
         if (!code) {
-            alertify.log("Code cannot be blank", "error", 600);
+            alertify.log("Code cannot be blank", "error", 5000);
             return false;
         }
         if (!name) {
-            alertify.log("Company Name cannot be blank", "error", 600);
+            alertify.log("Company Name cannot be blank", "error", 5000);
             $('#name-field').focus();
             return false;
         }
@@ -787,20 +787,20 @@
                     if (r == "Invalid Session") {
                         location.href = '@Url.Action("Logout", "Login")';
                     } else {
-                        alertify.log(r, "error", 600);
+                        alertify.log(r, "error", 5000);
                     }
                 } else {
                     var msg = (sts === "Update")
                         ? code + " - Company Updated Successfully"
                         : code + " - Company Created Successfully";
-                    alertify.set({ delay: 600 });
-                    alertify.log(msg, "success", 600);
+                    alertify.set({ delay: 5000 });
+                    alertify.log(msg, "success", 5000);
                     flg = 1;
                     location.href = '@Url.Action("CompanyIndex", "Master")';
                 }
             },
             error: function () {
-                alertify.log("An error occurred. Please try again.", "error", 600);
+                alertify.log("An error occurred. Please try again.", "error", 5000);
             },
             complete: function () {
                 if (flg == 1) {
@@ -821,33 +821,33 @@
         var code = currentRow.find("TD").eq(2).text().replace(/&amp;/g, '&').trim();
         var id   = currentRow.find("TD").eq(1).text().replace(/&amp;/g, '&').trim();
 
-        if (!confirm('Are you sure you want to delete: ' + code + '?')) {
-            return false;
-        }
+        alertify.confirm('Are you sure you want to delete: ' + code + '?', function(e) {
+            if (e) {
+                var flg = 0;
+                $('#loading').fadeIn();
 
-        var flg = 0;
-        $('#loading').fadeIn();
-
-        $.ajax({
-            method: "POST",
-            url: "@Url.Action("DeleteCompany", "Master")",
-            data: { iCompanyId: id, UserId: LoginId },
-            dataType: "json",
-            success: function (result) {
-                if (result.result != "Company Deleted Successfully") {
-                    alertify.log(code + " - Delete Operation Failed", "error", 600);
-                } else {
-                    alertify.log(code + " - " + result.result, "success", 600);
-                    flg = 1;
-                    location.href = '@Url.Action("CompanyIndex", "Master")';
-                }
-            },
-            error: function () {
-                alertify.log("Error during delete. Please try again.", "error", 600);
-            },
-            complete: function () {
-                if (flg == 1) { clearFields(); }
-                $('#loading').fadeOut();
+                $.ajax({
+                    method: "POST",
+                    url: "@Url.Action("DeleteCompany", "Master")",
+                    data: { iCompanyId: id, UserId: LoginId },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.result != "Company Deleted Successfully") {
+                            alertify.log(code + " - Delete Operation Failed", "error", 5000);
+                        } else {
+                            alertify.log(code + " - " + result.result, "success", 5000);
+                            flg = 1;
+                            location.href = '@Url.Action("CompanyIndex", "Master")';
+                        }
+                    },
+                    error: function () {
+                        alertify.log("Error during delete. Please try again.", "error", 5000);
+                    },
+                    complete: function () {
+                        if (flg == 1) { clearFields(); }
+                        $('#loading').fadeOut();
+                    }
+                });
             }
         });
 

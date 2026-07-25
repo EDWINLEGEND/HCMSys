@@ -1,0 +1,326 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .number-align {
+        text-align: right;
+    }
+    input[type="text"], textarea, select { text-align: left; }
+    .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+        background-color: #e9ecef !important; 
+        opacity: 1; 
+    }
+    .flatpickr-input[readonly], .datepicker[readonly] {
+        background-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+    .table th, .table td { vertical-align: middle; }
+    .table td.num-col { text-align: right; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-undo fa-sm text-primary mr-2"></i> HR Return
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <button type="button" class="btn btn-info btn-sm shadow-sm ml-2" onclick="showReturnable()">
+                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveReturn()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="returnForm" autocomplete="off">
+        <!-- COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">General</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Select Employee...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Remarks</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary">Returnable Items Detailed</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="user-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 60px; text-align:center;">Action</th>
+                            <th>Req No</th>
+                            <th>Request Type (Name)</th>
+                            <th class="num-col">Qty</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    var employeesData = [];
+    var pendingReturns = [];
+
+    $(document).ready(function() {
+        initHeader();
+
+        $.when(
+            $.getJSON('/assets/employee.json')
+        ).done(function(empRes) {
+            employeesData = empRes[0] || empRes;
+            if(Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
+                employeesData = employeesData[0];
+            }
+            populateDropdowns();
+            $('select.form-control').select2({ width: '100%' });
+        }).fail(function() {
+            alertify.log('Failed to load employee data.', 'error', 5000);
+        });
+
+        $('#hdr-employee').change(onEmployeeChange);
+
+        flatpickr(".datepicker", {
+            dateFormat: "d/m/Y",
+            defaultDate: "today"
+        });
+    });
+
+    function initHeader() {
+        var d = new Date();
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        var yyyy = d.getFullYear();
+        
+        $('#hdr-date').val(dd + '/' + mm + '/' + yyyy);
+        $('#hdr-docno').val('HRR-RET-' + mm + '-' + yy + '-00001');
+    }
+
+    function populateDropdowns() {
+        var empSelect = $('#hdr-employee');
+        employeesData.forEach(function(emp) {
+            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+        });
+    }
+
+    function onEmployeeChange() {
+        var empId = parseInt($(this).val());
+        pendingReturns = [];
+        renderGrid();
+        
+        if (!empId) {
+            $('#hdr-designation, #hdr-department, #hdr-manager').val('');
+            return;
+        }
+
+        var emp = employeesData.find(e => e.id === empId);
+        if (emp) {
+            $('#hdr-designation').val(emp.designation);
+            $('#hdr-department').val(emp.department);
+            $('#hdr-manager').val(emp.reportingManager);
+        }
+        
+        // Auto-fetch pending items
+        showReturnable();
+    }
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 25 * 1024 * 1024) {
+                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
+                input.value = '';
+            }
+        }
+    }
+
+    function showReturnable() {
+        var empId = $('#hdr-employee').val();
+        if(!empId) {
+            pendingReturns = [];
+            renderGrid();
+            return;
+        }
+
+        if (!localStorage.getItem('savedHRRequests')) {
+            var sampleRequests = [
+                { docNo: 'HRR-REQ-07-26-00001', date: '23/07/2026', employeeId: '1', employeeName: 'John Smith', reqNo: 'REQ-07-26-10001', selectionCode: 'REQ-04', selectionName: 'Company Laptop', requestType: 'Returnable', prefix: 'LAP', qty: 1, remarks: 'Issued for remote work', status: 'Pending' },
+                { docNo: 'HRR-REQ-07-26-00002', date: '23/07/2026', employeeId: '1', employeeName: 'John Smith', reqNo: 'REQ-07-26-10002', selectionCode: 'REQ-01', selectionName: 'Salary Certificate', requestType: 'Documents', prefix: 'SAL', qty: 1, remarks: 'Required for bank loan', status: 'Pending' }
+            ];
+            localStorage.setItem('savedHRRequests', JSON.stringify(sampleRequests));
+        }
+
+        var allRequests = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+        
+        pendingReturns = allRequests.filter(function(req) {
+            return req.employeeId == empId && req.requestType === 'Returnable' && req.status === 'Pending';
+        });
+
+        renderGrid();
+    }
+
+    function renderGrid() {
+        var uTbody = $('#user-grid-table tbody');
+        uTbody.empty();
+        
+        if(pendingReturns.length === 0) {
+            uTbody.append('<tr><td colspan="5" class="text-center">No requests found</td></tr>');
+            return;
+        }
+
+        pendingReturns.forEach(function(item, index) {
+            item.gridIndex = index;
+            var tr = `<tr>
+                <td class="action-btns" style="text-align:center;">
+                    <a href="#" class="remove-item-btn" title="Remove from list" onclick="removeFromGrid(${index}); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                </td>
+                <td>${item.reqNo || '-'}</td>
+                <td>${item.selectionName || '-'}</td>
+                <td class="num-col">${item.qty}</td>
+                <td><input type="text" class="form-control form-control-sm return-remarks" data-idx="${index}" value="Returned" /></td>
+            </tr>`;
+            uTbody.append(tr);
+        });
+    }
+
+    function removeFromGrid(index) {
+        pendingReturns.splice(index, 1);
+        renderGrid();
+    }
+
+    function saveReturn() {
+        if (pendingReturns.length === 0) {
+            alertify.log('No items selected for return.', 'error', 5000);
+            return;
+        }
+
+        if(!$('#hdr-employee').val()) {
+            alertify.log('Please fill required Header fields (Employee).', 'error', 5000);
+            return;
+        }
+
+        var docNo = $('#hdr-docno').val();
+        var date = $('#hdr-date').val();
+
+        var allRequests = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+        
+        pendingReturns.forEach(function(item, idx) {
+            var inputRemark = $('.return-remarks[data-idx="'+idx+'"]').val();
+            var match = allRequests.find(a => a.reqNo === item.reqNo && a.status === 'Pending');
+            if(match) {
+                match.status = 'Returned';
+                match.returnDocNo = docNo;
+                match.returnDate = date;
+                match.returnRemarks = inputRemark;
+            }
+        });
+
+        localStorage.setItem('savedHRRequests', JSON.stringify(allRequests));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'HR Return saved successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("HRReturnIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
+    }
+</script>

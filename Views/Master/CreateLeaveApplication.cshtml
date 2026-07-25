@@ -1,0 +1,694 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        html { font-size: 14px; }
+        .select2-container .select2-selection--single {
+            height: calc(1.5em + .75rem + 2px);
+            border: 1px solid #d1d3e2;
+            border-radius: 0.35rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: calc(1.5em + .75rem);
+            color: #6e707e;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + .75rem);
+        }
+        .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+        .action-btns a:hover { opacity: 0.7; }
+        .action-btns .fa-trash-alt { color: #e74a3b; }
+        .page-title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .page-title-text {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #5a5c69;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #5a5c69;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+        .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+        .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+        
+        .card-header-custom {
+            background-color: #4e73df;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 10px 15px;
+        }
+        
+        .summary-panel {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            border-radius: 0.35rem;
+            padding: 10px 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .summary-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            opacity: 0.9;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .summary-val {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .number-align {
+            text-align: right;
+        }
+        input[type="text"], select, textarea {
+            text-align: left;
+        }
+        .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+            background-color: #e9ecef !important; 
+            opacity: 1; 
+        }
+        .flatpickr-input[readonly], .datepicker[readonly] {
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        .table th, .table td { vertical-align: middle; }
+        .table td.num-col { text-align: right; }
+    </style>
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-file-signature fa-sm text-primary mr-2"></i> Create Leave Application
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("LeaveApplicationIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveApplication()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="leaveForm" autocomplete="off">
+        <!-- COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">General</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Select Employee...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Comments</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEAVE APPLICATION DETAILS CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom bg-info">Leave Selection</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Leave Type <span class="text-danger">*</span></label>
+                        <select class="form-control calc-trigger" id="dtl-leavetype" required>
+                            <option value="">Select...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Payment Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="dtl-paymenttype" required>
+                            <option value="">Select...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Half Day <span class="text-danger">*</span></label>
+                        <select class="form-control calc-trigger" id="dtl-halfday" required>
+                            <option value="">Select...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">From Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control calc-trigger datepicker" id="dtl-fromdate" required />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">To Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control calc-trigger datepicker" id="dtl-todate" required />
+                    </div>
+                    <div class="col-4 col-md-2 mb-3">
+                        <label class="form-label" style="font-size: 0.7rem;">Lvs Used No</label>
+                        <input type="number" class="form-control number-align" id="dtl-duration" readonly />
+                    </div>
+                    <div class="col-4 col-md-2 mb-3">
+                        <label class="form-label" style="font-size: 0.7rem;">Weekly Off</label>
+                        <input type="number" class="form-control calc-trigger number-align" id="dtl-weeklyoff" value="0" min="0" />
+                    </div>
+                    <div class="col-4 col-md-2 mb-3">
+                        <label class="form-label" style="font-size: 0.7rem;">Holiday</label>
+                        <input type="number" class="form-control calc-trigger number-align" id="dtl-publicholiday" value="0" min="0" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">No of Leaves (Used Now)</label>
+                        <input type="number" class="form-control font-weight-bold number-align" id="dtl-noofleaves" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Contact No</label>
+                        <input type="text" class="form-control" id="dtl-contact" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Substitute Employee</label>
+                        <select class="form-control" id="dtl-substitute">
+                            <option value="">Select...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="dtl-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                    </div>
+                    <div class="col-md-12 text-right mt-2">
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addToGrid()">
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY PANEL -->
+        <div class="summary-panel mb-4">
+            <div class="row text-center align-items-center">
+                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
+                    <div class="summary-label">Lvs Eligible</div>
+                    <div class="summary-val" id="sum-eligible">0.0</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
+                    <div class="summary-label">Lvs Approved</div>
+                    <div class="summary-val" id="sum-approved">0.0</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
+                    <div class="summary-label">Lvs UnApproved</div>
+                    <div class="summary-val" id="sum-unapproved">0.0</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
+                    <div class="summary-label">Lvs Available</div>
+                    <div class="summary-val" id="sum-available">0.0</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
+                    <div class="summary-label">Lvs Used Now</div>
+                    <div class="summary-val" id="sum-usednow">0.0</div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
+                    <div class="summary-label">Lvs Balance</div>
+                    <div class="summary-val" id="sum-balance">0.0</div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+<div class="card shadow mb-4">
+    <div class="card-header card-header-custom bg-secondary">Leaves Detailed (User Grid)</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0" id="user-grid-table">
+                <thead class="thead-light">
+                    <tr>
+                        <th style="width: 60px; text-align:center;">Action</th>
+                        <th>Leave Type</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th class="text-right">Lvs Used No</th>
+                        <th>Document</th>
+                        <th class="text-right">Lvs Eligible</th>
+                        <th class="text-right">Lvs Approved</th>
+                        <th class="text-right">Lvs UnApproved</th>
+                        <th class="text-right">Lvs Available</th>
+                        <th class="text-right">Lvs Used Now</th>
+                        <th class="text-right">Lvs Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header card-header-custom bg-dark">System Grid (Monthly Breakdown)</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0" id="system-grid-table">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Leave Type</th>
+                        <th>Month</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th class="text-right">Lvs Used No</th>
+                        <th>Document</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var employeesData = [];
+    var leaveBalancesData = [];
+    var leaveOptionsData = {};
+
+    var stagedLeaves = [];
+    var stagedSystemLeaves = [];
+
+    $(document).ready(function() {
+        initHeader();
+
+        // Fetch JSON data
+        $.when(
+            $.getJSON('/assets/employee.json'),
+            $.getJSON('/assets/leave_balances.json'),
+            $.getJSON('/assets/leavetype.json')
+        ).done(function(empRes, balRes, optRes) {
+            employeesData = empRes[0];
+            leaveBalancesData = balRes[0];
+            leaveOptionsData = optRes[0];
+            
+            populateDropdowns();
+            $('select.form-control').select2({ width: '100%' });
+        }).fail(function() {
+            alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+        });
+
+        // Event Listeners
+        $('#hdr-employee').change(onEmployeeChange);
+        $('#dtl-leavetype').change(onLeaveTypeChange);
+        $('.calc-trigger').on('change input', calculateLeaves);
+
+        // Initialize Datepickers (Format: 18-Jul-2026)
+        flatpickr(".datepicker", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today",
+            onChange: function() {
+                calculateLeaves();
+            }
+        });
+    });
+
+    function initHeader() {
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        var yyyy = d.getFullYear();
+        
+        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-docno').val('WCO-' + mm + '-' + yy + '-00001');
+    }
+
+    function populateDropdowns() {
+        var empSelect = $('#hdr-employee');
+        var subSelect = $('#dtl-substitute');
+        empSelect.append('<option value="">Select Employee...</option>');
+        subSelect.append('<option value="">Select Substitute...</option>');
+        
+        employeesData.forEach(function(emp) {
+            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+            subSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+        });
+
+        var ltSelect = $('#dtl-leavetype');
+        ltSelect.append('<option value="">Select Leave Type...</option>');
+        leaveOptionsData.leaveTypes.forEach(function(lt) {
+            ltSelect.append(`<option value="${lt.code}">${lt.name}</option>`);
+        });
+
+        var ptSelect = $('#dtl-paymenttype');
+        leaveOptionsData.paymentTypes.forEach(function(pt) {
+            ptSelect.append(`<option value="${pt.id}">${pt.name}</option>`);
+        });
+        ptSelect.find('option').filter(function(){ return $(this).text() === 'In Payroll'; }).prop('selected', true);
+
+        var hdSelect = $('#dtl-halfday');
+        leaveOptionsData.halfDay.forEach(function(hd) {
+            hdSelect.append(`<option value="${hd.name}">${hd.name}</option>`);
+        });
+        hdSelect.find('option').filter(function(){ return $(this).text() === 'No'; }).prop('selected', true);
+    }
+
+    function onEmployeeChange() {
+        var empId = parseInt($(this).val());
+        if (!empId) {
+            clearEmployeeFields();
+            return;
+        }
+
+        stagedLeaves = [];
+        stagedSystemLeaves = [];
+        renderGrids();
+
+        var emp = employeesData.find(e => e.id === empId);
+        if (emp) {
+            $('#hdr-designation').val(emp.designation);
+            $('#hdr-department').val(emp.department);
+            $('#hdr-manager').val(emp.reportingManager);
+            $('#dtl-contact').val(emp.contact);
+        }
+
+        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
+        $('#dtl-leavetype').val('').trigger('change');
+        calculateLeaves(); 
+    }
+
+    function onLeaveTypeChange() {
+        var ltCode = $(this).val();
+        if (!ltCode) {
+            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
+            calculateLeaves();
+            return;
+        }
+
+        var bal = leaveOptionsData.leaveTypes.find(lt => lt.code === ltCode);
+        if (bal) {
+            $('#sum-eligible').text((bal.eligible || 0).toFixed(1));
+            $('#sum-approved').text((bal.approved || 0).toFixed(1));
+            $('#sum-unapproved').text((bal.unapproved || 0).toFixed(1));
+            
+            var available = (bal.eligible || 0) - (bal.approved || 0) - (bal.unapproved || 0);
+            $('#sum-available').text(available.toFixed(1));
+        } else {
+            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
+        }
+
+        calculateLeaves();
+    }
+
+    function renderGrids() {
+        var uTbody = $('#user-grid-table tbody');
+        uTbody.empty();
+        stagedLeaves.forEach(function(app) {
+            var docBtn = app.attachmentName
+                ? `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>${app.attachmentName}</b>'); return false;" class="badge badge-info"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`
+                : `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>Leave_Doc_${app.stagedId}.pdf</b>'); return false;" class="badge badge-info"><i class="fas fa-file-pdf mr-1"></i> Preview Doc</a>`;
+
+            var tr = `<tr>
+                <td class="action-btns" style="text-align:center;">
+                    <a href="#" class="remove-item-btn" title="Delete" onclick="deleteStagedLeave('${app.stagedId}'); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                </td>
+                <td>${app.type || '-'}</td>
+                <td>${app.start}</td>
+                <td>${app.end}</td>
+                <td class="num-col">${app.duration}</td>
+                <td>${docBtn}</td>
+                <td class="num-col">${(app.eligible || 0).toFixed(1)}</td>
+                <td class="num-col">${(app.approved || 0).toFixed(1)}</td>
+                <td class="num-col">${(app.unapproved || 0).toFixed(1)}</td>
+                <td class="num-col">${(app.available || 0).toFixed(1)}</td>
+                <td class="num-col">${(app.usedNow || 0).toFixed(1)}</td>
+                <td class="num-col">${(app.balance || 0).toFixed(1)}</td>
+            </tr>`;
+            uTbody.append(tr);
+        });
+
+        var sTbody = $('#system-grid-table tbody');
+        sTbody.empty();
+        stagedSystemLeaves.forEach(function(app) {
+            var docBtn = app.attachmentName
+                ? `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>${app.attachmentName}</b>'); return false;" class="badge badge-info"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`
+                : `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>Sys_Doc_${app.stagedId}.pdf</b>'); return false;" class="badge badge-info"><i class="fas fa-file-pdf mr-1"></i> Preview Doc</a>`;
+
+            var tr = `<tr>
+                <td>${app.type || '-'}</td>
+                <td>${app.monthName}</td>
+                <td>${app.start}</td>
+                <td>${app.end}</td>
+                <td class="num-col">${app.duration}</td>
+                <td>${docBtn}</td>
+            </tr>`;
+            sTbody.append(tr);
+        });
+    }
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 25 * 1024 * 1024) {
+                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
+                input.value = '';
+            }
+        }
+    }
+
+    function deleteStagedLeave(stagedId) {
+        alertify.confirm('Are you sure you want to remove this leave from the grid?', function (e) {
+            if (e) {
+                stagedLeaves = stagedLeaves.filter(function(app) { return app.stagedId !== stagedId; });
+                stagedSystemLeaves = stagedSystemLeaves.filter(function(app) { return app.stagedId !== stagedId; });
+                calculateLeaves();
+                renderGrids();
+            }
+        });
+    }
+
+    function clearEmployeeFields() {
+        $('#hdr-designation, #hdr-department, #hdr-manager, #dtl-contact').val('');
+        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-balance').text('0.0');
+        stagedLeaves = [];
+        stagedSystemLeaves = [];
+        renderGrids();
+    }
+
+    function parseDateObj(dStr) {
+        if (!dStr) return new Date();
+        if (dStr.includes('-')) {
+            var p = dStr.split('-');
+            var months = {'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11};
+            var m = months[p[1]] !== undefined ? months[p[1]] : 0;
+            return new Date(parseInt(p[2]), m, parseInt(p[0]));
+        } else if (dStr.includes('/')) {
+            var p = dStr.split('/');
+            return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+        }
+        return new Date(dStr);
+    }
+
+    function formatDateDisplay(d) {
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mmm = months[d.getMonth()];
+        var yyyy = d.getFullYear();
+        return dd + '-' + mmm + '-' + yyyy;
+    }
+
+    function calculateLeaves() {
+        var fromStr = $('#dtl-fromdate').val();
+        var toStr = $('#dtl-todate').val();
+        
+        var duration = 0;
+        if (fromStr && toStr) {
+            var f = parseDateObj(fromStr);
+            var t = parseDateObj(toStr);
+
+            if (t >= f) {
+                var diffTime = Math.abs(t - f);
+                var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                duration = diffDays + 1;
+            }
+        }
+        $('#dtl-duration').val(duration);
+
+        var weeklyOff = parseFloat($('#dtl-weeklyoff').val()) || 0;
+        var publicHoliday = parseFloat($('#dtl-publicholiday').val()) || 0;
+        
+        var noOfLeaves = duration - weeklyOff - publicHoliday;
+        
+        if ($('#dtl-halfday').val() === 'Yes') {
+            noOfLeaves -= 0.5;
+        }
+        if (noOfLeaves < 0) noOfLeaves = 0;
+        
+        $('#dtl-noofleaves').val(noOfLeaves);
+        
+        var eligible = parseFloat($('#sum-eligible').text()) || 0;
+        var approved = parseFloat($('#sum-approved').text()) || 0;
+        var unapproved = parseFloat($('#sum-unapproved').text()) || 0;
+        
+        var available = eligible - approved - unapproved;
+        var finalBalance = available - noOfLeaves;
+
+        $('#sum-usednow').text(noOfLeaves.toFixed(1));
+        $('#sum-balance').text(finalBalance.toFixed(1));
+    }
+
+    function addToGrid() {
+        var empId = $('#hdr-employee').val();
+        var fromDate = $('#dtl-fromdate').val();
+        var toDate = $('#dtl-todate').val();
+        var leaveType = $('#dtl-leavetype option:selected').text();
+        
+        if(!empId || !fromDate || !toDate || !$('#dtl-leavetype').val()) {
+            alertify.log('Please fill all required fields (Employee, Leave Type, Dates).', 'error', 5000);
+            return;
+        }
+
+        var empName = $('#hdr-employee option:selected').text().split(' - ')[1];
+        var code = $('#hdr-docno').val();
+        var reason = $('#hdr-comments').val();
+
+        var attInput = document.getElementById('dtl-attachment');
+        var attachmentName = (attInput && attInput.files && attInput.files[0]) ? attInput.files[0].name : '';
+
+        var duration = parseFloat($('#dtl-duration').val()) || 0;
+        var eligible = parseFloat($('#sum-eligible').text()) || 0;
+        var approved = parseFloat($('#sum-approved').text()) || 0;
+        var unapproved = parseFloat($('#sum-unapproved').text()) || 0;
+        var available = eligible - approved - unapproved;
+
+        var usedNow = parseFloat($('#dtl-noofleaves').val()) || 0;
+        var balance = available - usedNow;
+
+        var f = parseDateObj(fromDate);
+        var t = parseDateObj(toDate);
+
+        if (f > t) {
+            alertify.log('To Date cannot be earlier than From Date.', 'error', 5000);
+            return;
+        }
+        
+        var uniqueStagedId = 'id_' + new Date().getTime();
+
+        var dispFrom = formatDateDisplay(f);
+        var dispTo = formatDateDisplay(t);
+
+        var newApp = {
+            stagedId: uniqueStagedId,
+            id: uniqueStagedId,
+            code: code,
+            name: empName,
+            type: leaveType,
+            start: dispFrom,
+            end: dispTo,
+            duration: usedNow,
+            eligible: eligible,
+            approved: approved,
+            unapproved: unapproved,
+            available: available,
+            usedNow: usedNow,
+            balance: balance,
+            status: 'Pending',
+            reason: reason,
+            attachmentName: attachmentName
+        };
+
+        stagedLeaves.push(newApp);
+
+        // System Grid (Monthly Breakdown)
+        var cur = new Date(f);
+        var monthsNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+        while (cur <= t) {
+            var mIndex = cur.getMonth();
+            var yNum = cur.getFullYear();
+            var monthLabel = monthsNames[mIndex] + ' ' + yNum;
+            
+            var lastDayOfMonth = new Date(yNum, mIndex + 1, 0);
+            var endChunk = (t < lastDayOfMonth) ? new Date(t) : lastDayOfMonth;
+            
+            var chunkDiff = Math.ceil(Math.abs(endChunk - cur) / (1000 * 60 * 60 * 24)) + 1;
+            
+            stagedSystemLeaves.push({
+                stagedId: uniqueStagedId,
+                type: leaveType,
+                monthName: monthLabel,
+                start: formatDateDisplay(cur),
+                end: formatDateDisplay(endChunk),
+                duration: chunkDiff,
+                attachmentName: attachmentName
+            });
+
+            cur = new Date(yNum, mIndex + 1, 1);
+        }
+
+        renderGrids();
+        alertify.log('Leave details added to grid.', 'success', 5000);
+    }
+
+    function saveApplication() {
+        if (stagedLeaves.length === 0) {
+            alertify.log('No leave entries added to the grid.', 'error', 5000);
+            return;
+        }
+
+        var existingLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
+        existingLeaves = existingLeaves.concat(stagedLeaves);
+        localStorage.setItem('leaveApps', JSON.stringify(existingLeaves));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Leave Application saved successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("LeaveApplicationIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
+    }
+</script>

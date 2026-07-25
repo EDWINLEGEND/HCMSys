@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "code": "USD",
+    "name": "US Dollar",
+    "exRate": 1.0,
+    "numberofdecimal": 2,
+    "numberformat": "1"
+  },
+  {
+    "id": 2,
+    "code": "EUR",
+    "name": "Euro",
+    "exRate": 0.92,
+    "numberofdecimal": 2,
+    "numberformat": "1"
+  },
+  {
+    "id": 3,
+    "code": "GBP",
+    "name": "British Pound",
+    "exRate": 0.79,
+    "numberofdecimal": 2,
+    "numberformat": "1"
+  },
+  {
+    "id": 4,
+    "code": "AED",
+    "name": "UAE Dirham",
+    "exRate": 3.67,
+    "numberofdecimal": 2,
+    "numberformat": "1"
+  },
+  {
+    "id": 5,
+    "code": "INR",
+    "name": "Indian Rupee",
+    "exRate": 83.2,
+    "numberofdecimal": 2,
+    "numberformat": "2"
+  },
+  {
+    "id": 6,
+    "code": "OMR",
+    "name": "Omani Rial",
+    "exRate": 1,
+    "numberofdecimal": 3,
+    "numberformat": "1"
+  }
+]

@@ -44,6 +44,10 @@
         font-size: larger;
         padding-top: 80px;
     }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
 </style>
 <section class="container-fluid">
     <div class="card shadow mb-4">
@@ -100,15 +104,15 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td style="text-align: center;">
+                                <td class="action-btns" style="text-align: center;">
                                     <a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Division-modal">
-                                        <i class="fas fa-edit fa-sm fa-fw mr-2 text-gray-600"></i>
+                                        <i class="fas fa-edit fa-sm fa-fw "></i>
                                     </a>
                                     @*             <a href="#">
-                                <i class="fas fa-print fa-sm fa-fw mr-2 text-gray-600"></i>
+                                <i class="fas fa-print fa-sm fa-fw "></i>
                                 </a> *@
                                     <a href="#" class="remove-item-btn">
-                                        <i class="fas fa-trash-alt fa-sm fa-fw mr-2 text-gray-600 "></i>
+                                        <i class="fas fa-trash-alt fa-sm fa-fw  "></i>
                                     </a>
 
                                 </td>
@@ -265,19 +269,19 @@
                         location.href = '@Url.Action("Logout", "Login")';
                     }
                     else {
-                        alertify.log(r, "error", 600);
+                        alertify.log(r, "error", 5000);
                     }
                 }
                 else {
-                    alertify.set({ delay: 600 });
-                    alertify.log("Data Imported Successfully", "success", 600);
+                    alertify.set({ delay: 5000 });
+                    alertify.log("Data Imported Successfully", "success", 5000);
                     window.location.href = '@Url.RouteUrl(new { Controller = "Common", Action = "Download"})';
 
                     flg = 1;
                 }
             },
             error: function () {
-                alertify.log("Error in update...", "error", 600);
+                alertify.log("Error in update...", "error", 5000);
             },
             complete: function () {
                 if (flg == 1) {
@@ -350,13 +354,13 @@
         var sts = $(this).text();
         var flg = 0;
         if (code == null || code == "") {
-            alertify.log("Code cannot be blank", "error", 600);
+            alertify.log("Code cannot be blank", "error", 5000);
             $('#loading').fadeOut();
             return false;
         }
         $('#loading').fadeIn();
         if (name == null || name == "") {
-            alertify.log("Name cannot be blank", "error", 600);
+            alertify.log("Name cannot be blank", "error", 5000);
             $('#loading').fadeOut();
             return false;
         }
@@ -379,18 +383,18 @@
                             location.href = '@Url.Action("Logout", "Login")';
                         }
                         else {
-                            alertify.log(r, "error", 600);
+                            alertify.log(r, "error", 5000);
                         }
                     }
                     else {
-                        alertify.set({ delay: 600 });
-                        alertify.log(code + " - Division Updated Successfully", "success", 600);
+                        alertify.set({ delay: 5000 });
+                        alertify.log(code + " - Division Updated Successfully", "success", 5000);
                         location.href = '@Url.Action("DivisionIndex", "Master")';
                         flg = 1;
                     }
                 },
                 error: function () {
-                    alertify.log("Error in update...", "error", 600);
+                    alertify.log("Error in update...", "error", 5000);
                 },
                 complete: function () {
                     if (flg == 1) {
@@ -418,17 +422,17 @@
                             location.href = '@Url.Action("Logout", "Login")';
                         }
                         else {
-                            alertify.log(r, "error", 600);
+                            alertify.log(r, "error", 5000);
                         }
                     }
                     else {
-                        alertify.log(code + " - Division Created Successfully", "success", 600);
+                        alertify.log(code + " - Division Created Successfully", "success", 5000);
                         location.href = '@Url.Action("DivisionIndex", "Master")';
                         flg = 1;
                     }
                 },
                 error: function () {
-                    alertify.log("Error in create...", "error", 600);
+                    alertify.log("Error in create...", "error", 5000);
                 },
                 complete: function () {
                     if (flg == 1) {
@@ -460,16 +464,16 @@
             dataType: "json",
             success: function (result) {
                 if (result.result != "Division Deleted Successfully") {
-                    alertify.log(code + " - Delete Operation Failed", "error", 600);
+                    alertify.log(code + " - Delete Operation Failed", "error", 5000);
                 }
                 else {
-                    alertify.log(code + " - " + result.result, "error", 600);
+                    alertify.log(code + " - " + result.result, "error", 5000);
                     location.href = '@Url.Action("DivisionIndex", "Master")';
                     flg = 1;
                 }
             },
             error: function () {
-                alertify.log("Error in delete...", "error", 600);
+                alertify.log("Error in delete...", "error", 5000);
             },
             complete: function () {
                 if (flg == 1) {

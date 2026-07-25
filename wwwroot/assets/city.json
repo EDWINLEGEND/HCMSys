@@ -1,0 +1,7 @@
+[
+  { "id": 1, "code": "NYC", "name": "New York" },
+  { "id": 2, "code": "LON", "name": "London" },
+  { "id": 3, "code": "DXB", "name": "Dubai" },
+  { "id": 4, "code": "TOK", "name": "Tokyo" },
+  { "id": 5, "code": "BOM", "name": "Mumbai" }
+]

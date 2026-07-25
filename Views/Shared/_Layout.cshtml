@@ -1,6 +1,7 @@
-﻿ 
 @{
     Layout = null;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 }
 
 @using Microsoft.AspNetCore.Http;
@@ -11,8 +12,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>
         HCMSys
-         -  
-        @Context.Session.GetString("username").ToUpper()
+       
  
     </title>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
@@ -56,7 +56,14 @@
     <script src="~/lib/select2/js/select2.min.js" defer></script>
     <link defer href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
     <script src="~/alertify.js/alertify.min.js"></script>
-    <link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof alertify !== 'undefined') {
+                alertify.set({ delay: 5000 });
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="~/alertify.js/alertify.core.css?v=3" />
     <link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
     <script defer src="~/dist/datatables/jquery.dataTables.min.js"></script>
     <script defer src="~/datatables.net-rowgroup/dataTables.rowGroup.min.js"></script>
@@ -123,11 +130,21 @@
     </style>
 </head>
 <body class="hold-transition skin-black sidebar-mini-expand-feature " >
+    <script>
+        if (localStorage.getItem('sidebar_toggled') === 'true') {
+            document.body.classList.add('sidebar-toggled');
+        }
+    </script>
    <!-- Page Wrapper -->
     <div id="wrapper">
         
         <!-- Sidebar -->
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background:#2C3333">
+            <script>
+                if (localStorage.getItem('sidebar_toggled') === 'true') {
+                    document.getElementById('accordionSidebar').classList.add('toggled');
+                }
+            </script>
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="@Url.Action("Index", "Home")">
                 <div class="sidebar-brand-icon rotate-n-15">
@@ -140,33 +157,97 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
                 <a class="nav-link" href="@Url.Action("Index", "Home")" id="mnuDashboard">
                     <i class="fas fa-fw fa-home"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
  
-            
-            <li class="nav-item">
+            @{
+                var isMastersActive = currentAction.StartsWith("Project");
+            }
+            <li class="nav-item @(isMastersActive ? "active" : "")">
                 <hr class="sidebar-divider">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                   aria-expanded="true" aria-controls="collapseTwo">
+                <a class="nav-link @(isMastersActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                   aria-expanded="@(isMastersActive ? "true" : "false")" aria-controls="collapseTwo">
                     <i class="fas fa-fw fa-tablet"></i>
                     <span>Masters</span>
                 </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div id="collapseTwo" class="collapse @(isMastersActive ? "show" : "")" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Common Masters:</h6>
-                   
-                        <a class="collapse-item" href="@Url.Action("ProjectIndex", "Master")">Project</a>
- 
-                  
-                   
+                        <a class="collapse-item @(currentAction.StartsWith("Project") ? "active" : "")" href="@Url.Action("ProjectIndex", "Master")">Project</a>
                     </div>
                 </div>
             </li>
 
+            <li class="nav-item @(currentAction.StartsWith("LeaveApplication") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("LeaveApplicationIndex", "Master")">
+                    <i class="fas fa-fw fa-calendar-alt"></i>
+                    <span>Leave Application</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("Claim") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("ClaimIndex", "Master")">
+                    <i class="fas fa-fw fa-money-bill"></i>
+                    <span>Claims</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("BusinessTrip") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("BusinessTripIndex", "Master")">
+                    <i class="fas fa-fw fa-plane"></i>
+                    <span>Business Trip</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("AssetAllocation") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("AssetAllocationIndex", "Master")">
+                    <i class="fas fa-fw fa-boxes"></i>
+                    <span>Asset Allocation</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("AssetDeAllocation") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("AssetDeAllocationIndex", "Master")">
+                    <i class="fas fa-fw fa-box-open"></i>
+                    <span>Asset De-Allocation</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("HRRequest") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("HRRequestIndex", "Master")">
+                    <i class="fas fa-fw fa-hand-holding"></i>
+                    <span>HR Request</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("HRReturn") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("HRReturnIndex", "Master")">
+                    <i class="fas fa-fw fa-undo"></i>
+                    <span>HR Return</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("HRDocumentIssue") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("HRDocumentIssueIndex", "Master")">
+                    <i class="fas fa-fw fa-file-invoice"></i>
+                    <span>HR Document Issue</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("OpeningLeaves") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("OpeningLeavesIndex", "Master")">
+                    <i class="fas fa-fw fa-calendar-plus"></i>
+                    <span>Opening Leaves</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("LeaveEligibility") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("LeaveEligibilityIndex", "Master")">
+                    <i class="fas fa-fw fa-user-check"></i>
+                    <span>Leave Eligibility</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("LeaveAdjustments") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("LeaveAdjustmentsIndex", "Master")">
+                    <i class="fas fa-fw fa-sliders-h"></i>
+                    <span>Leave Adjustments</span>
+                </a>
+            </li>
  
          
             <!-- Divider -->
@@ -195,49 +276,20 @@
                             <h6 class="h3 mb-0 text-gray-800" id="eg"> TIME</h6>
                         </div>
                     </form>
-
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-
-                       
  
-                     
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"> @Context.Session.GetString("username").ToUpper()</span>
-                                <img class="img-profile rounded-circle"
-                                    src="~/dist/img/user1.png">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
- 
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
 
                 </nav>
                 <!-- End of Topbar -->
  
                 <!-- Begin Page Content -->
-                <div class="container-fluid">
- 
+                <div class="container-fluid" id="main-page-container" style="transition: opacity 0.15s ease-in-out;">
+
                     <div class="row">
 
 
                         @RenderBody()
                         
- 
+
                     </div>
 
                 </div>
@@ -278,12 +330,146 @@
         </div>
     </div>
 
-
-    @*<script src="~/bower_components/jquery/dist/jquery.min.js"></script>*@
-    @*<script src="~/dist/js/jQuery-3.3.1/jquery-3.3.1.min.js"></script>*@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="~/dist/js/sb-admin-2.min.js"></script>
- 
+
+    <script>
+        function updateActiveSidebar(targetUrl) {
+            var currentPath = new URL(targetUrl || window.location.href, window.location.origin).pathname.toLowerCase();
+
+            $('#accordionSidebar .nav-item').removeClass('active');
+            $('#accordionSidebar .collapse-item').removeClass('active');
+
+            var foundMatch = false;
+
+            $('#accordionSidebar a.nav-link, #accordionSidebar a.collapse-item').each(function () {
+                var href = $(this).attr('href');
+                if (href && href !== '#' && href !== 'javascript:void(0);' && !$(this).attr('data-toggle')) {
+                    try {
+                        var linkPath = new URL(href, window.location.origin).pathname.toLowerCase();
+
+                        var cleanCurrent = currentPath.replace(/\/+$/, '').replace(/index$/, '');
+                        var cleanLink = linkPath.replace(/\/+$/, '').replace(/index$/, '');
+
+                        var isMatch = (currentPath === linkPath) || 
+                                      (cleanCurrent.length > 1 && cleanLink.length > 1 && cleanCurrent === cleanLink);
+
+                        if (isMatch && !foundMatch) {
+                            foundMatch = true;
+                            if ($(this).hasClass('collapse-item')) {
+                                $(this).addClass('active');
+                                var parentCollapse = $(this).closest('.collapse');
+                                parentCollapse.addClass('show');
+                                parentCollapse.prev('a.nav-link').removeClass('collapsed').attr('aria-expanded', 'true');
+                                parentCollapse.closest('.nav-item').addClass('active');
+                            } else {
+                                $(this).closest('.nav-item').addClass('active');
+                            }
+                        }
+                    } catch (e) { }
+                }
+            });
+
+            if (!foundMatch && (currentPath === '/' || currentPath.endsWith('/home') || currentPath.endsWith('/home/index'))) {
+                $('#mnuDashboard').closest('.nav-item').addClass('active');
+            }
+        }
+
+        function checkPendingAlert() {
+            var pendingAlert = sessionStorage.getItem('pendingAlert');
+            if (pendingAlert) {
+                try {
+                    var alertObj = JSON.parse(pendingAlert);
+                    if (typeof alertify !== 'undefined') {
+                        alertify.set({ delay: 5000 });
+                        alertify.log(alertObj.msg, alertObj.type || 'success', 5000);
+                    }
+                } catch(e) {}
+                sessionStorage.removeItem('pendingAlert');
+            }
+        }
+
+        function loadPageContent(url, pushState) {
+            if (pushState === undefined) pushState = true;
+            
+            $('#main-page-container').css('opacity', '0.4');
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'html',
+                success: function (data) {
+                    var $parsed = $('<div>').append($.parseHTML(data, document, true));
+                    var $newContainer = $parsed.find('#main-page-container');
+
+                    if ($newContainer.length > 0) {
+                        $('#main-page-container').html($newContainer.html());
+                    } else {
+                        $('#main-page-container').html(data);
+                    }
+
+                    $('#main-page-container').css('opacity', '1');
+
+                    if (pushState) {
+                        history.pushState({ url: url }, '', url);
+                    }
+
+                    updateActiveSidebar(url);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    checkPendingAlert();
+                },
+                error: function () {
+                    $('#main-page-container').css('opacity', '1');
+                    window.location.href = url;
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // 1. Restore Sidebar Toggle state
+            if (localStorage.getItem('sidebar_toggled') === 'true') {
+                $('body').addClass('sidebar-toggled');
+                $('#accordionSidebar').addClass('toggled');
+            }
+
+            $('#sidebarToggle, #sidebarToggleTop').on('click', function () {
+                var isToggled = $('#accordionSidebar').hasClass('toggled');
+                localStorage.setItem('sidebar_toggled', isToggled);
+            });
+
+            // 2. Initial Active Sidebar Item & Pending Notification Check
+            updateActiveSidebar(window.location.href);
+            checkPendingAlert();
+
+            // 3. Restore and Persist Sidebar Scroll Position
+            var savedScroll = sessionStorage.getItem('sidebar_scroll');
+            if (savedScroll !== null) {
+                $('#accordionSidebar').scrollTop(parseInt(savedScroll));
+            }
+
+            $('#accordionSidebar').on('scroll', function () {
+                sessionStorage.setItem('sidebar_scroll', $(this).scrollTop());
+            });
+
+            $('#accordionSidebar a').on('click', function () {
+                sessionStorage.setItem('sidebar_scroll', $('#accordionSidebar').scrollTop());
+            });
+        });
+
+        // 4. Intercept Clicks for Dynamic Navigation (Permanent Sidebar)
+        $(document).on('click', '#accordionSidebar a.nav-link:not([data-toggle]), #accordionSidebar a.collapse-item, .btn-group-actions a, a.spa-link', function (e) {
+            var href = $(this).attr('href');
+            if (href && href !== '#' && href !== 'javascript:void(0);' && !href.startsWith('http') && !$(this).attr('target')) {
+                e.preventDefault();
+                loadPageContent(href, true);
+            }
+        });
+
+        // 5. Handle Browser Back & Forward Buttons
+        window.addEventListener('popstate', function (e) {
+            loadPageContent(window.location.href, false);
+        });
+    </script>
 </body>
 </html>

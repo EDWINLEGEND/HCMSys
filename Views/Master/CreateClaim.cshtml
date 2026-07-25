@@ -1,0 +1,467 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        html { font-size: 14px; }
+        .select2-container .select2-selection--single {
+            height: calc(1.5em + .75rem + 2px);
+            border: 1px solid #d1d3e2;
+            border-radius: 0.35rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: calc(1.5em + .75rem);
+            color: #6e707e;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + .75rem);
+        }
+        .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+        .action-btns a:hover { opacity: 0.7; }
+        .action-btns .fa-trash-alt { color: #e74a3b; }
+        .page-title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .page-title-text {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #5a5c69;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #5a5c69;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+        .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+        .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+        
+        .card-header-custom {
+            background-color: #4e73df;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 10px 15px;
+        }
+        .summary-panel {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            border-radius: 0.35rem;
+            padding: 10px 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .summary-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            opacity: 0.9;
+            margin-bottom: 2px;
+        }
+        .summary-val {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+
+        
+        .number-align {
+            text-align: right;
+        }
+        input[type="text"], textarea, select { text-align: left; }
+        .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+            background-color: #e9ecef !important; 
+            opacity: 1; 
+        }
+        .flatpickr-input[readonly], .datepicker[readonly] {
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+        }
+        .table th, .table td { vertical-align: middle; }
+        .table td.num-col { text-align: right; }
+    </style>
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-money-bill fa-sm text-primary mr-2"></i> Create Claim
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("ClaimIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveClaim()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="claimForm" autocomplete="off">
+        <!-- COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">General</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Select Employee...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Currency <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-currency" required>
+                            <option value="">Select Currency...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Exchange Rate</label>
+                        <input type="number" class="form-control number-align" id="hdr-exrate" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Payment Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-paymenttype" required>
+                            <option value="In Payroll">In Payroll</option>
+                            <option value="Settlement">Settlement</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Comments</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLAIM DETAILS CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom bg-info">Claim Details</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Claim Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="dtl-claimtype" required>
+                            <option value="">Select Claim Type...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Amount <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control number-align" id="dtl-amount" required onblur="this.value = formatNumber(parseNumber(this.value))" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Ref No</label>
+                        <input type="text" class="form-control" id="dtl-refno" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Ref Date</label>
+                        <input type="text" class="form-control datepicker" id="dtl-refdate" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="dtl-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Remarks</label>
+                        <input type="text" class="form-control" id="dtl-remarks" />
+                    </div>
+                    
+                    <div class="col-md-12 text-right mt-2">
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addToGrid()">
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY PANEL -->
+        <div class="summary-panel mb-4 text-center">
+            <div class="summary-label">Total Claim Amount</div>
+            <div class="summary-val"><span id="sum-currency"></span> <span id="sum-amount">0.00</span></div>
+        </div>
+    </form>
+
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary">Claims Detailed</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="user-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 60px; text-align:center;">Action</th>
+                            <th>Claim Type</th>
+                            <th>Amount</th>
+                            <th>Ref No</th>
+                            <th>Ref Date</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    var employeesData = [];
+    var currencyData = [];
+    var claimMasterData = [];
+    var stagedClaims = [];
+
+    $(document).ready(function() {
+        initHeader();
+
+        $.when(
+            $.getJSON('/assets/employee.json'),
+            $.getJSON('/assets/currency.json'),
+            $.getJSON('/assets/claim_master.json')
+        ).done(function(empRes, curRes, claimRes) {
+            employeesData = empRes[0];
+            currencyData = curRes[0];
+            claimMasterData = claimRes[0];
+            
+            populateDropdowns();
+            // Make all dropdowns searchable
+            $('select.form-control').select2({ width: '100%' });
+        }).fail(function() {
+            alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+        });
+
+        $('#hdr-employee').change(onEmployeeChange);
+        $('#hdr-currency').change(onCurrencyChange);
+
+
+        flatpickr(".datepicker", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today"
+        });
+    });
+
+    function initHeader() {
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        var yyyy = d.getFullYear();
+        
+        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-docno').val('CLM-' + mm + '-' + yy + '-00001');
+    }
+
+    function populateDropdowns() {
+        var empSelect = $('#hdr-employee');
+        employeesData.forEach(function(emp) {
+            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+        });
+
+        var curSelect = $('#hdr-currency');
+        currencyData.forEach(function(cur) {
+            curSelect.append(`<option value="${cur.id}">${cur.code} - ${cur.name}</option>`);
+        });
+
+        var claimSelect = $('#dtl-claimtype');
+        claimMasterData.forEach(function(cm) {
+            claimSelect.append(`<option value="${cm.id}">${cm.name}</option>`);
+        });
+    }
+
+    function onEmployeeChange() {
+        var empId = parseInt($(this).val());
+        if (!empId) {
+            $('#hdr-designation, #hdr-department, #hdr-manager').val('');
+            return;
+        }
+
+        var emp = employeesData.find(e => e.id === empId);
+        if (emp) {
+            $('#hdr-designation').val(emp.designation);
+            $('#hdr-department').val(emp.department);
+            $('#hdr-manager').val(emp.reportingManager);
+        }
+    }
+    
+    function formatNumber(val) {
+        if (val === "" || val === null || isNaN(val)) return "";
+        return new Intl.NumberFormat(window.currentFormatLocale || 'en-US', {
+            minimumFractionDigits: window.currentDecimals || 2,
+            maximumFractionDigits: window.currentDecimals || 2
+        }).format(val);
+    }
+    
+    function parseNumber(val) {
+        if (!val) return 0;
+        return parseFloat(val.toString().replace(/,/g, '')) || 0;
+    }
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 25 * 1024 * 1024) {
+                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
+                input.value = '';
+            }
+        }
+    }
+
+    function onCurrencyChange() {
+        var curId = parseInt($(this).val());
+        if (!curId) {
+            $('#hdr-exrate').val('');
+            $('#sum-currency').text('');
+            return;
+        }
+        var cur = currencyData.find(c => c.id === curId);
+        if (cur) {
+            $('#hdr-exrate').val(cur.exRate);
+            $('#sum-currency').text(cur.code);
+            window.currentDecimals = cur.numberofdecimal || 2;
+            window.currentFormatLocale = cur.numberformat == "2" ? "en-IN" : "en-US";
+            renderGrid();
+        }
+    }
+
+    function renderGrid() {
+        var uTbody = $('#user-grid-table tbody');
+        uTbody.empty();
+        var totalAmount = 0;
+        
+        stagedClaims.forEach(function(item) {
+            var tr = `<tr>
+                <td class="action-btns" style="text-align:center;">
+                    <a href="#" class="remove-item-btn" title="Delete" onclick="deleteStagedClaim('${item.stagedId}'); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                </td>
+                <td>${item.claimTypeName || '-'}</td>
+                <td class="num-col">${formatNumber(item.amount)}</td>
+                <td>${item.refNo || '-'}</td>
+                <td>${item.refDate || '-'}</td>
+                <td>${item.remarks || '-'}</td>
+            </tr>`;
+            uTbody.append(tr);
+            totalAmount += item.amount;
+        });
+        
+        $('#sum-amount').text(formatNumber(totalAmount));
+    }
+
+    function deleteStagedClaim(stagedId) {
+        alertify.confirm('Are you sure you want to remove this claim?', function (e) {
+            if (e) {
+                stagedClaims = stagedClaims.filter(function(item) { return item.stagedId !== stagedId; });
+                renderGrid();
+            }
+        });
+    }
+
+    function addToGrid() {
+        var claimTypeId = $('#dtl-claimtype').val();
+        var amount = parseNumber($('#dtl-amount').val());
+        
+        if(!claimTypeId || amount <= 0) {
+            alertify.log('Please select Claim Type and enter a valid Amount.', 'error', 5000);
+            return;
+        }
+
+        var claimTypeName = $('#dtl-claimtype option:selected').text();
+        var refNo = $('#dtl-refno').val();
+        var refDate = $('#dtl-refdate').val();
+        var remarks = $('#dtl-remarks').val();
+
+        var uniqueStagedId = 'id_' + new Date().getTime();
+
+        var newItem = {
+            stagedId: uniqueStagedId,
+            claimTypeId: claimTypeId,
+            claimTypeName: claimTypeName,
+            amount: amount,
+            refNo: refNo,
+            refDate: refDate,
+            remarks: remarks
+        };
+
+        stagedClaims.push(newItem);
+        renderGrid();
+        
+        // Reset inputs
+        $('#dtl-claimtype').val('').trigger('change');
+        $('#dtl-amount').val('');
+        $('#dtl-refno').val('');
+        $('#dtl-remarks').val('');
+    }
+
+    function saveClaim() {
+        if (stagedClaims.length === 0) {
+            alertify.log('No claims added to the grid.', 'error', 5000);
+            return;
+        }
+
+        if(!$('#hdr-employee').val() || !$('#hdr-currency').val()) {
+            alertify.log('Please fill required Header fields.', 'error', 5000);
+            return;
+        }
+
+        var newClaim = {
+            docNo: $('#hdr-docno').val(),
+            date: $('#hdr-date').val(),
+            employeeName: $('#hdr-employee option:selected').text().split(' - ')[1] || $('#hdr-employee option:selected').text(),
+            totalAmount: $('#sum-amount').text(),
+            currency: $('#sum-currency').text(),
+            status: 'Pending'
+        };
+
+        var existingClaims = JSON.parse(localStorage.getItem('savedClaims') || '[]');
+        existingClaims.push(newClaim);
+        localStorage.setItem('savedClaims', JSON.stringify(existingClaims));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Claim saved successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("ClaimIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
+    }
+</script>
+

@@ -15,8 +15,6 @@
   <ItemGroup>
     <Content Remove="Views\Home\Index2.cshtml" />
     <Content Remove="Views\Home\Index5.cshtml" />
-    <Content Remove="Views\Login\Index1.cshtml" />
-    <Content Remove="Views\Login\Index2.cshtml" />
     <Content Remove="Views\Master\AccountIndex.cshtml" />
     <Content Remove="Views\Master\CategoryIndex1.cshtml" />
     <Content Remove="Views\Master\CheckListIndex.cshtml" />

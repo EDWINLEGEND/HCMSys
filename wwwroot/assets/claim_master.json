@@ -1,0 +1,7 @@
+[
+  { "id": 1, "code": "TRV", "name": "Travel Allowance" },
+  { "id": 2, "code": "MED", "name": "Medical Expenses" },
+  { "id": 3, "code": "FUD", "name": "Food & Beverage" },
+  { "id": 4, "code": "TEL", "name": "Telephone / Internet" },
+  { "id": 5, "code": "OTH", "name": "Other Expenses" }
+]

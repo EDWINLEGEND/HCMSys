@@ -1085,26 +1085,26 @@
         var employeePersonal = {};var employeeOffical = {};var employeeElement = new Array(); 
         var sCode = $("#sCode").val();
         if (sCode == null || sCode == "" || sCode == 0) {
-            alertify.log("Code cannot be blank", "error", 600);
+            alertify.log("Code cannot be blank", "error", 5000);
             $("#sCode").focus();
             $('#loading').fadeOut();
             return false;
         }
         var sName = $("#sName").val();
         if (sName == null || sName == "" || sName == 0) {
-            alertify.log("Name cannot be blank", "error", 600);
+            alertify.log("Name cannot be blank", "error", 5000);
             $("#sName").focus();
             $('#loading').fadeOut();
             return false;
         }
         if ($("#DateofRevision").val() < $("#DateofJoin").val()) {
-            alertify.log("Date of revision cannot be less than date of join", "error", 600);
+            alertify.log("Date of revision cannot be less than date of join", "error", 5000);
             $("#DateofRevision").focus();
             $('#loading').fadeOut();
             return false;
         }
         if ($("#DateofApplicable").val() < $("#DateofRevision").val()) {
-            alertify.log("Effective date cannot be less than date of revision", "error", 600);
+            alertify.log("Effective date cannot be less than date of revision", "error", 5000);
             $("#DateofApplicable").focus();
             $('#loading').fadeOut();
             return false;
@@ -1112,7 +1112,7 @@
 
         var iCategory = $("#ddlCategory").val();
         if (iCategory == null || iCategory == "" || iCategory == 0) {
-            alertify.log("Category cannot be blank", "error", 600);
+            alertify.log("Category cannot be blank", "error", 5000);
             $("#ddlCategory").focus();
             $('#loading').fadeOut();
             return false;
@@ -1202,17 +1202,17 @@
             dataType: "json",
             success: function (r) {
                 if (r == "Employee Created!!!") {
-                    alertify.log(r, "success", 600);
+                    alertify.log(r, "success", 5000);
                     location.href = '@Url.Action("CreateEmployee", "Master")';
                 }
                 else if (r == "Invalid Session")
                     location.href = '@Url.Action("Logout", "Login")';
                 else
-                    alertify.log(r, "error", 600);
+                    alertify.log(r, "error", 5000);
                 $("#loading").fadeOut();
             },
             error: function () {
-                alertify.log("Error in saving employee master..", "error", 600);
+                alertify.log("Error in saving employee master..", "error", 5000);
                 $("#loading").fadeOut();
                 return;
             },
@@ -1323,7 +1323,7 @@
 
             },
             error: function () {
-                alertify.log("Error in getting the data...", "error", 600);
+                alertify.log("Error in getting the data...", "error", 5000);
             },
             complete: function () {
                 $('#loading').fadeOut();

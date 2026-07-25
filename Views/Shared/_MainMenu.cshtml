@@ -1,4 +1,4 @@
-﻿@*<form action="#" method="get" class="sidebar-form">
+@*<form action="#" method="get" class="sidebar-form">
     <div class="input-group  ">
         <input type="text" name="q" class="form-control search-menu-box" placeholder="Search">
         <span class="input-group-btn">
@@ -11,6 +11,12 @@
 <ul class="sidebar-menu" data-widget="tree" id="myMenu">
 
     <li class="box box-danger"><a href="@Url.Action("Index", "Home")"> <i class="fa fa-home"></i><span>Home</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LeaveApplicationIndex", "Master")"> <i class="fa fa-calendar-alt"></i><span>Leave Application</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("AssetAllocation", "Master")"> <i class="fa fa-boxes"></i><span>Asset Allocation</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("AssetDeAllocation", "Master")"> <i class="fa fa-box-open"></i><span>Asset De-Allocation</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("OpeningLeavesIndex", "Master")"> <i class="fa fa-calendar-plus"></i><span>Opening Leaves</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LeaveEligibilityIndex", "Master")"> <i class="fa fa-user-check"></i><span>Leave Eligibility</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LeaveAdjustmentsIndex", "Master")"> <i class="fa fa-sliders-h"></i><span>Leave Adjustments</span></a></li>
     <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-th"></i><span>Masters</span>

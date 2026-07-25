@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "Salary Certificate", "code": "REQ-01", "type": "Documents", "prefix": "SAL" },
+  { "id": 2, "name": "Experience Letter", "code": "REQ-02", "type": "Documents", "prefix": "EXP" },
+  { "id": 3, "name": "Office Car", "code": "REQ-03", "type": "Returnable", "prefix": "CAR" },
+  { "id": 4, "name": "Company Laptop", "code": "REQ-04", "type": "Returnable", "prefix": "LAP" },
+  { "id": 5, "name": "ID Card", "code": "REQ-05", "type": "Issueonly", "prefix": "IDC" },
+  { "id": 6, "name": "Uniform", "code": "REQ-06", "type": "Issueonly", "prefix": "UNI" }
+]

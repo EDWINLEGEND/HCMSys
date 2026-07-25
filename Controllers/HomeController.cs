@@ -15,20 +15,15 @@ namespace HCMSys.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        SMDbContext db = new SMDbContext();
+     
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
         }
         public IActionResult Index()
         {
- 
-            if (HttpContext.Session.GetString("userid") == null)
-            {
-                // Session expired, redirect or handle as needed
-                return RedirectToAction("Index", "Login");
-            }
-            return View(db.vmHCM_Employee.OrderByDescending(ss => ss.iMasterId).ToList());
+
+            return View();
         }
 
         public IActionResult Privacy()

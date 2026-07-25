@@ -1,0 +1,279 @@
+@{
+    ViewData["Title"] = "HR Document Issue List";
+}
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #data-grid thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+    }
+    #data-grid tbody tr:hover { background-color: #f0f3ff; }
+    #data-grid td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-file-invoice fa-sm"></i>
+                    HR Document Issue List
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("HRDocumentIssue", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Create New
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Issued</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Issued Documents
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="data-grid" class="table table-bordered table-striped table-hover" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width:70px; text-align:center;">Action</th>
+                            <th>Issue Doc No</th>
+                            <th>Issue Date</th>
+                            <th>Employee</th>
+                            <th>Req No</th>
+                            <th>Document Name</th>
+                            <th>Generated Doc No</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="edit-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white py-2">
+                <h6 class="modal-title font-weight-bold"><i class="fas fa-edit mr-2"></i>Edit HR Document Issue</h6>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-reqno" />
+                <div class="form-group mb-2">
+                    <label class="form-label">Issue Doc No</label>
+                    <input type="text" class="form-control" id="edit-docno" readonly />
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Issue Date</label>
+                    <input type="text" class="form-control" id="edit-date" placeholder="e.g. 18-Jul-2026" />
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Employee Name</label>
+                    <input type="text" class="form-control" id="edit-employee" />
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Document Name</label>
+                    <input type="text" class="form-control" id="edit-docname" />
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Generated Doc No</label>
+                    <input type="text" class="form-control" id="edit-gendocno" />
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="save-edit-btn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var table = $('#data-grid').DataTable({
+            "pageLength": 10,
+            "order": [],
+            "language": {
+                search: "",
+                searchPlaceholder: "Search...",
+                info: "Showing _START_ to _END_ of _TOTAL_ records",
+                emptyTable: "No issued documents found"
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": 0 }
+            ]
+        });
+
+        function loadGridData() {
+            table.clear();
+            var savedData = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+            var issuedDocs = savedData.filter(function(i) { return i.status === 'Issued'; });
+            $('#stat-total').text(issuedDocs.length);
+
+            issuedDocs.reverse().forEach(function(item) {
+                var actionHtml = `
+                    <div class="action-btns" style="text-align:center;">
+                        <a href="#" class="edit-item-btn" data-req="${item.reqNo}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                        <a href="#" class="remove-item-btn" data-req="${item.reqNo}" title="Revert to Pending"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                    </div>
+                `;
+                table.row.add([
+                    actionHtml,
+                    item.issueDocNo || '-',
+                    item.issueDate || '-',
+                    item.employeeName || '-',
+                    item.reqNo || '-',
+                    item.selectionName || '-',
+                    item.generatedDocNo || '-'
+                ]);
+            });
+            table.draw(false);
+        }
+
+        loadGridData();
+
+        // Edit Handler
+        $('#data-grid tbody').on('click', '.edit-item-btn', function (e) {
+            e.preventDefault();
+            var reqNo = $(this).data('req');
+            var savedData = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+            var item = savedData.find(i => i.reqNo === reqNo);
+
+            if (item) {
+                $('#edit-reqno').val(reqNo);
+                $('#edit-docno').val(item.issueDocNo || '');
+                $('#edit-date').val(item.issueDate || '');
+                $('#edit-employee').val(item.employeeName || '');
+                $('#edit-docname').val(item.selectionName || '');
+                $('#edit-gendocno').val(item.generatedDocNo || '');
+
+                $('#edit-modal').modal('show');
+            }
+        });
+
+        $('#save-edit-btn').click(function() {
+            var reqNo = $('#edit-reqno').val();
+            var savedData = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+            var match = savedData.find(i => i.reqNo === reqNo);
+            
+            if (match) {
+                match.issueDate = $('#edit-date').val();
+                match.employeeName = $('#edit-employee').val();
+                match.selectionName = $('#edit-docname').val();
+                match.generatedDocNo = $('#edit-gendocno').val();
+
+                localStorage.setItem('savedHRRequests', JSON.stringify(savedData));
+                $('#edit-modal').modal('hide');
+                loadGridData();
+                alertify.log('HR Document Issue updated successfully.', 'success', 5000);
+            }
+        });
+
+        // Revert Handler
+        $('#data-grid tbody').on('click', '.remove-item-btn', function (e) {
+            e.preventDefault();
+            var reqNo = $(this).data('req');
+            
+            alertify.confirm('Are you sure you want to revert this document issue back to Pending status?', function (e) {
+                if (e) {
+                    var data = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+                    var match = data.find(i => i.reqNo === reqNo);
+                    if(match) {
+                        match.status = 'Pending';
+                        delete match.issueDocNo;
+                        delete match.issueDate;
+                        delete match.generatedDocNo;
+                    }
+                    localStorage.setItem('savedHRRequests', JSON.stringify(data));
+                    loadGridData();
+                    alertify.log('Record reverted successfully.', 'success', 5000);
+                }
+            });
+        });
+    });
+</script>

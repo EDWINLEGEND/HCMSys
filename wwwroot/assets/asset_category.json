@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "Laptop", "code": "CAT-LAP" },
+  { "id": 2, "name": "Mobile", "code": "CAT-MOB" },
+  { "id": 3, "name": "Vehicle", "code": "CAT-VEH" }
+]

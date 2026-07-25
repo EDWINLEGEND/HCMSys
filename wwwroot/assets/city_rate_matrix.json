@@ -1,0 +1,8 @@
+[
+  { "fromCityId": 1, "toCityId": 2, "rate": 500 },
+  { "fromCityId": 1, "toCityId": 3, "rate": 800 },
+  { "fromCityId": 2, "toCityId": 1, "rate": 550 },
+  { "fromCityId": 3, "toCityId": 1, "rate": 850 },
+  { "fromCityId": 1, "toCityId": 4, "rate": 1000 },
+  { "fromCityId": 4, "toCityId": 1, "rate": 1050 }
+]

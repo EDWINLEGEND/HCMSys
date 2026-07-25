@@ -1,0 +1,282 @@
+@{
+    ViewData["Title"] = "Claims List";
+}
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+
+    /* ── Page Title Bar ── */
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    /* ── Table Enhancements ── */
+    #claims-grid thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+    }
+    #claims-grid tbody tr:hover { background-color: #f0f3ff; }
+    #claims-grid td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit      { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+
+    /* ── Stat Cards ── */
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-info    { border-left: 0.25rem solid #36b9cc !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+
+    /* ── Badge fix ── */
+    .badge-primary { background-color: #4e73df; }
+    .badge-success { background-color: #1cc88a; color: white; }
+    .badge-warning { background-color: #f6c23e; color: white; }
+    .badge-danger { background-color: #e74a3b; color: white; }
+    .text-gray-800 { color: #5a5c69 !important; }
+    .text-gray-300 { color: #dddfeb !important; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-money-bill fa-sm"></i>
+                    Claims List
+                </div>
+                <div class="btn-group-actions">
+                    <a href="#" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateClaim", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Create New
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <!-- Total -->
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Claims</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Approved -->
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-active">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Pending -->
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800" id="stat-modified">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Module -->
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Module</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">Claim</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sitemap fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA TABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Claims
+            </h6>
+            <span class="badge badge-primary" id="record-count-badge">0 Records</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="claims-grid" class="table table-bordered table-striped table-hover" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px; text-align:center;">Action</th>
+                            <th>Doc No</th>
+                            <th>Date</th>
+                            <th>Employee</th>
+                            <th>Currency</th>
+                            <th>Total Amount</th>
+                            <th style="text-align:center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script defer src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    function getStatusBadge(status) {
+        if (status === 'Approved') return '<span class="badge badge-success">Approved</span>';
+        if (status === 'Rejected') return '<span class="badge badge-danger">Rejected</span>';
+        return '<span class="badge badge-warning">Pending</span>';
+    }
+
+    $(document).ready(function() {
+        var table = $('#claims-grid').DataTable({
+            order: [[1, 'desc']],
+            pageLength: 15,
+            language: {
+                search: "",
+                searchPlaceholder: "Search claims...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ claims",
+                emptyTable: "No claims found"
+            },
+            columnDefs: [
+                { className: "action-btns text-center", targets: 0 },
+                { className: "text-right", targets: 5 }
+            ]
+        });
+
+        // Load data
+        var savedClaims = JSON.parse(localStorage.getItem('savedClaims') || '[]');
+        
+        savedClaims.reverse().forEach(function(claim, index) {
+            var actualIndex = savedClaims.length - 1 - index;
+            table.row.add([
+                    '<a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Claim-modal" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a> ' +
+                    '<a href="#" class="remove-item-btn" title="Delete" data-index="' + actualIndex + '"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>',
+                claim.docNo || '-',
+                claim.date || '-',
+                claim.employeeName || '-',
+                claim.currency || '-',
+                '<span class="font-weight-bold text-primary">' + (claim.totalAmount || '0.00') + '</span>',
+                '<div style="text-align:center;">' + getStatusBadge(claim.status || 'Pending') + '</div>'
+            ]).draw(false);
+        });
+
+        updateStats(table);
+
+        // Delete handler
+        $('#claims-grid tbody').on('click', '.remove-item-btn', function (e) {
+            e.preventDefault();
+            var row = table.row($(this).parents('tr'));
+            var rowData = row.data();
+            var actualIndex = $(this).data('index');
+            
+            alertify.confirm('Are you sure you want to delete claim: ' + rowData[1] + '?', function (confirm) {
+                if (confirm) {
+                    var savedClaims = JSON.parse(localStorage.getItem('savedClaims') || '[]');
+                    savedClaims.splice(actualIndex, 1);
+                    localStorage.setItem('savedClaims', JSON.stringify(savedClaims));
+                    
+                    row.remove().draw();
+                    updateStats(table);
+                    alertify.log(rowData[1] + ' Deleted', 'success');
+                }
+            });
+        });
+    });
+
+    function updateStats(table) {
+        var totalRows = table.rows().count();
+        $('#stat-total').text(totalRows);
+        $('#record-count-badge').text(totalRows + ' Records');
+        
+        var approvedCount = 0;
+        var pendingCount = 0;
+        table.rows().every(function() {
+            var statusHtml = this.node().cells[6].innerHTML;
+            if (statusHtml.includes('Approved')) approvedCount++;
+            if (statusHtml.includes('Pending')) pendingCount++;
+        });
+        
+        $('#stat-active').text(approvedCount);
+        $('#stat-modified').text(pendingCount);
+    }
+</script>

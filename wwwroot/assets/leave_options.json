@@ -1,0 +1,15 @@
+{
+  "leaveTypes": [
+    { "id": 1, "code": "AL", "name": "Annual Leave", "eligible": 50, "approved": 5, "unapproved": 2 },
+    { "id": 2, "code": "SL", "name": "Sick Leave", "eligible": 182, "approved": 14, "unapproved": 5 },
+    { "id": 3, "code": "EL", "name": "Emergency Leave", "eligible": 10, "approved": 0, "unapproved": 0 }
+  ],
+  "paymentTypes": [
+    { "id": 0, "name": "In Payroll" },
+    { "id": 1, "name": "Settlement" }
+  ],
+  "halfDay": [
+    { "id": 0, "name": "No" },
+    { "id": 1, "name": "Yes" }
+  ]
+}

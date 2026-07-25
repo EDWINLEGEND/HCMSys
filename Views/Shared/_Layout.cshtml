@@ -26,7 +26,11 @@
 
 
     <!-- Custom styles for this template-->
-   <link href="~/dist/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="~/dist/css/sb-admin-2.min.css" rel="stylesheet">
+    <style>
+        body:not(.modal-open) .modal-backdrop { display: none !important; }
+        #main-page-container { transition: opacity 0.15s ease-in-out; }
+    </style>
 
     <!-- Bootstrap core JavaScript-->
     <script src="~/dist/jquery/jquery.min.js"></script>
@@ -390,13 +394,25 @@
             }
         }
 
+        var activeAjaxRequest = null;
+
         function loadPageContent(url, pushState) {
             if (pushState === undefined) pushState = true;
             
-            $('#main-page-container').css('opacity', '0.4');
+            // Abort previous in-flight navigation if user clicks sidebar items again
+            if (activeAjaxRequest && activeAjaxRequest.readyState !== 4) {
+                activeAjaxRequest.abort();
+            }
 
-            $.ajax({
-                url: url,
+            // Force-close any open modals and cleanup lingering backdrops
+            $('.modal').modal('hide');
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({'padding-right': '', 'overflow': ''});
+
+            var targetFullUrl = new URL(url, window.location.origin).href;
+
+            activeAjaxRequest = $.ajax({
+                url: targetFullUrl,
                 type: 'GET',
                 dataType: 'html',
                 success: function (data) {
@@ -409,19 +425,23 @@
                         $('#main-page-container').html(data);
                     }
 
-                    $('#main-page-container').css('opacity', '1');
-
                     if (pushState) {
-                        history.pushState({ url: url }, '', url);
+                        history.pushState({ url: targetFullUrl }, '', targetFullUrl);
                     }
 
-                    updateActiveSidebar(url);
+                    updateActiveSidebar(targetFullUrl);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     checkPendingAlert();
                 },
-                error: function () {
+                error: function (xhr, status) {
+                    if (status !== 'abort') {
+                        window.location.href = targetFullUrl;
+                    }
+                },
+                complete: function () {
                     $('#main-page-container').css('opacity', '1');
-                    window.location.href = url;
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css({'padding-right': '', 'overflow': ''});
                 }
             });
         }
@@ -455,6 +475,12 @@
             $('#accordionSidebar a').on('click', function () {
                 sessionStorage.setItem('sidebar_scroll', $('#accordionSidebar').scrollTop());
             });
+        });
+
+        // Global Modal Event Listener: Purge any orphan backdrops when any modal is closed
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({'padding-right': '', 'overflow': ''});
         });
 
         // 4. Intercept Clicks for Dynamic Navigation (Permanent Sidebar)

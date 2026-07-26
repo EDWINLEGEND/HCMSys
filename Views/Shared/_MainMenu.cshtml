@@ -1,22 +1,8 @@
-@*<form action="#" method="get" class="sidebar-form">
-    <div class="input-group  ">
-        <input type="text" name="q" class="form-control search-menu-box" placeholder="Search">
-        <span class="input-group-btn">
-            <button type="submit" name="search" id="search-btn" class="btn btn-flat">
-                <i class="fa fa-search"></i>
-            </button>
-        </span>
-    </div>
-</form>*@
 <ul class="sidebar-menu" data-widget="tree" id="myMenu">
 
     <li class="box box-danger"><a href="@Url.Action("Index", "Home")"> <i class="fa fa-home"></i><span>Home</span></a></li>
-    <li class="box box-danger"><a href="@Url.Action("LeaveApplicationIndex", "Master")"> <i class="fa fa-calendar-alt"></i><span>Leave Application</span></a></li>
-    <li class="box box-danger"><a href="@Url.Action("AssetAllocation", "Master")"> <i class="fa fa-boxes"></i><span>Asset Allocation</span></a></li>
-    <li class="box box-danger"><a href="@Url.Action("AssetDeAllocation", "Master")"> <i class="fa fa-box-open"></i><span>Asset De-Allocation</span></a></li>
-    <li class="box box-danger"><a href="@Url.Action("OpeningLeavesIndex", "Master")"> <i class="fa fa-calendar-plus"></i><span>Opening Leaves</span></a></li>
-    <li class="box box-danger"><a href="@Url.Action("LeaveEligibilityIndex", "Master")"> <i class="fa fa-user-check"></i><span>Leave Eligibility</span></a></li>
-    <li class="box box-danger"><a href="@Url.Action("LeaveAdjustmentsIndex", "Master")"> <i class="fa fa-sliders-h"></i><span>Leave Adjustments</span></a></li>
+    
+    <!-- LOAN MANAGEMENT MODULES -->
     <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-hand-holding-usd"></i> <span>Loan Management</span>
@@ -31,6 +17,21 @@
             <li><a href="@Url.Action("LoanSettlementIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Settlement</a></li>
         </ul>
     </li>
+
+    <!-- LEAVE & HR OPERATIONS -->
+    <li class="box box-danger"><a href="@Url.Action("LeaveApplicationIndex", "Master")"> <i class="fa fa-calendar-alt"></i><span>Leave Application</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("ClaimIndex", "Master")"> <i class="fa fa-money-bill"></i><span>Claims</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("BusinessTripIndex", "Master")"> <i class="fa fa-plane"></i><span>Business Trip</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("AssetAllocationIndex", "Master")"> <i class="fa fa-boxes"></i><span>Asset Allocation</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("AssetDeAllocationIndex", "Master")"> <i class="fa fa-box-open"></i><span>Asset De-Allocation</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("HRRequestIndex", "Master")"> <i class="fa fa-hand-holding"></i><span>HR Request</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("HRReturnIndex", "Master")"> <i class="fa fa-undo"></i><span>HR Return</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("HRDocumentIssueIndex", "Master")"> <i class="fa fa-file-invoice"></i><span>HR Document Issue</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("OpeningLeavesIndex", "Master")"> <i class="fa fa-calendar-plus"></i><span>Opening Leaves</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LeaveEligibilityIndex", "Master")"> <i class="fa fa-user-check"></i><span>Leave Eligibility</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LeaveAdjustmentsIndex", "Master")"> <i class="fa fa-sliders-h"></i><span>Leave Adjustments</span></a></li>
+
+    <!-- MASTERS -->
     <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-th"></i><span>Masters</span>
@@ -44,6 +45,10 @@
             <li><a href="@Url.Action("ProjectIndex", "Master")"><i class="fa fa-angle-right"></i>Project Master</a></li>
             <li><a href="@Url.Action("SiteIndex", "Master")"><i class="fa fa-angle-right"></i>Site Master</a></li>
         </ul>
+    </li>
+
+    <!-- PAYROLL -->
+    <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-table"></i> <span>Payroll</span>
             <span class="pull-right-container">
@@ -53,6 +58,10 @@
         <ul class="treeview-menu">
             <li><a href="@Url.Action("AttendanceIndex", "Payroll")"><i class="fa fa-angle-right"></i>Attendance</a></li>
         </ul>
+    </li>
+
+    <!-- REPORTS -->
+    <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-list-ul"></i><span>Reports</span>
             <span class="pull-right-container">
@@ -64,6 +73,10 @@
             <li><a href="@Url.Action("ReportSummary", "Reports")"><i class="fa fa-angle-right"></i>Attendance Matrix Report</a></li>
             <li><a href="@Url.Action("ReportDetail", "Reports")"><i class="fa fa-angle-right"></i>Attendance Detail Report</a></li>
         </ul>
+    </li>
+
+    <!-- SECURITY -->
+    <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-server"></i><span>Security</span>
             <span class="pull-right-container">
@@ -73,6 +86,10 @@
         <ul class="treeview-menu">
             <li><a href="@Url.Action("UserIndex", "Security")"><i class="fa fa-angle-right"></i>Users</a></li>
         </ul>
+    </li>
+
+    <!-- SETTINGS -->
+    <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-list-ul"></i> <span>Settings</span>
             <span class="pull-right-container">
@@ -82,6 +99,10 @@
         <ul class="treeview-menu">
             <li><a href="@Url.Action("Index", "Settings")">Company Information</a></li>
         </ul>
+    </li>
+
+    <!-- UTILITIES -->
+    <li class="treeview box box-danger">
         <a href="#">
             <i class="fa fa-laptop-code"></i> <span>Utilities</span>
             <span class="pull-right-container">
@@ -95,9 +116,9 @@
         </ul>
     </li>
 </ul>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script>
-
     $(".search-menu-box").on('input', function () {
         var filter = $(this).val();
         $(".sidebar-menu > li").each(function () {

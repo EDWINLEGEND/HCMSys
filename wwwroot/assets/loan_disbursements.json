@@ -1,0 +1,40 @@
+[
+  {
+    "disbursementNo": "DSB-07-26-00001",
+    "disbursementDate": "25-Jul-2026",
+    "requestNo": "LON-07-26-00001",
+    "employeeId": 1,
+    "employeeCode": "EMP-001",
+    "employeeName": "John Smith",
+    "designation": "Senior Developer",
+    "department": "Engineering",
+    "reportingManager": "Jane Doe",
+    "loanTypeName": "Personal Loan",
+    "requestedAmount": 100000.00,
+    "sanctionedAmount": 100000.00,
+    "interestRate": 6.5,
+    "noOfMonths": 12,
+    "emiStartDate": "05-Sep-2026",
+    "monthlyEmi": 8875.00,
+    "status": "Active"
+  },
+  {
+    "disbursementNo": "DSB-07-26-00002",
+    "disbursementDate": "26-Jul-2026",
+    "requestNo": "LON-07-26-00002",
+    "employeeId": 3,
+    "employeeCode": "EMP-003",
+    "employeeName": "Michael Chen",
+    "designation": "Sales Executive",
+    "department": "Sales",
+    "reportingManager": "David Brown",
+    "loanTypeName": "Vehicle Loan",
+    "requestedAmount": 250000.00,
+    "sanctionedAmount": 250000.00,
+    "interestRate": 8.0,
+    "noOfMonths": 24,
+    "emiStartDate": "01-Sep-2026",
+    "monthlyEmi": 12083.33,
+    "status": "Active"
+  }
+]

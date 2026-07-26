@@ -1,0 +1,510 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .summary-panel {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border-radius: 0.35rem;
+        padding: 15px 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .summary-label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.9;
+        margin-bottom: 2px;
+    }
+    .summary-val {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+    .number-align {
+        text-align: right;
+    }
+    input[type="text"], textarea, select { text-align: left; }
+    .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+        background-color: #e9ecef !important; 
+        opacity: 1; 
+    }
+    .flatpickr-input[readonly], .datepicker[readonly] {
+        background-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+    .table th, .table td { vertical-align: middle; }
+    .table td.num-col { text-align: right; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-hand-holding-usd fa-sm text-primary mr-2"></i> Create Loan Request
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("LoanRequestIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveLoanRequest()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="loanRequestForm" autocomplete="off">
+        <!-- COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">General Information (Common Header)</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Select Employee...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Date Of Joining (Read Only)</label>
+                        <input type="text" class="form-control" id="hdr-doj" readonly placeholder="--" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Current Outstanding (Read Only)</label>
+                        <input type="text" class="form-control number-align" id="hdr-outstanding" readonly value="0.00" />
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Comments / Remarks</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOAN DETAILS CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom bg-info">Loan Request Details</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Loan Type (Selection - JSON) <span class="text-danger">*</span></label>
+                        <select class="form-control" id="dtl-loantype" required>
+                            <option value="">Select Loan Type...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Loan Amount (Fraction) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control number-align" id="dtl-loanamount" required placeholder="0.00" onkeyup="calculateEMI()" onblur="this.value = formatNumber(parseNumber(this.value)); calculateEMI();" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Needed By (Date) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control datepicker" id="dtl-neededby" required />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">EMI Start Date (Date) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control datepicker" id="dtl-emistartdate" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">EMI Type (Selection) <span class="text-danger">*</span></label>
+                        <select class="form-control" id="dtl-emitype" required onchange="onEmiTypeChange()">
+                            <option value="Tenure">Tenure (No of Months)</option>
+                            <option value="EMI">EMI Amount</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">No of Months (Number) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control number-align" id="dtl-months" min="1" value="12" onkeyup="calculateEMI()" onchange="calculateEMI()" />
+                        <small id="months-help" class="text-muted">Editable when EMI Type is Tenure.</small>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">EMI Amount (Fraction) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control number-align" id="dtl-emiamount" readonly placeholder="0.00" onkeyup="calculateEMI()" onblur="this.value = formatNumber(parseNumber(this.value)); calculateEMI();" />
+                        <small id="emi-help" class="text-muted">Auto-calculated based on EMI Type.</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Guarantor (Selection - JSON Employee) <span class="text-danger">*</span></label>
+                        <select class="form-control" id="dtl-guarantor" required>
+                            <option value="">Select Guarantor...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Interest Type (Selection) <span class="text-danger">*</span></label>
+                        <select class="form-control" id="dtl-interesttype" required onchange="calculateEMI()">
+                            <option value="None">None (0% Interest)</option>
+                            <option value="Flat">Flat Interest</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-12 text-right mt-2">
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addToGrid()">
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Loan Entry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY PANEL -->
+        <div class="summary-panel mb-4">
+            <div class="row text-center">
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <div class="summary-label">Total Loan Requested</div>
+                    <div class="summary-val">$ <span id="sum-loanamount">0.00</span></div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <div class="summary-label">Monthly EMI</div>
+                    <div class="summary-val">$ <span id="sum-emiamount">0.00</span></div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <div class="summary-label">Tenure (Months)</div>
+                    <div class="summary-val"><span id="sum-months">0</span> Months</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="summary-label">Current Outstanding</div>
+                    <div class="summary-val">$ <span id="sum-outstanding">0.00</span></div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary">Loan Requests Grid</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="loan-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 60px; text-align:center;">Action</th>
+                            <th>Loan Type</th>
+                            <th class="num-col">Loan Amount</th>
+                            <th>Needed By</th>
+                            <th>EMI Start</th>
+                            <th>EMI Type</th>
+                            <th class="num-col">Months</th>
+                            <th class="num-col">EMI Amount</th>
+                            <th>Guarantor</th>
+                            <th>Interest Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    var employeesData = [];
+    var loanTypesData = [];
+    var stagedLoans = [];
+
+    $(document).ready(function() {
+        initHeader();
+
+        $.when(
+            $.getJSON('/assets/employee.json'),
+            $.getJSON('/assets/loan_type.json')
+        ).done(function(empRes, loanRes) {
+            employeesData = empRes[0];
+            loanTypesData = loanRes[0];
+            
+            populateDropdowns();
+            $('select.form-control').select2({ width: '100%' });
+            onEmiTypeChange();
+        }).fail(function() {
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+            }
+        });
+
+        $('#hdr-employee').change(onEmployeeChange);
+
+        flatpickr(".datepicker", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today"
+        });
+    });
+
+    function initHeader() {
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        var yyyy = d.getFullYear();
+        
+        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-docno').val('LON-' + mm + '-' + yy + '-00001');
+    }
+
+    function populateDropdowns() {
+        var empSelect = $('#hdr-employee');
+        var guarantorSelect = $('#dtl-guarantor');
+        var loanTypeSelect = $('#dtl-loantype');
+
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        guarantorSelect.empty().append('<option value="">Select Guarantor...</option>');
+        loanTypeSelect.empty().append('<option value="">Select Loan Type...</option>');
+
+        employeesData.forEach(function(emp) {
+            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+            guarantorSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
+        });
+
+        loanTypesData.forEach(function(lt) {
+            loanTypeSelect.append(`<option value="${lt.id}">${lt.name}</option>`);
+        });
+    }
+
+    function onEmployeeChange() {
+        var empId = $(this).val();
+        var emp = employeesData.find(e => e.id == empId);
+        if (emp) {
+            $('#hdr-designation').val(emp.designation || '');
+            $('#hdr-department').val(emp.department || '');
+            $('#hdr-manager').val(emp.reportingManager || '');
+            $('#hdr-doj').val(emp.dateOfJoining || '15-Jan-2020');
+            $('#hdr-outstanding').val(formatNumber(emp.currentOutstanding || 0));
+            $('#sum-outstanding').text(formatNumber(emp.currentOutstanding || 0));
+        } else {
+            $('#hdr-designation, #hdr-department, #hdr-manager, #hdr-doj').val('');
+            $('#hdr-outstanding').val('0.00');
+            $('#sum-outstanding').text('0.00');
+        }
+    }
+
+    function onEmiTypeChange() {
+        var emiType = $('#dtl-emitype').val();
+        if (emiType === 'Tenure') {
+            $('#dtl-months').prop('readonly', false);
+            $('#dtl-emiamount').prop('readonly', true);
+            $('#months-help').text('Editable when EMI Type is Tenure.');
+            $('#emi-help').text('Auto-calculated based on Tenure.');
+        } else {
+            $('#dtl-months').prop('readonly', true);
+            $('#dtl-emiamount').prop('readonly', false);
+            $('#months-help').text('Auto-calculated based on EMI Amount.');
+            $('#emi-help').text('Editable when EMI Type is EMI.');
+        }
+        calculateEMI();
+    }
+
+    function parseNumber(val) {
+        if (!val) return 0;
+        var num = parseFloat(val.toString().replace(/,/g, ''));
+        return isNaN(num) ? 0 : num;
+    }
+
+    function formatNumber(val) {
+        return parseNumber(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateEMI() {
+        var amount = parseNumber($('#dtl-loanamount').val());
+        var emiType = $('#dtl-emitype').val();
+        var interestType = $('#dtl-interesttype').val();
+        var months = parseInt($('#dtl-months').val()) || 1;
+        var emiAmount = parseNumber($('#dtl-emiamount').val());
+
+        // Simple flat rate multiplier if flat
+        var interestFactor = (interestType === 'Flat') ? 1.05 : 1.0;
+
+        if (emiType === 'Tenure') {
+            if (months < 1) months = 1;
+            var totalPayable = amount * interestFactor;
+            var calcEmi = totalPayable / months;
+            $('#dtl-emiamount').val(formatNumber(calcEmi));
+            emiAmount = calcEmi;
+        } else {
+            if (emiAmount > 0) {
+                var calcMonths = Math.ceil((amount * interestFactor) / emiAmount);
+                if (calcMonths < 1) calcMonths = 1;
+                $('#dtl-months').val(calcMonths);
+                months = calcMonths;
+            }
+        }
+
+        $('#sum-loanamount').text(formatNumber(amount));
+        $('#sum-emiamount').text(formatNumber(emiAmount));
+        $('#sum-months').text(months);
+    }
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            var fileSize = input.files[0].size / 1024 / 1024; // MB
+            if (fileSize > 25) {
+                alert('File size exceeds 25MB limit!');
+                input.value = '';
+            }
+        }
+    }
+
+    function addToGrid() {
+        var loanTypeId = $('#dtl-loantype').val();
+        var loanTypeObj = loanTypesData.find(l => l.id == loanTypeId);
+        var loanAmount = parseNumber($('#dtl-loanamount').val());
+        var neededBy = $('#dtl-neededby').val();
+        var emiStartDate = $('#dtl-emistartdate').val();
+        var emiType = $('#dtl-emitype').val();
+        var months = $('#dtl-months').val();
+        var emiAmount = parseNumber($('#dtl-emiamount').val());
+        var guarantorId = $('#dtl-guarantor').val();
+        var guarantorObj = employeesData.find(e => e.id == guarantorId);
+        var interestType = $('#dtl-interesttype').val();
+
+        if (!loanTypeId || loanAmount <= 0 || !neededBy || !emiStartDate || !guarantorId) {
+            alert('Please fill in all required Loan Details fields!');
+            return;
+        }
+
+        var entry = {
+            id: Date.now(),
+            loanTypeId: loanTypeId,
+            loanTypeName: loanTypeObj ? loanTypeObj.name : '',
+            loanAmount: loanAmount,
+            neededBy: neededBy,
+            emiStartDate: emiStartDate,
+            emiType: emiType,
+            months: months,
+            emiAmount: emiAmount,
+            guarantorId: guarantorId,
+            guarantorName: guarantorObj ? guarantorObj.name : '',
+            interestType: interestType
+        };
+
+        stagedLoans.push(entry);
+        renderGrid();
+        clearDetailForm();
+    }
+
+    function renderGrid() {
+        var tbody = $('#loan-grid-table tbody');
+        tbody.empty();
+        stagedLoans.forEach(function(item, index) {
+            var row = `<tr>
+                <td class="action-btns" style="text-align: center;">
+                    <a href="javascript:void(0)" onclick="deleteGridItem(${item.id})"><i class="fas fa-trash-alt"></i></a>
+                </td>
+                <td>${item.loanTypeName}</td>
+                <td class="num-col">${formatNumber(item.loanAmount)}</td>
+                <td>${item.neededBy}</td>
+                <td>${item.emiStartDate}</td>
+                <td><span class="badge badge-info">${item.emiType}</span></td>
+                <td class="num-col">${item.months}</td>
+                <td class="num-col">${formatNumber(item.emiAmount)}</td>
+                <td>${item.guarantorName}</td>
+                <td><span class="badge badge-secondary">${item.interestType}</span></td>
+            </tr>`;
+            tbody.append(row);
+        });
+    }
+
+    function deleteGridItem(id) {
+        stagedLoans = stagedLoans.filter(x => x.id !== id);
+        renderGrid();
+    }
+
+    function clearDetailForm() {
+        $('#dtl-loantype').val('').trigger('change');
+        $('#dtl-loanamount').val('');
+        $('#dtl-emiamount').val('');
+        $('#dtl-guarantor').val('').trigger('change');
+    }
+
+    function saveLoanRequest() {
+        var empId = $('#hdr-employee').val();
+        if (!empId) {
+            alert('Please select an Employee!');
+            return;
+        }
+        if (stagedLoans.length === 0 && parseNumber($('#dtl-loanamount').val()) <= 0) {
+            alert('Please add at least one loan detail entry!');
+            return;
+        }
+        alert('Loan Request saved successfully!');
+        window.location.href = '@Url.Action("LoanRequestIndex", "Master")';
+    }
+</script>

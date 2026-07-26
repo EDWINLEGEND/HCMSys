@@ -1,0 +1,247 @@
+@{
+    ViewData["Title"] = "Loan Requests";
+}
+
+<!-- DataTables & Alertify -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+
+    /* Page Title Bar */
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    /* Table Enhancements */
+    #loan-requests-grid thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+    }
+    #loan-requests-grid tbody tr:hover { background-color: #f0f3ff; }
+    #loan-requests-grid td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit      { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+
+    /* Stat Cards */
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+    .border-left-info    { border-left: 0.25rem solid #36b9cc !important; }
+
+    .badge-primary { background-color: #4e73df; }
+    .badge-success { background-color: #1cc88a; color: white; }
+    .badge-warning { background-color: #f6c23e; color: white; }
+    .badge-danger { background-color: #e74a3b; color: white; }
+    .text-gray-800 { color: #5a5c69 !important; }
+    .text-gray-300 { color: #dddfeb !important; }
+    .num-col { text-align: right; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-hand-holding-usd fa-sm"></i>
+                    Loan Requests List
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateLoanRequest", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Create Loan Request
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Loan Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved Requests</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-approved">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Approval</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-pending">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Amount Requested</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-amount">$ --</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-coins fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATATABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-body p-3">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="loan-requests-grid" width="100%">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px; text-align:center;">Action</th>
+                            <th>Doc No</th>
+                            <th>Date</th>
+                            <th>Employee</th>
+                            <th>Loan Type</th>
+                            <th class="num-col">Loan Amount</th>
+                            <th>Needed By</th>
+                            <th>EMI Start</th>
+                            <th>EMI Type</th>
+                            <th class="num-col">Months</th>
+                            <th class="num-col">EMI Amount</th>
+                            <th>Guarantor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.getJSON('/assets/loan_requests.json', function(data) {
+            var tbody = $('#loan-requests-grid tbody');
+            tbody.empty();
+            
+            var totalAmt = 0;
+            var appCount = 0;
+            var pendCount = 0;
+
+            data.forEach(function(item) {
+                totalAmt += item.loanAmount;
+                if (item.status === 'Approved') appCount++;
+                else pendCount++;
+
+                var badgeClass = item.status === 'Approved' ? 'badge-success' : 'badge-warning';
+
+                var row = `<tr>
+                    <td class="action-btns" style="text-align: center;">
+                        <a href="#" title="Edit"><i class="fas fa-edit"></i></a>
+                        <a href="#" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                    <td><strong>${item.docNo}</strong></td>
+                    <td>${item.date}</td>
+                    <td>${item.employeeCode} - ${item.employeeName}</td>
+                    <td>${item.loanTypeName}</td>
+                    <td class="num-col">${item.loanAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                    <td>${item.neededBy}</td>
+                    <td>${item.emiStartDate}</td>
+                    <td><span class="badge badge-info">${item.emiType}</span></td>
+                    <td class="num-col">${item.noOfMonths}</td>
+                    <td class="num-col">${item.emiAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                    <td>${item.guarantorName}</td>
+                    <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                </tr>`;
+                tbody.append(row);
+            });
+
+            $('#stat-total').text(data.length);
+            $('#stat-approved').text(appCount);
+            $('#stat-pending').text(pendCount);
+            $('#stat-amount').text('$' + totalAmt.toLocaleString('en-US', {minimumFractionDigits: 2}));
+
+            $('#loan-requests-grid').DataTable({
+                pageLength: 10,
+                order: [[1, 'desc']],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search loan requests..."
+                }
+            });
+        });
+    });
+</script>

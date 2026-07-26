@@ -1,0 +1,380 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .summary-panel {
+        background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+        color: white;
+        border-radius: 0.35rem;
+        padding: 15px 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .summary-label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.9;
+        margin-bottom: 2px;
+    }
+    .summary-val {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+    .number-align { text-align: right; }
+    .table th, .table td { vertical-align: middle; }
+    .table td.num-col { text-align: right; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-file-signature fa-sm text-primary mr-2"></i> Create Loan Disbursement
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("LoanDisbursementIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveDisbursement()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Process Disbursement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="disbursementForm" autocomplete="off">
+        <!-- REQUEST SELECTOR & COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">Request Selection & Common Header</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Select Loan Request Number (Pending) <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-requestno" required onchange="onRequestNumberChange()">
+                            <option value="">Select Request Number...</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Disbursement Doc No</label>
+                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Disbursement Date</label>
+                        <input type="text" class="form-control" id="hdr-date" readonly />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Employee</label>
+                        <input type="text" class="form-control" id="hdr-employeename" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAME HEADER OF REQUEST CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom bg-info">Loan Request Header Details</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Loan Type</label>
+                        <input type="text" class="form-control" id="req-loantype" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Requested Loan Amount</label>
+                        <input type="text" class="form-control number-align" id="req-loanamount" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Needed By Date</label>
+                        <input type="text" class="form-control" id="req-neededby" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">EMI Start Date</label>
+                        <input type="text" class="form-control" id="req-emistartdate" readonly />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">EMI Type</label>
+                        <input type="text" class="form-control" id="req-emitype" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">No of Months / Tenure</label>
+                        <input type="text" class="form-control number-align" id="req-months" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Requested EMI Amount</label>
+                        <input type="text" class="form-control number-align" id="req-emiamount" readonly />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Guarantor</label>
+                        <input type="text" class="form-control" id="req-guarantor" readonly />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DISBURSEMENT CALCULATION PARAMETERS -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom bg-success">Sanction & Interest Configuration</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Sanctioned Amount (Fraction) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control number-align" id="disb-sanctionedamount" required onkeyup="generateInstallmentGrid()" onblur="this.value = formatNumber(parseNumber(this.value)); generateInstallmentGrid();" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Interest % (Fraction) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.1" class="form-control number-align" id="disb-interestrate" required value="6.5" onkeyup="generateInstallmentGrid()" onchange="generateInstallmentGrid()" />
+                    </div>
+                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-info btn-block" onclick="generateInstallmentGrid()">
+                            <i class="fas fa-calculator mr-1"></i> Recalculate Installment Grid
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY PANEL -->
+        <div class="summary-panel mb-4">
+            <div class="row text-center">
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <div class="summary-label">Sanctioned Amount</div>
+                    <div class="summary-val">$ <span id="sum-sanctioned">0.00</span></div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <div class="summary-label">Total Interest</div>
+                    <div class="summary-val">$ <span id="sum-totalinterest">0.00</span></div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <div class="summary-label">Total Payable</div>
+                    <div class="summary-val">$ <span id="sum-totalpayable">0.00</span></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="summary-label">Monthly EMI</div>
+                    <div class="summary-val">$ <span id="sum-monthlyemi">0.00</span></div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- INSTALLMENT GRID CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary">Installment Grid Schedule</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="installment-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 50px; text-align:center;">#</th>
+                            <th>EMI Date</th>
+                            <th class="num-col">Principal</th>
+                            <th class="num-col">Interest</th>
+                            <th class="num-col">Installment Amount (Principal + Int)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tfoot class="bg-light font-weight-bold">
+                        <tr>
+                            <td colspan="2" class="text-right">Total:</td>
+                            <td class="num-col" id="foot-principal">0.00</td>
+                            <td class="num-col" id="foot-interest">0.00</td>
+                            <td class="num-col" id="foot-total">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    var requestsData = [];
+    var selectedRequest = null;
+
+    $(document).ready(function() {
+        initHeader();
+
+        $.getJSON('/assets/loan_requests.json', function(res) {
+            requestsData = res;
+            var reqSelect = $('#hdr-requestno');
+            reqSelect.empty().append('<option value="">Select Request Number...</option>');
+            requestsData.forEach(function(req) {
+                reqSelect.append(`<option value="${req.docNo}">${req.docNo} - ${req.employeeName} (${req.loanTypeName})</option>`);
+            });
+            reqSelect.select2({ width: '100%' });
+        });
+    });
+
+    function initHeader() {
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        var yyyy = d.getFullYear();
+        
+        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-docno').val('DSB-' + mm + '-' + yy + '-00001');
+    }
+
+    function onRequestNumberChange() {
+        var docNo = $('#hdr-requestno').val();
+        selectedRequest = requestsData.find(r => r.docNo === docNo);
+
+        if (selectedRequest) {
+            $('#hdr-employeename').val(selectedRequest.employeeCode + ' - ' + selectedRequest.employeeName);
+            $('#hdr-designation').val(selectedRequest.designation || '');
+            $('#hdr-department').val(selectedRequest.department || '');
+            $('#hdr-manager').val(selectedRequest.reportingManager || '');
+
+            $('#req-loantype').val(selectedRequest.loanTypeName);
+            $('#req-loanamount').val(formatNumber(selectedRequest.loanAmount));
+            $('#req-neededby').val(selectedRequest.neededBy);
+            $('#req-emistartdate').val(selectedRequest.emiStartDate);
+            $('#req-emitype').val(selectedRequest.emiType);
+            $('#req-months').val(selectedRequest.noOfMonths);
+            $('#req-emiamount').val(formatNumber(selectedRequest.emiAmount));
+            $('#req-guarantor').val(selectedRequest.guarantorName);
+
+            $('#disb-sanctionedamount').val(formatNumber(selectedRequest.loanAmount));
+            $('#disb-interestrate').val(selectedRequest.interestRate || 6.5);
+
+            generateInstallmentGrid();
+        } else {
+            $('#disbursementForm input:not(#hdr-docno,#hdr-date)').val('');
+            $('#installment-grid-table tbody').empty();
+        }
+    }
+
+    function parseNumber(val) {
+        if (!val) return 0;
+        var num = parseFloat(val.toString().replace(/,/g, ''));
+        return isNaN(num) ? 0 : num;
+    }
+
+    function formatNumber(val) {
+        return parseNumber(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function generateInstallmentGrid() {
+        if (!selectedRequest) return;
+
+        var sanctioned = parseNumber($('#disb-sanctionedamount').val());
+        var interestRate = parseFloat($('#disb-interestrate').val()) || 0;
+        var tenureMonths = parseInt(selectedRequest.noOfMonths) || 12;
+        var startDateStr = selectedRequest.emiStartDate || "01-Sep-2026";
+
+        var principalPerMonth = sanctioned / tenureMonths;
+        var annualInterest = (sanctioned * (interestRate / 100));
+        var monthlyInterest = annualInterest / 12;
+        var monthlyInstallment = principalPerMonth + monthlyInterest;
+
+        var tbody = $('#installment-grid-table tbody');
+        tbody.empty();
+
+        var totalP = 0, totalI = 0, totalInst = 0;
+        var baseDate = new Date(startDateStr);
+        if (isNaN(baseDate.getTime())) baseDate = new Date();
+
+        for (var i = 1; i <= tenureMonths; i++) {
+            var emiDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + (i - 1), baseDate.getDate());
+            var dateFormatted = emiDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+
+            totalP += principalPerMonth;
+            totalI += monthlyInterest;
+            totalInst += monthlyInstallment;
+
+            var row = `<tr>
+                <td style="text-align: center;">${i}</td>
+                <td>${dateFormatted}</td>
+                <td class="num-col">${formatNumber(principalPerMonth)}</td>
+                <td class="num-col">${formatNumber(monthlyInterest)}</td>
+                <td class="num-col font-weight-bold text-primary">${formatNumber(monthlyInstallment)}</td>
+            </tr>`;
+            tbody.append(row);
+        }
+
+        $('#foot-principal').text(formatNumber(totalP));
+        $('#foot-interest').text(formatNumber(totalI));
+        $('#foot-total').text(formatNumber(totalInst));
+
+        $('#sum-sanctioned').text(formatNumber(sanctioned));
+        $('#sum-totalinterest').text(formatNumber(totalI));
+        $('#sum-totalpayable').text(formatNumber(totalInst));
+        $('#sum-monthlyemi').text(formatNumber(monthlyInstallment));
+    }
+
+    function saveDisbursement() {
+        if (!selectedRequest) {
+            alert('Please select a valid Loan Request Number!');
+            return;
+        }
+        alert('Loan Disbursement processed successfully!');
+        window.location.href = '@Url.Action("LoanDisbursementIndex", "Master")';
+    }
+</script>

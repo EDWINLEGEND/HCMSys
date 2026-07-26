@@ -1,0 +1,8 @@
+[
+  { "id": 1, "code": "PERS", "name": "Personal Loan", "maxAmount": 500000, "maxTenure": 36 },
+  { "id": 2, "code": "HOM", "name": "Home Loan / Housing Advance", "maxAmount": 2000000, "maxTenure": 120 },
+  { "id": 3, "code": "VEH", "name": "Vehicle Loan", "maxAmount": 1000000, "maxTenure": 60 },
+  { "id": 4, "code": "EDU", "name": "Education Loan", "maxAmount": 300000, "maxTenure": 48 },
+  { "id": 5, "code": "EMG", "name": "Emergency Advance", "maxAmount": 100000, "maxTenure": 12 },
+  { "id": 6, "code": "SAL", "name": "Salary Advance", "maxAmount": 50000, "maxTenure": 6 }
+]

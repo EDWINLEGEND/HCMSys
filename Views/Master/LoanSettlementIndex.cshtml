@@ -1,0 +1,190 @@
+@{
+    ViewData["Title"] = "Loan Settlements";
+}
+
+<!-- DataTables & Alertify -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #e74a3b; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #settlement-grid thead th {
+        background-color: #e74a3b;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #be2617;
+        vertical-align: middle;
+    }
+    #settlement-grid tbody tr:hover { background-color: #fdeaea; }
+    #settlement-grid td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit      { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+
+    .border-left-danger  { border-left: 0.25rem solid #e74a3b !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+
+    .badge-danger { background-color: #e74a3b; color: white; }
+    .num-col { text-align: right; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-file-contract fa-sm"></i>
+                    Loan Settlements List
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateLoanSettlement", "Master")" class="btn btn-danger btn-sm shadow-sm font-weight-bold">
+                        <i class="fas fa-plus fa-sm text-white mr-1"></i> Create Settlement
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Settlements</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">1</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Amount Settled</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">$ 106,500.00</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Closed Loan Accounts</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">1</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-lock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATATABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-body p-3">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="settlement-grid" width="100%">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px; text-align:center;">Action</th>
+                            <th>Settlement No</th>
+                            <th>Date</th>
+                            <th>Disbursement No</th>
+                            <th>Employee</th>
+                            <th>Loan Type</th>
+                            <th class="num-col">Original Total</th>
+                            <th class="num-col">Settled Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="action-btns" style="text-align: center;">
+                                <a href="#" title="Edit"><i class="fas fa-edit"></i></a>
+                                <a href="#" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                            </td>
+                            <td><strong>STL-07-26-00001</strong></td>
+                            <td>26-Jul-2026</td>
+                            <td>DSB-07-26-00001</td>
+                            <td>EMP-001 - John Smith</td>
+                            <td>Personal Loan</td>
+                            <td class="num-col">106,500.00</td>
+                            <td class="num-col text-danger font-weight-bold">106,500.00</td>
+                            <td><span class="badge badge-danger">Settled & Closed</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#settlement-grid').DataTable({
+            pageLength: 10,
+            order: [[1, 'desc']],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search settlements..."
+            }
+        });
+    });
+</script>

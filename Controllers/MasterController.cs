@@ -154,8 +154,48 @@ namespace HCMSys.Controllers
         {
             return View();
         }
-        
-       
+
+        // Loan Management Module Actions
+        public ActionResult LoanRequestIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateLoanRequest()
+        {
+            return View();
+        }
+
+        public ActionResult LoanDisbursementIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateLoanDisbursement()
+        {
+            return View();
+        }
+
+        public ActionResult LoanDefermentIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateLoanDeferment()
+        {
+            return View();
+        }
+
+        public ActionResult LoanSettlementIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateLoanSettlement()
+        {
+            return View();
+        }
+
         private class WebClient : System.Net.WebClient
         {
             public int Timeout { get; set; }

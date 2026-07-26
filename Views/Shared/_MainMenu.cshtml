@@ -19,6 +19,20 @@
     <li class="box box-danger"><a href="@Url.Action("LeaveAdjustmentsIndex", "Master")"> <i class="fa fa-sliders-h"></i><span>Leave Adjustments</span></a></li>
     <li class="treeview box box-danger">
         <a href="#">
+            <i class="fa fa-hand-holding-usd"></i> <span>Loan Management</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="@Url.Action("LoanRequestIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Request</a></li>
+            <li><a href="@Url.Action("LoanDisbursementIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Disbursement</a></li>
+            <li><a href="@Url.Action("LoanDefermentIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Deferment</a></li>
+            <li><a href="@Url.Action("LoanSettlementIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Settlement</a></li>
+        </ul>
+    </li>
+    <li class="treeview box box-danger">
+        <a href="#">
             <i class="fa fa-th"></i><span>Masters</span>
             <span class="pull-right-container">
                 <i class="fa fa-angle-left pull-right"></i>

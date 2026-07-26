@@ -1,0 +1,232 @@
+@{
+    ViewData["Title"] = "Loan Disbursements";
+}
+
+<!-- DataTables & Alertify -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #1cc88a; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #disbursements-grid thead th {
+        background-color: #1cc88a;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #169b6b;
+        vertical-align: middle;
+    }
+    #disbursements-grid tbody tr:hover { background-color: #e8fadf; }
+    #disbursements-grid td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit      { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+    .border-left-info    { border-left: 0.25rem solid #36b9cc !important; }
+
+    .badge-success { background-color: #1cc88a; color: white; }
+    .num-col { text-align: right; }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-file-invoice-dollar fa-sm"></i>
+                    Loan Disbursements List
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateLoanDisbursement", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Create Disbursement
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Disbursements</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-double fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Sanctioned</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-sanctioned">$ --</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-check-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Avg Interest Rate</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-interest">-- %</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Active Loans</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-active">--</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATATABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-body p-3">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="disbursements-grid" width="100%">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px; text-align:center;">Action</th>
+                            <th>Disbursement No</th>
+                            <th>Disb Date</th>
+                            <th>Request No</th>
+                            <th>Employee</th>
+                            <th>Loan Type</th>
+                            <th class="num-col">Sanctioned Amt</th>
+                            <th class="num-col">Interest %</th>
+                            <th class="num-col">Tenure</th>
+                            <th>EMI Start</th>
+                            <th class="num-col">Monthly EMI</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.getJSON('/assets/loan_disbursements.json', function(data) {
+            var tbody = $('#disbursements-grid tbody');
+            tbody.empty();
+            
+            var totalSanctioned = 0;
+            var totalInterest = 0;
+
+            data.forEach(function(item) {
+                totalSanctioned += item.sanctionedAmount;
+                totalInterest += item.interestRate;
+
+                var row = `<tr>
+                    <td class="action-btns" style="text-align: center;">
+                        <a href="#" title="Edit"><i class="fas fa-edit"></i></a>
+                        <a href="#" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                    <td><strong>${item.disbursementNo}</strong></td>
+                    <td>${item.disbursementDate}</td>
+                    <td>${item.requestNo}</td>
+                    <td>${item.employeeCode} - ${item.employeeName}</td>
+                    <td>${item.loanTypeName}</td>
+                    <td class="num-col">${item.sanctionedAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                    <td class="num-col">${item.interestRate}%</td>
+                    <td class="num-col">${item.noOfMonths} Mos</td>
+                    <td>${item.emiStartDate}</td>
+                    <td class="num-col">${item.monthlyEmi.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                    <td><span class="badge badge-success">${item.status}</span></td>
+                </tr>`;
+                tbody.append(row);
+            });
+
+            $('#stat-total').text(data.length);
+            $('#stat-sanctioned').text('$' + totalSanctioned.toLocaleString('en-US', {minimumFractionDigits: 2}));
+            $('#stat-interest').text(data.length > 0 ? (totalInterest / data.length).toFixed(1) + '%' : '0.0%');
+            $('#stat-active').text(data.length);
+
+            $('#disbursements-grid').DataTable({
+                pageLength: 10,
+                order: [[1, 'desc']],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search disbursements..."
+                }
+            });
+        });
+    });
+</script>

@@ -116,6 +116,10 @@
                         <label class="form-label">Deferment Date</label>
                         <input type="text" class="form-control" id="hdr-date" readonly />
                     </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Post Date</label>
+                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                    </div>
                 </div>
             </div>
         </div>
@@ -247,6 +251,7 @@
         var yyyy = d.getFullYear();
         
         $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
         $('#hdr-docno').val('DEF-' + mm + '-' + yy + '-00001');
     }
 

@@ -100,6 +100,10 @@
                         <label class="form-label">Date</label>
                         <input type="text" class="form-control" id="hdr-date" readonly />
                     </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Post Date</label>
+                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                    </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
                         <select class="form-control" id="hdr-employee" required>
@@ -190,9 +194,11 @@
         var dd = String(d.getDate()).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
+        var mmm = d.toLocaleString('default', { month: 'short' }).toUpperCase();
         
-        $('#hdr-date').val(dd + '/' + mm + '/' + yyyy);
-        $('#hdr-docno').val('HRR-RET-' + mm + '-' + yy + '-00001');
+        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-docno').val('RET-' + mm + '-' + yy + '-00001');
     }
 
     function populateDropdowns() {

@@ -100,6 +100,10 @@
                         <label class="form-label">Date</label>
                         <input type="text" class="form-control" id="hdr-date" readonly />
                     </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Post Date</label>
+                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                    </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
                         <select class="form-control" id="hdr-employee" required>
@@ -194,7 +198,8 @@
         var yyyy = d.getFullYear();
         
         $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('HRR-ISS-' + mm + '-' + yy + '-00001');
+        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
+        $('#hdr-docno').val('ISU-' + mm + '-' + yy + '-00001');
     }
 
     function populateDropdowns() {

@@ -191,33 +191,6 @@
             <div class="sidebar-heading text-white-50 text-uppercase px-3 py-1 small font-weight-bold" style="letter-spacing: 0.08em;">
                 Loan Management
             </div>
-            @{
-                var isLoanActive = currentAction.StartsWith("Loan");
-            }
-            <li class="nav-item @(isLoanActive ? "active" : "")">
-                <a class="nav-link @(isLoanActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseLoan"
-                   aria-expanded="@(isLoanActive ? "true" : "false")" aria-controls="collapseLoan">
-                    <i class="fas fa-fw fa-hand-holding-usd"></i>
-                    <span>Loan Modules</span>
-                </a>
-                <div id="collapseLoan" class="collapse @(isLoanActive ? "show" : "")" aria-labelledby="headingLoan" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Loan System:</h6>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanRequest") ? "active font-weight-bold" : "")" href="@Url.Action("LoanRequestIndex", "Master")">
-                            <i class="fas fa-fw fa-hand-holding-usd mr-1 text-primary"></i> Loan Request
-                        </a>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanDisbursement") ? "active font-weight-bold" : "")" href="@Url.Action("LoanDisbursementIndex", "Master")">
-                            <i class="fas fa-fw fa-file-invoice-dollar mr-1 text-success"></i> Loan Disbursement
-                        </a>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanDeferment") ? "active font-weight-bold" : "")" href="@Url.Action("LoanDefermentIndex", "Master")">
-                            <i class="fas fa-fw fa-calendar-minus mr-1 text-warning"></i> Loan Deferment
-                        </a>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanSettlement") ? "active font-weight-bold" : "")" href="@Url.Action("LoanSettlementIndex", "Master")">
-                            <i class="fas fa-fw fa-file-contract mr-1 text-danger"></i> Loan Settlement
-                        </a>
-                    </div>
-                </div>
-            </li>
 
             <!-- Direct Nav Links for Loan Pages -->
             <li class="nav-item @(currentAction.StartsWith("LoanRequest") ? "active" : "")">

@@ -3,20 +3,10 @@
     <li class="box box-danger"><a href="@Url.Action("Index", "Home")"> <i class="fa fa-home"></i><span>Home</span></a></li>
     
     <!-- LOAN MANAGEMENT MODULES -->
-    <li class="treeview box box-danger">
-        <a href="#">
-            <i class="fa fa-hand-holding-usd"></i> <span>Loan Management</span>
-            <span class="pull-right-container">
-                <i class="fa fa-angle-left pull-right"></i>
-            </span>
-        </a>
-        <ul class="treeview-menu">
-            <li><a href="@Url.Action("LoanRequestIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Request</a></li>
-            <li><a href="@Url.Action("LoanDisbursementIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Disbursement</a></li>
-            <li><a href="@Url.Action("LoanDefermentIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Deferment</a></li>
-            <li><a href="@Url.Action("LoanSettlementIndex", "Master")"><i class="fa fa-angle-right"></i>Loan Settlement</a></li>
-        </ul>
-    </li>
+    <li class="box box-danger"><a href="@Url.Action("LoanRequestIndex", "Master")"> <i class="fa fa-hand-holding-usd"></i><span>Loan Request</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LoanDisbursementIndex", "Master")"> <i class="fa fa-file-invoice-dollar"></i><span>Loan Disbursement</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LoanDefermentIndex", "Master")"> <i class="fa fa-calendar-minus"></i><span>Loan Deferment</span></a></li>
+    <li class="box box-danger"><a href="@Url.Action("LoanSettlementIndex", "Master")"> <i class="fa fa-file-contract"></i><span>Loan Settlement</span></a></li>
 
     <!-- LEAVE & HR OPERATIONS -->
     <li class="box box-danger"><a href="@Url.Action("LeaveApplicationIndex", "Master")"> <i class="fa fa-calendar-alt"></i><span>Leave Application</span></a></li>

@@ -179,25 +179,36 @@
                 </div>
             </li>
 
-            @{
-                var isLoanActive = currentAction.StartsWith("Loan");
-            }
-            <li class="nav-item @(isLoanActive ? "active" : "")">
-                <hr class="sidebar-divider">
-                <a class="nav-link @(isLoanActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseLoan"
-                   aria-expanded="@(isLoanActive ? "true" : "false")" aria-controls="collapseLoan">
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading text-white-50 text-uppercase px-3 py-1 small font-weight-bold" style="letter-spacing: 0.08em;">
+                Loan Management
+            </div>
+
+            <!-- Direct Nav Links for Loan Pages (Same style as HR & Leave Operations) -->
+            <li class="nav-item @(currentAction.StartsWith("LoanRequest") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("LoanRequestIndex", "Master")">
                     <i class="fas fa-fw fa-hand-holding-usd"></i>
-                    <span>Loan Management</span>
+                    <span>Loan Request</span>
                 </a>
-                <div id="collapseLoan" class="collapse @(isLoanActive ? "show" : "")" aria-labelledby="headingLoan" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Loan Operations:</h6>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanRequest") ? "active" : "")" href="@Url.Action("LoanRequestIndex", "Master")">Loan Request</a>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanDisbursement") ? "active" : "")" href="@Url.Action("LoanDisbursementIndex", "Master")">Loan Disbursement</a>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanDeferment") ? "active" : "")" href="@Url.Action("LoanDefermentIndex", "Master")">Loan Deferment</a>
-                        <a class="collapse-item @(currentAction.StartsWith("LoanSettlement") ? "active" : "")" href="@Url.Action("LoanSettlementIndex", "Master")">Loan Settlement</a>
-                    </div>
-                </div>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("LoanDisbursement") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("LoanDisbursementIndex", "Master")">
+                    <i class="fas fa-fw fa-file-invoice-dollar"></i>
+                    <span>Loan Disbursement</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("LoanDeferment") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("LoanDefermentIndex", "Master")">
+                    <i class="fas fa-fw fa-calendar-minus"></i>
+                    <span>Loan Deferment</span>
+                </a>
+            </li>
+            <li class="nav-item @(currentAction.StartsWith("LoanSettlement") ? "active" : "")">
+                <a class="nav-link" href="@Url.Action("LoanSettlementIndex", "Master")">
+                    <i class="fas fa-fw fa-file-contract"></i>
+                    <span>Loan Settlement</span>
+                </a>
             </li>
 
             <!-- Divider -->

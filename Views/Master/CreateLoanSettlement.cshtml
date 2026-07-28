@@ -354,7 +354,12 @@
             alert('Please select a valid Disbursement No!');
             return;
         }
-        alert('Loan Settlement completed successfully!');
-        window.location.href = '@Url.Action("LoanSettlementIndex", "Master")';
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Loan Settlement completed successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("LoanSettlementIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
     }
 </script>

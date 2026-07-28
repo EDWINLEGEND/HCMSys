@@ -509,7 +509,12 @@
             alert('Please add at least one loan detail entry!');
             return;
         }
-        alert('Loan Request saved successfully!');
-        window.location.href = '@Url.Action("LoanRequestIndex", "Master")';
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Loan Request saved successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("LoanRequestIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
     }
 </script>

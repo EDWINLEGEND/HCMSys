@@ -525,9 +525,9 @@
         });
 
         // 4. Intercept Clicks for Dynamic Navigation (Permanent Sidebar)
-        $(document).on('click', '#accordionSidebar a.nav-link:not([data-toggle]), #accordionSidebar a.collapse-item, .btn-group-actions a.spa-link, a.spa-link', function (e) {
+        $(document).on('click', '#accordionSidebar a.nav-link:not([data-toggle]), #accordionSidebar a.collapse-item, .btn-group-actions a, a.btn, a.spa-link', function (e) {
             var href = $(this).attr('href');
-            var isModal = $(this).attr('data-toggle') === 'modal' || $(this).attr('data-target');
+            var isModal = $(this).attr('data-toggle') === 'modal' || $(this).attr('data-target') || $(this).attr('data-dismiss');
             if (!isModal && href && href !== '#' && href !== 'javascript:void(0);' && !href.startsWith('http') && !$(this).attr('target')) {
                 e.preventDefault();
                 loadPageContent(href, true);

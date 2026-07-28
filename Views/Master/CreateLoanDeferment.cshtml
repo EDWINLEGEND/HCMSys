@@ -358,7 +358,12 @@
             alert('Please select a valid Disbursement No!');
             return;
         }
-        alert('Loan Deferment saved successfully!');
-        window.location.href = '@Url.Action("LoanDefermentIndex", "Master")';
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Loan Deferment saved successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("LoanDefermentIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
     }
 </script>

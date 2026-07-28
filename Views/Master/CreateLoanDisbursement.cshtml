@@ -379,7 +379,12 @@
             alert('Please select a valid Loan Request Number!');
             return;
         }
-        alert('Loan Disbursement processed successfully!');
-        window.location.href = '@Url.Action("LoanDisbursementIndex", "Master")';
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Loan Disbursement processed successfully!', type: 'success' }));
+        var targetUrl = '@Url.Action("LoanDisbursementIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
     }
 </script>

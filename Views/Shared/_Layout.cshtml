@@ -29,6 +29,7 @@
     <link href="~/dist/css/sb-admin-2.min.css" rel="stylesheet">
     <style>
         body:not(.modal-open) .modal-backdrop { display: none !important; }
+        .modal-backdrop.show:not(.modal.show ~ .modal-backdrop) { pointer-events: none !important; }
         #main-page-container { transition: opacity 0.15s ease-in-out; }
     </style>
 
@@ -45,13 +46,6 @@
     <!-- Page level plugins -->
     <script src="~/dist/chart.js/Chart.min.js"></script>
     <script src="~/HCM/common.js"></script>
-    <script src="~/lib/jquery.min.js"></script>
-    <!-- Page level custom scripts -->
-    <script src="~/dist/vendor/chart.js/Chart.min.js"></script>
-    <script src="~/dist/jquery/jquery.slim.min.js"></script>
-    <script src="~/dist/bootstrap/js/bootstrap.min.js"></script>
-
-    <script src="~/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/dist/fontawesome-free/js/all.min.js"></script>
     <script src="~/dist/fontawesome-free/js/brands.min.js"></script>
     <link href="~/lib/datepicker/datepicker.css" rel="stylesheet" />
@@ -69,7 +63,6 @@
     </script>
     <link rel="stylesheet" href="~/alertify.js/alertify.core.css?v=3" />
     <link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
-    <script defer src="~/dist/datatables/jquery.dataTables.min.js"></script>
     <script defer src="~/datatables.net-rowgroup/dataTables.rowGroup.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 @*    <script src="js/demo/chart-area-demo.js"></script>
@@ -186,36 +179,25 @@
                 </div>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-            <div class="sidebar-heading text-white-50 text-uppercase px-3 py-1 small font-weight-bold" style="letter-spacing: 0.08em;">
-                Loan Management
-            </div>
-
-            <!-- Direct Nav Links for Loan Pages -->
-            <li class="nav-item @(currentAction.StartsWith("LoanRequest") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanRequestIndex", "Master")">
+            @{
+                var isLoanActive = currentAction.StartsWith("Loan");
+            }
+            <li class="nav-item @(isLoanActive ? "active" : "")">
+                <hr class="sidebar-divider">
+                <a class="nav-link @(isLoanActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseLoan"
+                   aria-expanded="@(isLoanActive ? "true" : "false")" aria-controls="collapseLoan">
                     <i class="fas fa-fw fa-hand-holding-usd"></i>
-                    <span>Loan Request</span>
+                    <span>Loan Management</span>
                 </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LoanDisbursement") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanDisbursementIndex", "Master")">
-                    <i class="fas fa-fw fa-file-invoice-dollar"></i>
-                    <span>Loan Disbursement</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LoanDeferment") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanDefermentIndex", "Master")">
-                    <i class="fas fa-fw fa-calendar-minus"></i>
-                    <span>Loan Deferment</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LoanSettlement") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanSettlementIndex", "Master")">
-                    <i class="fas fa-fw fa-file-contract"></i>
-                    <span>Loan Settlement</span>
-                </a>
+                <div id="collapseLoan" class="collapse @(isLoanActive ? "show" : "")" aria-labelledby="headingLoan" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Loan Operations:</h6>
+                        <a class="collapse-item @(currentAction.StartsWith("LoanRequest") ? "active" : "")" href="@Url.Action("LoanRequestIndex", "Master")">Loan Request</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LoanDisbursement") ? "active" : "")" href="@Url.Action("LoanDisbursementIndex", "Master")">Loan Disbursement</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LoanDeferment") ? "active" : "")" href="@Url.Action("LoanDefermentIndex", "Master")">Loan Deferment</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LoanSettlement") ? "active" : "")" href="@Url.Action("LoanSettlementIndex", "Master")">Loan Settlement</a>
+                    </div>
+                </div>
             </li>
 
             <!-- Divider -->
@@ -373,10 +355,6 @@
         </div>
     </div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="~/dist/js/sb-admin-2.min.js"></script>
-
     <script>
         function updateActiveSidebar(targetUrl) {
             var currentPath = new URL(targetUrl || window.location.href, window.location.origin).pathname.toLowerCase();
@@ -444,7 +422,7 @@
             }
 
             // Force-close any open modals and cleanup lingering backdrops
-            $('.modal').modal('hide');
+            try { $('.modal').modal('hide'); } catch(e) {}
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open').css({'padding-right': '', 'overflow': ''});
 
@@ -453,15 +431,28 @@
             activeAjaxRequest = $.ajax({
                 url: targetFullUrl,
                 type: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 dataType: 'html',
                 success: function (data) {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css({'padding-right': '', 'overflow': ''});
+
                     var $parsed = $('<div>').append($.parseHTML(data, document, true));
+
+                    // Strip out redundant external library script tags from incoming view HTML so global jQuery/Bootstrap state is never overwritten
+                    $parsed.find('script[src]').each(function() {
+                        var src = ($(this).attr('src') || '').toLowerCase();
+                        if (src.indexOf('jquery') !== -1 || src.indexOf('bootstrap') !== -1 || src.indexOf('sb-admin-2') !== -1 || src.indexOf('fontawesome') !== -1) {
+                            $(this).remove();
+                        }
+                    });
+
                     var $newContainer = $parsed.find('#main-page-container');
 
                     if ($newContainer.length > 0) {
                         $('#main-page-container').html($newContainer.html());
                     } else {
-                        $('#main-page-container').html(data);
+                        $('#main-page-container').html($parsed.html());
                     }
 
                     if (pushState) {
@@ -523,9 +514,10 @@
         });
 
         // 4. Intercept Clicks for Dynamic Navigation (Permanent Sidebar)
-        $(document).on('click', '#accordionSidebar a.nav-link:not([data-toggle]), #accordionSidebar a.collapse-item, .btn-group-actions a, a.spa-link', function (e) {
+        $(document).on('click', '#accordionSidebar a.nav-link:not([data-toggle]), #accordionSidebar a.collapse-item, .btn-group-actions a.spa-link, a.spa-link', function (e) {
             var href = $(this).attr('href');
-            if (href && href !== '#' && href !== 'javascript:void(0);' && !href.startsWith('http') && !$(this).attr('target')) {
+            var isModal = $(this).attr('data-toggle') === 'modal' || $(this).attr('data-target');
+            if (!isModal && href && href !== '#' && href !== 'javascript:void(0);' && !href.startsWith('http') && !$(this).attr('target')) {
                 e.preventDefault();
                 loadPageContent(href, true);
             }

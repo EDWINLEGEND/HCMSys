@@ -157,7 +157,10 @@
             $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
             $.getJSON('/assets/leavetype.json')
         ).done(function(empRes, leaveRes) {
-            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
+            employeesData = empRes[0] || empRes;
+            if (Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
+                employeesData = employeesData[0];
+            }
             var leaveData = leaveRes[0] || leaveRes;
             leaveTypesData = leaveData.leaveTypes || leaveData;
             

@@ -263,12 +263,14 @@
         initHeader();
 
         $.getJSON('/assets/loan_requests.json', function(res) {
-            requestsData = res;
+            requestsData = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : res;
             var reqSelect = $('#hdr-requestno');
             reqSelect.empty().append('<option value="">Select Request Number...</option>');
-            requestsData.forEach(function(req) {
-                reqSelect.append(`<option value="${req.docNo}">${req.docNo} - ${req.employeeName} (${req.loanTypeName})</option>`);
-            });
+            if (Array.isArray(requestsData)) {
+                requestsData.forEach(function(req) {
+                    reqSelect.append(`<option value="${req.docNo}">${req.docNo} - ${req.employeeName || req.employee} (${req.loanTypeName || req.loanType})</option>`);
+                });
+            }
             reqSelect.select2({ width: '100%' });
         });
     });

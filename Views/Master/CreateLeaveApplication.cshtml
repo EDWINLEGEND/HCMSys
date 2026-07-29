@@ -333,14 +333,17 @@
             $.getJSON('/assets/leave_balances.json'),
             $.getJSON('/assets/leavetype.json')
         ).done(function(empRes, balRes, optRes) {
-            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
-            leaveBalancesData = Array.isArray(balRes) ? balRes : (balRes[0] || balRes);
-            leaveOptionsData = Array.isArray(optRes) ? optRes : (optRes[0] || optRes);
+            employeesData = empRes[0] || empRes;
+            if (Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
+                employeesData = employeesData[0];
+            }
+            leaveBalancesData = balRes[0] || balRes;
+            leaveOptionsData = optRes[0] || optRes;
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {
-            alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+            alertify.log('Failed to load leave application data', 'error', 5000);
         });
 
         // Event Listeners

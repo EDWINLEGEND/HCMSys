@@ -291,8 +291,14 @@
             $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
             $.getJSON('/assets/loan_type.json')
         ).done(function(empRes, loanRes) {
-            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
-            loanTypesData = Array.isArray(loanRes) ? loanRes : (loanRes[0] || loanRes);
+            employeesData = empRes[0] || empRes;
+            if (Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
+                employeesData = employeesData[0];
+            }
+            loanTypesData = loanRes[0] || loanRes;
+            if (Array.isArray(loanTypesData) && loanTypesData.length > 0 && Array.isArray(loanTypesData[0])) {
+                loanTypesData = loanTypesData[0];
+            }
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });

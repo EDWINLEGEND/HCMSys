@@ -279,10 +279,22 @@
             $.getJSON('/assets/city.json'),
             $.getJSON('/assets/city_rate_matrix.json')
         ).done(function(empRes, curRes, cityRes, rateRes) {
-            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
-            currencyData = Array.isArray(curRes) ? curRes : (curRes[0] || curRes);
-            cityData = Array.isArray(cityRes) ? cityRes : (cityRes[0] || cityRes);
-            rateMatrix = Array.isArray(rateRes) ? rateRes : (rateRes[0] || rateRes);
+            employeesData = empRes[0] || empRes;
+            if (Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
+                employeesData = employeesData[0];
+            }
+            currencyData = curRes[0] || curRes;
+            if (Array.isArray(currencyData) && currencyData.length > 0 && Array.isArray(currencyData[0])) {
+                currencyData = currencyData[0];
+            }
+            cityData = cityRes[0] || cityRes;
+            if (Array.isArray(cityData) && cityData.length > 0 && Array.isArray(cityData[0])) {
+                cityData = cityData[0];
+            }
+            rateMatrix = rateRes[0] || rateRes;
+            if (Array.isArray(rateMatrix) && rateMatrix.length > 0 && Array.isArray(rateMatrix[0])) {
+                rateMatrix = rateMatrix[0];
+            }
             
             populateDropdowns();
             // Make all dropdowns searchable

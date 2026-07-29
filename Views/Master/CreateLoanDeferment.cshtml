@@ -231,12 +231,14 @@
         initHeader();
 
         $.getJSON('/assets/loan_disbursements.json', function(res) {
-            disbursementsData = res;
+            disbursementsData = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : res;
             var disbSelect = $('#hdr-disbursementno');
             disbSelect.empty().append('<option value="">Select Disbursement No...</option>');
-            disbursementsData.forEach(function(d) {
-                disbSelect.append(`<option value="${d.disbursementNo}">${d.disbursementNo} - ${d.employeeName} (${d.loanTypeName})</option>`);
-            });
+            if (Array.isArray(disbursementsData)) {
+                disbursementsData.forEach(function(d) {
+                    disbSelect.append(`<option value="${d.disbursementNo}">${d.disbursementNo} - ${d.employeeName || d.employee} (${d.loanTypeName || d.loanType})</option>`);
+                });
+            }
             disbSelect.select2({ width: '100%' });
         });
     });

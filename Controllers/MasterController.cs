@@ -42,21 +42,52 @@ namespace HCMSys.Controllers
         public async Task<IActionResult> GetApiEmployees()
         {
             var employees = await _apiService.GetEmployeesAsync();
-            return Json(employees);
+            var normalized = employees.Select(e => new {
+                id = e.Id > 0 ? e.Id : e.IMasterId,
+                iMasterId = e.IMasterId,
+                code = !string.IsNullOrEmpty(e.SCode) ? e.SCode : "",
+                sCode = !string.IsNullOrEmpty(e.SCode) ? e.SCode : "",
+                name = !string.IsNullOrEmpty(e.SName) ? e.SName : "",
+                sName = !string.IsNullOrEmpty(e.SName) ? e.SName : "",
+                joiningDate = e.JoiningDate,
+                departmentName = e.SDepartmentName,
+                designationName = e.SDesignationName
+            });
+            return Json(normalized);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetApiAssetCategories()
         {
             var categories = await _apiService.GetAssetCategoriesAsync();
-            return Json(categories);
+            var normalized = categories.Select(c => new {
+                id = c.IMasterId,
+                iMasterId = c.IMasterId,
+                code = !string.IsNullOrEmpty(c.SCode) ? c.SCode : "",
+                sCode = !string.IsNullOrEmpty(c.SCode) ? c.SCode : "",
+                name = !string.IsNullOrEmpty(c.SName) ? c.SName : "",
+                sName = !string.IsNullOrEmpty(c.SName) ? c.SName : ""
+            });
+            return Json(normalized);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetApiAssets()
         {
             var assets = await _apiService.GetAssetsAsync();
-            return Json(assets);
+            var normalized = assets.Select(a => new {
+                id = a.IMasterId,
+                iMasterId = a.IMasterId,
+                code = !string.IsNullOrEmpty(a.SCode) ? a.SCode : "",
+                sCode = !string.IsNullOrEmpty(a.SCode) ? a.SCode : "",
+                name = !string.IsNullOrEmpty(a.SName) ? a.SName : "",
+                sName = !string.IsNullOrEmpty(a.SName) ? a.SName : "",
+                iCategoryId = a.ICategoryId,
+                categoryCode = a.SCategoryCode,
+                categoryName = a.SCategoryName,
+                tagNumber = a.STagNumber
+            });
+            return Json(normalized);
         }
 
         /// <summary>

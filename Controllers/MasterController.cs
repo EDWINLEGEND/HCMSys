@@ -23,25 +23,48 @@ using System.Net.NetworkInformation;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
+using HCMSys.Services;
+
 namespace HCMSys.Controllers
 {
     public class MasterController : Controller
     {
-    
         private readonly IWebHostEnvironment _env;
-        public MasterController(  IWebHostEnvironment env )
+        private readonly IHcmsApiService _apiService;
+
+        public MasterController(IWebHostEnvironment env, IHcmsApiService apiService)
         {
-     
             _env = env;
- 
-        } 
+            _apiService = apiService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiEmployees()
+        {
+            var employees = await _apiService.GetEmployeesAsync();
+            return Json(employees);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiAssetCategories()
+        {
+            var categories = await _apiService.GetAssetCategoriesAsync();
+            return Json(categories);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiAssets()
+        {
+            var assets = await _apiService.GetAssetsAsync();
+            return Json(assets);
+        }
+
         /// <summary>
         /// ////Project master
         /// </summary>
         /// <returns></returns>
         public ActionResult ProjectIndex()
         {
-
             return View();
         }
 

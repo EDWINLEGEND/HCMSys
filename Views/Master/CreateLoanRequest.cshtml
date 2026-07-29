@@ -288,18 +288,18 @@
         initHeader();
 
         $.when(
-            $.getJSON('/assets/employee.json'),
+            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
             $.getJSON('/assets/loan_type.json')
         ).done(function(empRes, loanRes) {
-            employeesData = empRes[0];
-            loanTypesData = loanRes[0];
+            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
+            loanTypesData = Array.isArray(loanRes) ? loanRes : (loanRes[0] || loanRes);
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
             onEmiTypeChange();
         }).fail(function() {
             if (typeof alertify !== 'undefined') {
-                alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+                alertify.log('Failed to load employee/loan data', 'error', 5000);
             }
         });
 

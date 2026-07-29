@@ -1,5 +1,6 @@
 using HCMSys;
 using HCMSys.Models;
+using HCMSys.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ builder.Logging.AddConsole();
 // Add services to the container
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddHttpClient<IHcmsApiService, HcmsApiService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddSession(options =>

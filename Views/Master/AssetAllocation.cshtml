@@ -211,18 +211,18 @@
         initHeader();
 
         $.when(
-            $.getJSON('/assets/employee.json'),
-            $.getJSON('/assets/asset_category.json'),
-            $.getJSON('/assets/asset_code.json')
+            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
+            $.getJSON('/Master/GetApiAssetCategories').then(function(res) { return res && res.length ? res : $.getJSON('/assets/asset_category.json'); }),
+            $.getJSON('/Master/GetApiAssets').then(function(res) { return res && res.length ? res : $.getJSON('/assets/asset_code.json'); })
         ).done(function(empRes, catRes, codeRes) {
-            employeesData = empRes[0];
-            assetCategoryData = catRes[0];
-            assetCodeData = codeRes[0];
+            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
+            assetCategoryData = Array.isArray(catRes) ? catRes : (catRes[0] || catRes);
+            assetCodeData = Array.isArray(codeRes) ? codeRes : (codeRes[0] || codeRes);
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {
-            alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+            alertify.log('Failed to load API or static data', 'error', 5000);
         });
 
         $('#hdr-employee').change(onEmployeeChange);

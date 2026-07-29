@@ -199,16 +199,16 @@
         initHeader();
 
         $.when(
-            $.getJSON('/assets/employee.json'),
+            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
             $.getJSON('/assets/request_master.json')
         ).done(function(empRes, reqRes) {
-            employeesData = empRes[0];
-            requestMasterData = reqRes[0];
+            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
+            requestMasterData = Array.isArray(reqRes) ? reqRes : (reqRes[0] || reqRes);
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {
-            alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+            alertify.log('Failed to load data', 'error', 5000);
         });
 
         $('#hdr-employee').change(onEmployeeChange);

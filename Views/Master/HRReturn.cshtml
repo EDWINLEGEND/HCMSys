@@ -168,12 +168,9 @@
         initHeader();
 
         $.when(
-            $.getJSON('/assets/employee.json')
+            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); })
         ).done(function(empRes) {
-            employeesData = empRes[0] || empRes;
-            if(Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
-                employeesData = employeesData[0];
-            }
+            employeesData = Array.isArray(empRes) ? (Array.isArray(empRes[0]) ? empRes[0] : empRes) : empRes;
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {

@@ -375,19 +375,26 @@
     function populateDropdowns() {
         var empSelect = $('#hdr-employee');
         var subSelect = $('#dtl-substitute');
-        empSelect.append('<option value="">Select Employee...</option>');
-        subSelect.append('<option value="">Select Substitute...</option>');
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        subSelect.empty().append('<option value="">Select Substitute...</option>');
         
-        employeesData.forEach(function(emp) {
-            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
-            subSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
-        });
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId || '';
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+                subSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+            });
+        }
 
         var ltSelect = $('#dtl-leavetype');
-        ltSelect.append('<option value="">Select Leave Type...</option>');
-        leaveOptionsData.leaveTypes.forEach(function(lt) {
-            ltSelect.append(`<option value="${lt.code}">${lt.name}</option>`);
-        });
+        ltSelect.empty().append('<option value="">Select Leave Type...</option>');
+        if (leaveOptionsData && Array.isArray(leaveOptionsData.leaveTypes)) {
+            leaveOptionsData.leaveTypes.forEach(function(lt) {
+                ltSelect.append(`<option value="${lt.code}">${lt.name}</option>`);
+            });
+        }
 
         var ptSelect = $('#dtl-paymenttype');
         leaveOptionsData.paymentTypes.forEach(function(pt) {

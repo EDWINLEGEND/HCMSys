@@ -329,22 +329,37 @@
 
     function populateDropdowns() {
         var empSelect = $('#hdr-employee');
-        employeesData.forEach(function(emp) {
-            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
-        });
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId || '';
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+            });
+        }
 
         var curSelect = $('#hdr-currency');
-        currencyData.forEach(function(cur) {
-            curSelect.append(`<option value="${cur.id}">${cur.code} - ${cur.name}</option>`);
-        });
+        curSelect.empty().append('<option value="">Select Currency...</option>');
+        if (Array.isArray(currencyData)) {
+            currencyData.forEach(function(cur) {
+                var curId = cur.id || cur.code || '';
+                curSelect.append(`<option value="${curId}">${cur.code} - ${cur.name}</option>`);
+            });
+        }
 
         var fromCitySelect = $('#dtl-fromcity');
         var toCitySelect = $('#dtl-tocity');
-        cityData.forEach(function(city) {
-            var opt = `<option value="${city.id}">${city.code} - ${city.name}</option>`;
-            fromCitySelect.append(opt);
-            toCitySelect.append(opt);
-        });
+        fromCitySelect.empty().append('<option value="">Select Departure City...</option>');
+        toCitySelect.empty().append('<option value="">Select Arrival City...</option>');
+        if (Array.isArray(cityData)) {
+            cityData.forEach(function(city) {
+                var cityId = city.id || city.code || '';
+                var opt = `<option value="${cityId}">${city.code} - ${city.name}</option>`;
+                fromCitySelect.append(opt);
+                toCitySelect.append(opt);
+            });
+        }
     }
 
     function onEmployeeChange() {

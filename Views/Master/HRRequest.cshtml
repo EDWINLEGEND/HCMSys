@@ -236,14 +236,23 @@
 
     function populateDropdowns() {
         var empSelect = $('#hdr-employee');
-        employeesData.forEach(function(emp) {
-            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
-        });
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId || '';
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+            });
+        }
 
         var reqSelect = $('#dtl-selection');
-        requestMasterData.forEach(function(req) {
-            reqSelect.append(`<option value="${req.code}">${req.name}</option>`);
-        });
+        reqSelect.empty().append('<option value="">Select Request Type...</option>');
+        if (Array.isArray(requestMasterData)) {
+            requestMasterData.forEach(function(req) {
+                reqSelect.append(`<option value="${req.code}">${req.name}</option>`);
+            });
+        }
     }
 
     function onEmployeeChange() {

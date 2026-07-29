@@ -305,19 +305,31 @@
 
     function populateDropdowns() {
         var empSelect = $('#hdr-employee');
-        employeesData.forEach(function(emp) {
-            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
-        });
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId || '';
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+            });
+        }
 
         var curSelect = $('#hdr-currency');
-        currencyData.forEach(function(cur) {
-            curSelect.append(`<option value="${cur.id}">${cur.code} - ${cur.name}</option>`);
-        });
+        curSelect.empty().append('<option value="">Select Currency...</option>');
+        if (Array.isArray(currencyData)) {
+            currencyData.forEach(function(cur) {
+                curSelect.append(`<option value="${cur.code}">${cur.code} - ${cur.name}</option>`);
+            });
+        }
 
-        var claimSelect = $('#dtl-claimtype');
-        claimMasterData.forEach(function(cm) {
-            claimSelect.append(`<option value="${cm.id}">${cm.name}</option>`);
-        });
+        var claimTypeSelect = $('#dtl-claimtype');
+        claimTypeSelect.empty().append('<option value="">Select Claim Type...</option>');
+        if (Array.isArray(claimMasterData)) {
+            claimMasterData.forEach(function(ct) {
+                claimTypeSelect.append(`<option value="${ct.code}">${ct.code} - ${ct.name}</option>`);
+            });
+        }
     }
 
     function onEmployeeChange() {

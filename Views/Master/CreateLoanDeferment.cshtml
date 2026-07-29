@@ -357,7 +357,7 @@
 
     function saveDeferment() {
         if (!selectedDisbursement) {
-            alert('Please select a valid Disbursement No!');
+            alertify.log('Please select a valid Disbursement No!', 'error', 5000);
             return;
         }
         sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Loan Deferment saved successfully!', type: 'success' }));

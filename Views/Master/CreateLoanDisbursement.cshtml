@@ -378,7 +378,7 @@
 
     function saveDisbursement() {
         if (!selectedRequest) {
-            alert('Please select a valid Loan Request Number!');
+            alertify.log('Please select a valid Loan Request Number!', 'error', 5000);
             return;
         }
         sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Loan Disbursement processed successfully!', type: 'success' }));

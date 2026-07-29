@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MployTracker.Web.Models.vtSer_CheckLists_Detail>
+@model IEnumerable<MployTracker.Web.Models.vtSer_CheckLists_Detail>
 
 @{
     var jsonBrand = "0";
@@ -397,7 +397,7 @@
             debugger;
             $("body").css("cursor", "progress");
             if ($("#ntxtDescription").val() <= 0) {
-                alert("Description cannot be empty");
+                alertify.log("Description cannot be empty", "error", 5000);
                 $("#ntxtDescription").focus();
                 $("body").css("cursor", "default");
                 return;
@@ -419,7 +419,7 @@
             debugger;
             $("body").css("cursor", "progress");
             if ($("#txtDescription").val() <= 0) {
-                alert("Description cannot be empty");
+                alertify.log("Description cannot be empty", "error", 5000);
                 $("#txtDescription").focus();
                 $("body").css("cursor", "default");
                 return;
@@ -443,25 +443,25 @@
             debugger;
             $("body").css("cursor", "progress");
             if ($("#ddlCheckListType").val() <= 0) {
-                alert("Check List Type cannot be empty");
+                alertify.log("Check List Type cannot be empty", "error", 5000);
                 $("#ddlCheckListType").focus();
                 $("body").css("cursor", "default");
                 return;
             }
             if ($("#ddlBrand").val() <= 0) {
-                alert("Brand cannot be empty");
+                alertify.log("Brand cannot be empty", "error", 5000);
                 $("#ddlBrand").focus();
                 $("body").css("cursor", "default");
                 return;
             }
             if ($("#ddlModel").val() <= 0) {
-                alert("Model cannot be empty");
+                alertify.log("Model cannot be empty", "error", 5000);
                 $("#ddlModel").focus();
                 $("body").css("cursor", "default");
                 return;
             }
             if ($("#ddlVehicleSeries").val() <= 0) {
-                alert("Vehicle Series cannot be empty");
+                alertify.log("Vehicle Series cannot be empty", "error", 5000);
                 $("#ddlVehicleSeries").focus();
                 $("body").css("cursor", "default");
                 return;
@@ -505,14 +505,14 @@
                     data: fdata,
                     dataType: "json",
                     success: function (r) {
-                        alert(r);
+                        alertify.log(r, r == "Check List Saved" ? "success" : "error", 5000);
                         $("body").css("cursor", "default");
                         if (r == "Check List Saved") {
                             location.href = "@Url.Action("CheckListIndex", "Master")";
                         }
                     },
                     error: function () {
-                        alert("Error in update check list...");
+                        alertify.log("Error in update check list...", "error", 5000);
                         $("body").css("cursor", "default");
                         return;
                     }

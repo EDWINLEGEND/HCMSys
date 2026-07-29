@@ -1,4 +1,4 @@
-﻿@model MployTracker.Web.Models.mSer_CheckListTypes
+@model MployTracker.Web.Models.mSer_CheckListTypes
 <script src="~/lib/jquery.min.js"></script>
 <link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
 <script defer src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
@@ -101,11 +101,10 @@
                     location.href = '@Url.Action("CheckListTypeIndex", "Master")';
                 },
                 error: function () {
-                     alert("Error in update...");
-                     return;
+                      alertify.log("Error in update...", "error", 5000);
+                      return;
                 }
             });
 
         });
 </script>
-

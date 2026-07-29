@@ -237,6 +237,8 @@
 
     function initHeader() {
         var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
         var mm = String(d.getMonth() + 1).padStart(2, '0');
         var dd = String(d.getDate()).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
@@ -249,14 +251,25 @@
 
     function populateDropdowns() {
         var empSelect = $('#hdr-employee');
-        employeesData.forEach(function(emp) {
-            empSelect.append(`<option value="${emp.id}">${emp.code} - ${emp.name}</option>`);
-        });
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId || '';
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+            });
+        }
 
         var catSelect = $('#dtl-assetcategory');
-        assetCategoryData.forEach(function(cat) {
-            catSelect.append(`<option value="${cat.code}">${cat.code} - ${cat.name}</option>`);
-        });
+        catSelect.empty().append('<option value="">Select Category...</option>');
+        if (Array.isArray(assetCategoryData)) {
+            assetCategoryData.forEach(function(cat) {
+                var catCode = cat.code || cat.sCode || '';
+                var catName = cat.name || cat.sName || '';
+                catSelect.append(`<option value="${catCode}">${catCode} - ${catName}</option>`);
+            });
+        }
     }
 
     function onEmployeeChange() {

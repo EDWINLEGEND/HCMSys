@@ -211,18 +211,18 @@
         initHeader();
 
         $.when(
-            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
-            $.getJSON('/Master/GetApiAssetCategories').then(function(res) { return res && res.length ? res : $.getJSON('/assets/asset_category.json'); }),
-            $.getJSON('/Master/GetApiAssets').then(function(res) { return res && res.length ? res : $.getJSON('/assets/asset_code.json'); })
+            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
+            fetchWithFallback('/Master/GetApiAssetCategories', '/assets/asset_category.json'),
+            fetchWithFallback('/Master/GetApiAssets', '/assets/asset_code.json')
         ).done(function(empRes, catRes, codeRes) {
-            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
-            assetCategoryData = Array.isArray(catRes) ? catRes : (catRes[0] || catRes);
-            assetCodeData = Array.isArray(codeRes) ? codeRes : (codeRes[0] || codeRes);
+            employeesData = empRes;
+            assetCategoryData = catRes;
+            assetCodeData = codeRes;
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {
-            alertify.log('Failed to load API or static data', 'error', 5000);
+            alertify.log('Failed to load data', 'error', 5000);
         });
 
         $('#hdr-employee').change(onEmployeeChange);
@@ -260,17 +260,17 @@
     }
 
     function onEmployeeChange() {
-        var empId = parseInt($(this).val());
-        if (!empId) {
+        var empVal = $(this).val();
+        if (!empVal) {
             $('#hdr-designation, #hdr-department, #hdr-manager').val('');
             return;
         }
 
-        var emp = employeesData.find(e => e.id === empId);
+        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal);
         if (emp) {
-            $('#hdr-designation').val(emp.designation);
-            $('#hdr-department').val(emp.department);
-            $('#hdr-manager').val(emp.reportingManager);
+            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
+            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
+            $('#hdr-manager').val(emp.reportingManager || emp.createdBy || 'Admin');
         }
     }
     
@@ -283,16 +283,29 @@
         $('#dtl-assettag').val('');
         
         if (!catCode) {
-            codeSelect.prop('disabled', true);
+            codeSelect.prop('disabled', true).trigger('change');
             return;
         }
 
-        var filteredCodes = assetCodeData.filter(c => c.categoryCode === catCode);
-        filteredCodes.forEach(function(code) {
-            codeSelect.append(`<option value="${code.code}">${code.code}</option>`);
+        var filteredCodes = assetCodeData.filter(c => 
+            c.categoryCode == catCode || 
+            c.sCategoryCode == catCode || 
+            c.iCategoryId == catCode ||
+            c.categoryName == catCode
+        );
+
+        // Fallback: If no code matched by category, show all codes
+        if (!filteredCodes || filteredCodes.length === 0) {
+            filteredCodes = assetCodeData;
+        }
+
+        filteredCodes.forEach(function(codeItem) {
+            var cCode = codeItem.code || codeItem.sCode;
+            var cName = codeItem.name || codeItem.sName;
+            codeSelect.append(`<option value="${cCode}">${cCode} - ${cName}</option>`);
         });
         
-        codeSelect.prop('disabled', false);
+        codeSelect.prop('disabled', false).trigger('change');
     }
     
     function onAssetCodeChange() {
@@ -302,10 +315,10 @@
             $('#dtl-assettag').val('');
             return;
         }
-        var asset = assetCodeData.find(c => c.code === aCode);
+        var asset = assetCodeData.find(c => c.code == aCode || c.sCode == aCode);
         if (asset) {
-            $('#dtl-assetname').val(asset.name);
-            $('#dtl-assettag').val(asset.tagNumber);
+            $('#dtl-assetname').val(asset.name || asset.sName || '');
+            $('#dtl-assettag').val(asset.tagNumber || asset.sTagNumber || 'N/A');
         }
     }
 

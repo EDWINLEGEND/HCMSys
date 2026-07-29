@@ -210,8 +210,8 @@
     $(document).ready(function() {
         initHeader();
 
-        ($.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); })).done(function(empRes) {
-            employeesData = Array.isArray(empRes) ? (Array.isArray(empRes[0]) ? empRes[0] : empRes) : empRes;
+        fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json').done(function(empRes) {
+            employeesData = empRes;
             populateDropdowns();
             $('#hdr-employee').select2({ width: '100%' });
             $('#modal-employee-select').select2({ dropdownParent: $('#inHandAssetsModal'), width: '100%' });

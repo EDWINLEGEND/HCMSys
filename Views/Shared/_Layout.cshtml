@@ -424,6 +424,28 @@
 
         var activeAjaxRequest = null;
 
+        function fetchWithFallback(apiUrl, fallbackUrl) {
+            var def = $.Deferred();
+            $.getJSON(apiUrl).done(function(data) {
+                if (data && ((Array.isArray(data) && data.length > 0) || (typeof data === 'object' && Object.keys(data).length > 0))) {
+                    def.resolve(data);
+                } else {
+                    $.getJSON(fallbackUrl).done(function(fbData) {
+                        def.resolve(fbData);
+                    }).fail(function() {
+                        def.reject();
+                    });
+                }
+            }).fail(function() {
+                $.getJSON(fallbackUrl).done(function(fbData) {
+                    def.resolve(fbData);
+                }).fail(function() {
+                    def.reject();
+                });
+            });
+            return def.promise();
+        }
+
         function loadPageContent(url, pushState) {
             if (pushState === undefined) pushState = true;
             

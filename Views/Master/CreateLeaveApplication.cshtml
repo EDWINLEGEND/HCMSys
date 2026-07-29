@@ -329,14 +329,11 @@
 
         // Fetch JSON data
         $.when(
-            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
+            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
             $.getJSON('/assets/leave_balances.json'),
             $.getJSON('/assets/leavetype.json')
         ).done(function(empRes, balRes, optRes) {
-            employeesData = empRes[0] || empRes;
-            if (Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
-                employeesData = employeesData[0];
-            }
+            employeesData = empRes;
             leaveBalancesData = balRes[0] || balRes;
             leaveOptionsData = optRes[0] || optRes;
             

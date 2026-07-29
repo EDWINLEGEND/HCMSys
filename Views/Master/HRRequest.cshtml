@@ -199,11 +199,11 @@
         initHeader();
 
         $.when(
-            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
+            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
             $.getJSON('/assets/request_master.json')
         ).done(function(empRes, reqRes) {
-            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
-            requestMasterData = Array.isArray(reqRes) ? reqRes : (reqRes[0] || reqRes);
+            employeesData = empRes;
+            requestMasterData = reqRes[0] || reqRes;
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });

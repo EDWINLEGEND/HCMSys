@@ -17,8 +17,9 @@ namespace HCMSys.Services
         private readonly IConfiguration _config;
         private readonly ILogger<HcmsApiService> _logger;
 
-        private string? _cachedToken;
-        private DateTime _tokenExpiration = DateTime.MinValue;
+        private static string? _cachedToken;
+        private static DateTime _tokenExpiration = DateTime.MinValue;
+        private static readonly System.Threading.SemaphoreSlim _tokenSemaphore = new System.Threading.SemaphoreSlim(1, 1);
 
         public HcmsApiService(HttpClient httpClient, IConfiguration config, ILogger<HcmsApiService> logger)
         {
@@ -37,8 +38,14 @@ namespace HCMSys.Services
                 return _cachedToken;
             }
 
+            await _tokenSemaphore.WaitAsync();
             try
             {
+                if (!string.IsNullOrEmpty(_cachedToken) && DateTime.UtcNow < _tokenExpiration.AddMinutes(-2))
+                {
+                    return _cachedToken;
+                }
+
                 var username = _config["HcmsApi:Username"] ?? "edwin";
                 var password = _config["HcmsApi:Password"] ?? "123";
 
@@ -66,6 +73,10 @@ namespace HCMSys.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during API authentication");
+            }
+            finally
+            {
+                _tokenSemaphore.Release();
             }
 
             return null;

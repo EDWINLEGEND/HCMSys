@@ -258,14 +258,11 @@
         initHeader();
 
         $.when(
-            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
+            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
             $.getJSON('/assets/currency.json'),
             $.getJSON('/assets/claim_master.json')
         ).done(function(empRes, curRes, claimRes) {
-            employeesData = empRes[0] || empRes;
-            if (Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
-                employeesData = employeesData[0];
-            }
+            employeesData = empRes;
             currencyData = curRes[0] || curRes;
             if (Array.isArray(currencyData) && currencyData.length > 0 && Array.isArray(currencyData[0])) {
                 currencyData = currencyData[0];

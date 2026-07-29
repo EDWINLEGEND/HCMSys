@@ -169,125 +169,93 @@
  
             @{
                 var isMastersActive = currentAction.StartsWith("Project");
+                var isLoansActive = currentAction.StartsWith("Loan");
+                var isLeavesActive = currentAction.StartsWith("Leave") || currentAction.StartsWith("OpeningLeaves");
+                var isHrActive = currentAction.StartsWith("Claim") || currentAction.StartsWith("BusinessTrip") || currentAction.StartsWith("HR");
+                var isAssetsActive = currentAction.StartsWith("Asset");
             }
+
+            <!-- Masters Group -->
             <li class="nav-item @(isMastersActive ? "active" : "")">
-                <hr class="sidebar-divider">
-                <a class="nav-link @(isMastersActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                   aria-expanded="@(isMastersActive ? "true" : "false")" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-tablet"></i>
+                <a class="nav-link @(isMastersActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseMasters"
+                   aria-expanded="@(isMastersActive ? "true" : "false")" aria-controls="collapseMasters">
+                    <i class="fas fa-fw fa-cubes"></i>
                     <span>Masters</span>
                 </a>
-                <div id="collapseTwo" class="collapse @(isMastersActive ? "show" : "")" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div id="collapseMasters" class="collapse @(isMastersActive ? "show" : "")" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Common Masters:</h6>
-                        <a class="collapse-item @(currentAction.StartsWith("Project") ? "active" : "")" href="@Url.Action("ProjectIndex", "Master")">Project</a>
+                        <a class="collapse-item @(currentAction.StartsWith("Project") ? "active" : "")" href="@Url.Action("ProjectIndex", "Master")">
+                            <i class="fas fa-fw fa-project-diagram mr-2 text-gray-500"></i>Project
+                        </a>
                     </div>
                 </div>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-            <div class="sidebar-heading text-white-50 text-uppercase px-3 py-1 small font-weight-bold" style="letter-spacing: 0.08em;">
-                Loan Management
-            </div>
-
-            <!-- Direct Nav Links for Loan Pages (Same style as HR & Leave Operations) -->
-            <li class="nav-item @(currentAction.StartsWith("LoanRequest") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanRequestIndex", "Master")">
+            <!-- Loan Management Group -->
+            <li class="nav-item @(isLoansActive ? "active" : "")">
+                <a class="nav-link @(isLoansActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseLoans"
+                   aria-expanded="@(isLoansActive ? "true" : "false")" aria-controls="collapseLoans">
                     <i class="fas fa-fw fa-hand-holding-usd"></i>
-                    <span>Loan Request</span>
+                    <span>Loan Management</span>
                 </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LoanDisbursement") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanDisbursementIndex", "Master")">
-                    <i class="fas fa-fw fa-file-invoice-dollar"></i>
-                    <span>Loan Disbursement</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LoanDeferment") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanDefermentIndex", "Master")">
-                    <i class="fas fa-fw fa-calendar-minus"></i>
-                    <span>Loan Deferment</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LoanSettlement") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LoanSettlementIndex", "Master")">
-                    <i class="fas fa-fw fa-file-contract"></i>
-                    <span>Loan Settlement</span>
-                </a>
+                <div id="collapseLoans" class="collapse @(isLoansActive ? "show" : "")" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item @(currentAction.StartsWith("LoanRequest") ? "active" : "")" href="@Url.Action("LoanRequestIndex", "Master")">Loan Request</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LoanDisbursement") ? "active" : "")" href="@Url.Action("LoanDisbursementIndex", "Master")">Loan Disbursement</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LoanDeferment") ? "active" : "")" href="@Url.Action("LoanDefermentIndex", "Master")">Loan Deferment</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LoanSettlement") ? "active" : "")" href="@Url.Action("LoanSettlementIndex", "Master")">Loan Settlement</a>
+                    </div>
+                </div>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-            <div class="sidebar-heading text-white-50 text-uppercase px-3 py-1 small font-weight-bold" style="letter-spacing: 0.08em;">
-                HR & Leave Operations
-            </div>
-
-            <li class="nav-item @(currentAction.StartsWith("LeaveApplication") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LeaveApplicationIndex", "Master")">
+            <!-- Leave Operations Group -->
+            <li class="nav-item @(isLeavesActive ? "active" : "")">
+                <a class="nav-link @(isLeavesActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseLeaves"
+                   aria-expanded="@(isLeavesActive ? "true" : "false")" aria-controls="collapseLeaves">
                     <i class="fas fa-fw fa-calendar-alt"></i>
-                    <span>Leave Application</span>
+                    <span>Leave Operations</span>
                 </a>
+                <div id="collapseLeaves" class="collapse @(isLeavesActive ? "show" : "")" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item @(currentAction.StartsWith("LeaveApplication") ? "active" : "")" href="@Url.Action("LeaveApplicationIndex", "Master")">Leave Application</a>
+                        <a class="collapse-item @(currentAction.StartsWith("OpeningLeaves") ? "active" : "")" href="@Url.Action("OpeningLeavesIndex", "Master")">Opening Leaves</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LeaveEligibility") ? "active" : "")" href="@Url.Action("LeaveEligibilityIndex", "Master")">Leave Eligibility</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LeaveAdjustments") ? "active" : "")" href="@Url.Action("LeaveAdjustmentsIndex", "Master")">Leave Adjustments</a>
+                    </div>
+                </div>
             </li>
-            <li class="nav-item @(currentAction.StartsWith("Claim") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("ClaimIndex", "Master")">
-                    <i class="fas fa-fw fa-money-bill"></i>
-                    <span>Claims</span>
+
+            <!-- HR & Expenses Group -->
+            <li class="nav-item @(isHrActive ? "active" : "")">
+                <a class="nav-link @(isHrActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseHR"
+                   aria-expanded="@(isHrActive ? "true" : "false")" aria-controls="collapseHR">
+                    <i class="fas fa-fw fa-user-cog"></i>
+                    <span>HR & Expenses</span>
                 </a>
+                <div id="collapseHR" class="collapse @(isHrActive ? "show" : "")" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item @(currentAction.StartsWith("Claim") ? "active" : "")" href="@Url.Action("ClaimIndex", "Master")">Claims</a>
+                        <a class="collapse-item @(currentAction.StartsWith("BusinessTrip") ? "active" : "")" href="@Url.Action("BusinessTripIndex", "Master")">Business Trip</a>
+                        <a class="collapse-item @(currentAction.StartsWith("HRRequest") ? "active" : "")" href="@Url.Action("HRRequestIndex", "Master")">HR Request</a>
+                        <a class="collapse-item @(currentAction.StartsWith("HRReturn") ? "active" : "")" href="@Url.Action("HRReturnIndex", "Master")">HR Return</a>
+                        <a class="collapse-item @(currentAction.StartsWith("HRDocumentIssue") ? "active" : "")" href="@Url.Action("HRDocumentIssueIndex", "Master")">HR Document Issue</a>
+                    </div>
+                </div>
             </li>
-            <li class="nav-item @(currentAction.StartsWith("BusinessTrip") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("BusinessTripIndex", "Master")">
-                    <i class="fas fa-fw fa-plane"></i>
-                    <span>Business Trip</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("AssetAllocation") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("AssetAllocationIndex", "Master")">
+
+            <!-- Asset Management Group -->
+            <li class="nav-item @(isAssetsActive ? "active" : "")">
+                <a class="nav-link @(isAssetsActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseAssets"
+                   aria-expanded="@(isAssetsActive ? "true" : "false")" aria-controls="collapseAssets">
                     <i class="fas fa-fw fa-boxes"></i>
-                    <span>Asset Allocation</span>
+                    <span>Asset Management</span>
                 </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("AssetDeAllocation") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("AssetDeAllocationIndex", "Master")">
-                    <i class="fas fa-fw fa-box-open"></i>
-                    <span>Asset De-Allocation</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("HRRequest") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("HRRequestIndex", "Master")">
-                    <i class="fas fa-fw fa-hand-holding"></i>
-                    <span>HR Request</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("HRReturn") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("HRReturnIndex", "Master")">
-                    <i class="fas fa-fw fa-undo"></i>
-                    <span>HR Return</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("HRDocumentIssue") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("HRDocumentIssueIndex", "Master")">
-                    <i class="fas fa-fw fa-file-invoice"></i>
-                    <span>HR Document Issue</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("OpeningLeaves") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("OpeningLeavesIndex", "Master")">
-                    <i class="fas fa-fw fa-calendar-plus"></i>
-                    <span>Opening Leaves</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LeaveEligibility") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LeaveEligibilityIndex", "Master")">
-                    <i class="fas fa-fw fa-user-check"></i>
-                    <span>Leave Eligibility</span>
-                </a>
-            </li>
-            <li class="nav-item @(currentAction.StartsWith("LeaveAdjustments") ? "active" : "")">
-                <a class="nav-link" href="@Url.Action("LeaveAdjustmentsIndex", "Master")">
-                    <i class="fas fa-fw fa-sliders-h"></i>
-                    <span>Leave Adjustments</span>
-                </a>
+                <div id="collapseAssets" class="collapse @(isAssetsActive ? "show" : "")" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item @(currentAction.StartsWith("AssetAllocation") ? "active" : "")" href="@Url.Action("AssetAllocationIndex", "Master")">Asset Allocation</a>
+                        <a class="collapse-item @(currentAction.StartsWith("AssetDeAllocation") ? "active" : "")" href="@Url.Action("AssetDeAllocationIndex", "Master")">Asset De-Allocation</a>
+                    </div>
+                </div>
             </li>
 
  

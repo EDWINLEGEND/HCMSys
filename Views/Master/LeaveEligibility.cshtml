@@ -155,25 +155,19 @@
         initHeader();
 
         $.when(
-            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
+            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
             $.getJSON('/assets/leavetype.json'),
-            $.getJSON('/Master/GetApiAssetCategories').then(function(res) { return res && res.length ? res : $.getJSON('/assets/asset_category.json'); })
+            fetchWithFallback('/Master/GetApiAssetCategories', '/assets/asset_category.json')
         ).done(function(empRes, leaveRes, catRes) {
-            employeesData = empRes[0] || empRes;
-            if (Array.isArray(employeesData) && employeesData.length > 0 && Array.isArray(employeesData[0])) {
-                employeesData = employeesData[0];
-            }
+            employeesData = empRes;
             var leaveData = leaveRes[0] || leaveRes;
             leaveTypesData = leaveData.leaveTypes || leaveData;
-            categoriesData = catRes[0] || catRes;
-            if (Array.isArray(categoriesData) && categoriesData.length > 0 && Array.isArray(categoriesData[0])) {
-                categoriesData = categoriesData[0];
-            }
+            categoriesData = catRes;
             
             // Automatically add initial clean row
             addRow();
         }).fail(function() {
-            alertify.log('Failed to load JSON data from /assets/', 'error', 5000);
+            alertify.log('Failed to load Leave Eligibility data.', 'error', 5000);
         });
 
         flatpickr(".datepicker", {
@@ -201,19 +195,33 @@
         var tbody = $('#user-grid-table tbody');
         
         var empOptions = '<option value="">Select Employee...</option>';
-        employeesData.forEach(function(emp) {
-            empOptions += `<option value="${emp.id}">${emp.code} - ${emp.name}</option>`;
-        });
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId || '';
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                empOptions += `<option value="${empId}">${empCode} - ${empName}</option>`;
+            });
+        }
 
         var leaveOptions = '<option value="">Select Leave Type...</option>';
-        leaveTypesData.forEach(function(lt) {
-            leaveOptions += `<option value="${lt.id}">${lt.code} - ${lt.name}</option>`;
-        });
+        if (Array.isArray(leaveTypesData)) {
+            leaveTypesData.forEach(function(lt) {
+                var ltId = lt.id || lt.code || '';
+                var ltCode = lt.code || '';
+                var ltName = lt.name || '';
+                leaveOptions += `<option value="${ltId}">${ltCode} - ${ltName}</option>`;
+            });
+        }
 
         var catOptions = '<option value="">Select Category...</option>';
-        categoriesData.forEach(function(cat) {
-            catOptions += `<option value="${cat.code}">${cat.code} - ${cat.name}</option>`;
-        });
+        if (Array.isArray(categoriesData)) {
+            categoriesData.forEach(function(cat) {
+                var catCode = cat.code || cat.sCode || '';
+                var catName = cat.name || cat.sName || '';
+                catOptions += `<option value="${catCode}">${catCode} - ${catName}</option>`;
+            });
+        }
 
         var rowId = 'row_' + new Date().getTime() + '_' + Math.floor(Math.random()*1000);
 

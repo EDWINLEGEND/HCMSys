@@ -329,13 +329,13 @@
 
         // Fetch JSON data
         $.when(
-            $.getJSON('/assets/employee.json'),
+            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
             $.getJSON('/assets/leave_balances.json'),
             $.getJSON('/assets/leavetype.json')
         ).done(function(empRes, balRes, optRes) {
-            employeesData = empRes[0];
-            leaveBalancesData = balRes[0];
-            leaveOptionsData = optRes[0];
+            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
+            leaveBalancesData = Array.isArray(balRes) ? balRes : (balRes[0] || balRes);
+            leaveOptionsData = Array.isArray(optRes) ? optRes : (optRes[0] || optRes);
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });

@@ -258,13 +258,13 @@
         initHeader();
 
         $.when(
-            $.getJSON('/assets/employee.json'),
+            $.getJSON('/Master/GetApiEmployees').then(function(res) { return res && res.length ? res : $.getJSON('/assets/employee.json'); }),
             $.getJSON('/assets/currency.json'),
             $.getJSON('/assets/claim_master.json')
         ).done(function(empRes, curRes, claimRes) {
-            employeesData = empRes[0];
-            currencyData = curRes[0];
-            claimMasterData = claimRes[0];
+            employeesData = Array.isArray(empRes) ? empRes : (empRes[0] || empRes);
+            currencyData = Array.isArray(curRes) ? curRes : (curRes[0] || curRes);
+            claimMasterData = Array.isArray(claimRes) ? claimRes : (claimRes[0] || claimRes);
             
             populateDropdowns();
             // Make all dropdowns searchable

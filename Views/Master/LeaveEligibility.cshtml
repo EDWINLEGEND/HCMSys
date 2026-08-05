@@ -155,9 +155,9 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
-            $.getJSON('/assets/leavetype.json'),
-            fetchWithFallback('/Master/GetApiAssetCategories', '/assets/asset_category.json')
+            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
+            $.getJSON('/api-assets/leavetype.json'),
+            fetchWithFallback('/Master/GetApiAssetCategories', '/api-assets/asset_category.json')
         ).done(function(empRes, leaveRes, catRes) {
             employeesData = empRes;
             var leaveData = leaveRes[0] || leaveRes;

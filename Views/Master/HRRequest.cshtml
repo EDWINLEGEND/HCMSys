@@ -199,8 +199,8 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
-            $.getJSON('/assets/request_master.json')
+            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
+            $.getJSON('/api-assets/request_master.json')
         ).done(function(empRes, reqRes) {
             employeesData = empRes;
             requestMasterData = reqRes[0] || reqRes;

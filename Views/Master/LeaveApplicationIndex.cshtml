@@ -297,7 +297,7 @@
                         <!-- ── Dummy Data Rows ── -->
                         <tr>
                             <td class="action-btns" style="text-align:center;">
-                                <a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Leave-modal" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                                <a href="#" class="edit-item-btn" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
                                 <a href="#" class="remove-item-btn" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                             </td>
                             <td>1</td>
@@ -319,7 +319,7 @@
                         </tr>
                         <tr>
                             <td class="action-btns" style="text-align:center;">
-                                <a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Leave-modal" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                                <a href="#" class="edit-item-btn" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
                                 <a href="#" class="remove-item-btn" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                             </td>
                             <td>2</td>
@@ -583,7 +583,7 @@
             var docBtn = '<a href="#" onclick="openDocPreview(\'' + safeName + '\', \'' + safeUrl + '\'); return false;" class="badge badge-info shadow-sm"><i class="fas fa-file-alt mr-1"></i> ' + (l.attachmentName ? l.attachmentName : 'View / Preview') + '</a>';
 
             table.row.add([
-                '<a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Leave-modal" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a> ' +
+                '<a href="#" class="edit-item-btn" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a> ' +
                 '<a href="#" class="remove-item-btn" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>',
                 l.id,
                 l.code,
@@ -661,32 +661,57 @@
         getNo();
     }
 
-    /* ── Edit row ── */
+    /* ── Edit row: Navigate to CreateLeaveApplication form ── */
     $(document).on('click', 'a.edit-item-btn', function (e) {
         e.preventDefault();
         var row = $(this).closest('tr');
-        clearFields();
-
-        $('#add-btn').html('<i class="fas fa-sync-alt mr-1"></i> Update');
-        $('#Leave-modal-label').html('<i class="fas fa-edit mr-2"></i>Update Leave Application');
 
         var id     = row.find('td').eq(1).text().trim();
         var code   = row.find('td').eq(2).text().trim();
         var name   = row.find('td').eq(3).text().trim();
         var type   = row.find('td').eq(4).text().trim();
-        var start  = parseDateToHTMLFormat(row.find('td').eq(5).text().trim());
-        var end    = parseDateToHTMLFormat(row.find('td').eq(6).text().trim());
-        var status = $(row.find('td').eq(7)).text().trim();
-        var reason = row.find('td').eq(8).text().trim();
+        var start  = row.find('td').eq(5).text().trim();
+        var end    = row.find('td').eq(6).text().trim();
+        var duration = row.find('td').eq(7).text().trim();
+        var eligible = row.find('td').eq(9).text().trim();
+        var approved = row.find('td').eq(10).text().trim();
+        var unapproved = row.find('td').eq(11).text().trim();
+        var available = row.find('td').eq(12).text().trim();
+        var usedNow = row.find('td').eq(13).text().trim();
+        var balance = row.find('td').eq(14).text().trim();
+        var status = row.find('td').eq(15).text().trim();
+        var reason = row.find('td').eq(16).text().trim();
 
-        $('#id-field').val(id);
-        $('#code-field').val(code).prop('disabled', true);
-        $('#name-field').val(name);
-        $('#type-field').val(type);
-        $('#start-field').val(start);
-        $('#end-field').val(end);
-        $('#status-field').val(status);
-        $('#reason-field').val(reason);
+        // Retrieve saved object from localStorage if present
+        var storedLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
+        var match = storedLeaves.find(function(l) { return l.code === code || String(l.id) === String(id); });
+
+        var editObj = match || {
+            id: id,
+            code: code,
+            name: name,
+            type: type,
+            start: start,
+            end: end,
+            duration: duration,
+            eligible: eligible,
+            approved: approved,
+            unapproved: unapproved,
+            available: available,
+            usedNow: usedNow,
+            balance: balance,
+            status: status,
+            reason: reason
+        };
+
+        sessionStorage.setItem('editLeaveApp', JSON.stringify(editObj));
+
+        var createUrl = '@Url.Action("CreateLeaveApplication", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(createUrl, true);
+        } else {
+            window.location.href = createUrl;
+        }
 
         return false;
     });

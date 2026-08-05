@@ -330,9 +330,9 @@
 
         // Fetch JSON data
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
-            $.getJSON('/assets/leave_balances.json'),
-            $.getJSON('/assets/leavetype.json')
+            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
+            $.getJSON('/api-assets/leave_balances.json'),
+            $.getJSON('/api-assets/leavetype.json')
         ).done(function(empRes, balRes, optRes) {
             employeesData = empRes;
             leaveBalancesData = balRes[0] || balRes;
@@ -340,6 +340,7 @@
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
+            checkEditMode();
         }).fail(function() {
             alertify.log('Failed to load leave application data', 'error', 5000);
         });
@@ -769,19 +770,104 @@
         }
 
         renderGrids();
+        resetLeaveDetailsForm();
+        alertify.log('Leave details added to grid.', 'success', 3000);
+    }
 
-        // Reset details section & blue summary panel to 0.0 until next leave is selected
+    function resetLeaveDetailsForm() {
         $('#dtl-leavetype').val('').trigger('change');
-        $('#dtl-substitute').val('').trigger('change');
+        if ($('#dtl-paymenttype option').length > 0) {
+            $('#dtl-paymenttype').val($('#dtl-paymenttype option:first').val()).trigger('change');
+        }
+        $('#dtl-halfday').val('No').trigger('change');
+        
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yyyy = d.getFullYear();
+        var todayStr = dd + '-' + mmm + '-' + yyyy;
+        
+        $('#dtl-fromdate').val(todayStr);
+        $('#dtl-todate').val(todayStr);
+        
+        $('#dtl-duration').val(0);
         $('#dtl-weeklyoff').val(0);
         $('#dtl-publicholiday').val(0);
-        $('#dtl-duration').val(0);
         $('#dtl-noofleaves').val(0);
+        
+        $('#dtl-contact').val('');
+        $('#dtl-substitute').val('').trigger('change');
         $('#dtl-attachment').val('');
-
+        uploadedBase64Url = '';
+        uploadedFileName = '';
+        
         $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
+    }
 
-        alertify.log('Leave details added to grid.', 'success', 5000);
+    function checkEditMode() {
+        var editDataStr = sessionStorage.getItem('editLeaveApp');
+        if (!editDataStr) return;
+        
+        try {
+            var editData = JSON.parse(editDataStr);
+            sessionStorage.removeItem('editLeaveApp');
+
+            if (editData.code) {
+                $('#hdr-docno').val(editData.code);
+            }
+            if (editData.comments || editData.reason) {
+                $('#hdr-comments').val(editData.comments || editData.reason);
+            }
+
+            var targetName = editData.name || editData.employeeName || '';
+            if (targetName && Array.isArray(employeesData)) {
+                var emp = employeesData.find(e => {
+                    var nameMatch = (e.name && e.name.toLowerCase().includes(targetName.toLowerCase())) ||
+                                    (e.sName && e.sName.toLowerCase().includes(targetName.toLowerCase()));
+                    return nameMatch || e.id == editData.empId || e.iMasterId == editData.empId;
+                });
+                if (emp) {
+                    var empId = emp.id || emp.iMasterId;
+                    $('#hdr-employee').val(empId).trigger('change');
+                }
+            }
+
+            if (editData.type || editData.start) {
+                var uniqueStagedId = 'id_' + new Date().getTime();
+                var appObj = {
+                    stagedId: editData.stagedId || uniqueStagedId,
+                    id: editData.id || uniqueStagedId,
+                    code: editData.code || $('#hdr-docno').val(),
+                    name: editData.name || editData.employeeName || $('#hdr-employee option:selected').text(),
+                    type: editData.type || editData.leaveTypeName || 'Annual Leave',
+                    start: editData.start || editData.fromDate || $('#hdr-date').val(),
+                    end: editData.end || editData.toDate || $('#hdr-date').val(),
+                    duration: parseFloat(editData.duration || editData.usedNow || 1),
+                    contactNo: editData.contactNo || '',
+                    substituteEmployee: editData.substituteEmployee || editData.substitute || '-',
+                    substituteEmployeeId: editData.substituteEmployeeId || '',
+                    eligible: parseFloat(editData.eligible || 0),
+                    approved: parseFloat(editData.approved || 0),
+                    unapproved: parseFloat(editData.unapproved || 0),
+                    available: parseFloat(editData.available || 0),
+                    usedNow: parseFloat(editData.usedNow || editData.duration || 1),
+                    balance: parseFloat(editData.balance || 0),
+                    status: editData.status || 'Pending',
+                    reason: editData.reason || editData.comments || '',
+                    attachmentName: editData.attachmentName || '',
+                    attachmentUrl: editData.attachmentUrl || ''
+                };
+
+                stagedLeaves = [appObj];
+                renderGrids();
+            }
+
+            $('.page-title-bar .page-title-text').html('<i class="fas fa-edit fa-sm mr-2 text-primary"></i> Edit Leave Application');
+            alertify.log('Editing Leave Application: ' + (editData.code || ''), 'info', 3000);
+        } catch(e) {
+            console.error('Error loading edit leave application data:', e);
+        }
     }
 
     function saveApplication() {
@@ -791,7 +877,18 @@
         }
 
         var existingLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-        existingLeaves = existingLeaves.concat(stagedLeaves);
+        
+        stagedLeaves.forEach(function(staged) {
+            var idx = existingLeaves.findIndex(function(l) { 
+                return (l.code && l.code === staged.code) || (l.id && String(l.id) === String(staged.id)); 
+            });
+            if (idx !== -1) {
+                existingLeaves[idx] = staged;
+            } else {
+                existingLeaves.push(staged);
+            }
+        });
+
         localStorage.setItem('leaveApps', JSON.stringify(existingLeaves));
 
         sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Leave Application saved successfully!', type: 'success' }));

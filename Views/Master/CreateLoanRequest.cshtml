@@ -288,8 +288,8 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
-            $.getJSON('/assets/loan_type.json')
+            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
+            $.getJSON('/api-assets/loan_type.json')
         ).done(function(empRes, loanRes) {
             employeesData = empRes;
             loanTypesData = loanRes[0] || loanRes;

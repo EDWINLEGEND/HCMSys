@@ -258,9 +258,9 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
-            $.getJSON('/assets/currency.json'),
-            $.getJSON('/assets/claim_master.json')
+            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
+            $.getJSON('/api-assets/currency.json'),
+            $.getJSON('/api-assets/claim_master.json')
         ).done(function(empRes, curRes, claimRes) {
             employeesData = empRes;
             currencyData = curRes[0] || curRes;

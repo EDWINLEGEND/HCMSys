@@ -211,9 +211,9 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
-            fetchWithFallback('/Master/GetApiAssetCategories', '/assets/asset_category.json'),
-            fetchWithFallback('/Master/GetApiAssets', '/assets/asset_code.json')
+            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
+            fetchWithFallback('/Master/GetApiAssetCategories', '/api-assets/asset_category.json'),
+            fetchWithFallback('/Master/GetApiAssets', '/api-assets/asset_code.json')
         ).done(function(empRes, catRes, codeRes) {
             employeesData = empRes;
             assetCategoryData = catRes;

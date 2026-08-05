@@ -274,10 +274,10 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json'),
-            $.getJSON('/assets/currency.json'),
-            $.getJSON('/assets/city.json'),
-            $.getJSON('/assets/city_rate_matrix.json')
+            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
+            $.getJSON('/api-assets/currency.json'),
+            $.getJSON('/api-assets/city.json'),
+            $.getJSON('/api-assets/city_rate_matrix.json')
         ).done(function(empRes, curRes, cityRes, rateRes) {
             employeesData = empRes;
             currencyData = curRes[0] || curRes;

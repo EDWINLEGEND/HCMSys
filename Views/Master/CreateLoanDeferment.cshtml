@@ -230,7 +230,7 @@
     $(document).ready(function() {
         initHeader();
 
-        $.getJSON('/assets/loan_disbursements.json', function(res) {
+        $.getJSON('/api-assets/loan_disbursements.json', function(res) {
             disbursementsData = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : res;
             var disbSelect = $('#hdr-disbursementno');
             disbSelect.empty().append('<option value="">Select Disbursement No...</option>');

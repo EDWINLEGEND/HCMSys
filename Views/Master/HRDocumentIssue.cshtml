@@ -167,7 +167,7 @@
     $(document).ready(function() {
         initHeader();
 
-        fetchWithFallback('/Master/GetApiEmployees', '/assets/employee.json').done(function(empRes) {
+        fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json').done(function(empRes) {
             employeesData = empRes;
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });

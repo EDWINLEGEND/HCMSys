@@ -262,7 +262,7 @@
     $(document).ready(function() {
         initHeader();
 
-        $.getJSON('/assets/loan_requests.json', function(res) {
+        $.getJSON('/api-assets/loan_requests.json', function(res) {
             requestsData = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : res;
             var reqSelect = $('#hdr-requestno');
             reqSelect.empty().append('<option value="">Select Request Number...</option>');

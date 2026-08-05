@@ -89,10 +89,17 @@ namespace HCMSys.Services
                 var token = await GetAuthTokenAsync();
                 if (string.IsNullOrEmpty(token)) return new List<EmployeeDto>();
 
-                var request = new HttpRequestMessage(HttpMethod.Get, "api/common/employees");
+                var request = new HttpRequestMessage(HttpMethod.Get, "api/asset/employees");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    request = new HttpRequestMessage(HttpMethod.Get, "api/common/employees");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    response = await _httpClient.SendAsync(request);
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonString = await response.Content.ReadAsStringAsync();

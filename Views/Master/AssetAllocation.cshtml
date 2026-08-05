@@ -326,21 +326,43 @@
         if (!aCode) {
             $('#dtl-assetname').val('');
             $('#dtl-assettag').val('');
+            $('#dtl-assetcode').data('assetId', 0);
             return;
         }
         var asset = assetCodeData.find(c => c.code == aCode || c.sCode == aCode);
         if (asset) {
             $('#dtl-assetname').val(asset.name || asset.sName || '');
             $('#dtl-assettag').val(asset.tagNumber || asset.sTagNumber || 'N/A');
+            $('#dtl-assetcode').data('assetId', asset.iMasterId || asset.id || 1);
         }
     }
 
+    var uploadedBase64Url = '';
+    var uploadedFileName = '';
+    var uploadedContentType = '';
+
     function checkFileSize(input) {
         if (input.files && input.files[0]) {
-            if (input.files[0].size > 25 * 1024 * 1024) {
+            var file = input.files[0];
+            if (file.size > 25 * 1024 * 1024) {
                 alertify.log('File size exceeds 25MB limit.', 'error', 5000);
                 input.value = '';
+                uploadedBase64Url = '';
+                uploadedFileName = '';
+                uploadedContentType = '';
+                return;
             }
+            uploadedFileName = file.name;
+            uploadedContentType = file.type;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedBase64Url = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            uploadedBase64Url = '';
+            uploadedFileName = '';
+            uploadedContentType = '';
         }
     }
 
@@ -387,11 +409,13 @@
         var tagNumber = $('#dtl-assettag').val();
         var remarks = $('#dtl-remarks').val();
         var qty = $('#dtl-qty').val();
+        var assetId = $('#dtl-assetcode').data('assetId') || 1;
 
         var uniqueStagedId = 'id_' + new Date().getTime();
 
         var newItem = {
             stagedId: uniqueStagedId,
+            assetId: assetId,
             categoryCode: categoryCode,
             categoryName: categoryName,
             assetCode: assetCode,
@@ -415,43 +439,126 @@
             return;
         }
 
-        if(!$('#hdr-employee').val()) {
-            alertify.log('Please fill required Header fields (Employee).', 'error', 5000);
+        var empVal = $('#hdr-employee').val();
+        if(!empVal) {
+            alertify.log('Please select an Employee.', 'error', 5000);
             return;
         }
 
-        var empText = $('#hdr-employee option:selected').text();
-        var empParts = empText.split(' - ');
-        var empName = empParts.length > 1 ? empParts.slice(1).join(' - ') : empText;
+        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
+        var empCode = emp ? (emp.sCode || emp.code || '') : '';
+        var empName = emp ? (emp.sName || emp.name || '') : '';
+        var empDeptCode = emp ? (emp.sDepartmentCode || emp.departmentCode || '') : '';
+        var empDeptName = emp ? (emp.sDepartmentName || emp.departmentName || $('#hdr-department').val() || '') : '';
+        var empDesigCode = emp ? (emp.sDesignationCode || emp.designationCode || '') : '';
+        var empDesigName = emp ? (emp.sDesignationName || emp.designationName || $('#hdr-designation').val() || '') : '';
+        var managerName = $('#hdr-manager').val();
 
-        var newAllocations = stagedAssets.map(function(sa) {
-            return {
-                docNo: $('#hdr-docno').val(),
-                date: $('#hdr-date').val(),
-                employeeId: $('#hdr-employee').val(),
-                employeeName: empName,
-                allocationNo: 'ALL-' + Math.floor(Math.random() * 100000), // Generate mock Allocation No
-                categoryCode: sa.categoryCode,
-                categoryName: sa.categoryName,
-                assetCode: sa.assetCode,
-                assetName: sa.assetName,
-                tagNumber: sa.tagNumber,
-                qty: sa.qty,
-                remarks: sa.remarks,
-                status: 'Allocated'
-            };
-        });
+        var docNo = $('#hdr-docno').val();
+        var dateStr = $('#hdr-date').val();
 
-        var existingAllocations = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-        existingAllocations = existingAllocations.concat(newAllocations);
-        localStorage.setItem('savedAssetAllocations', JSON.stringify(existingAllocations));
-
-        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset Allocation saved successfully!', type: 'success' }));
-        var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
-        if (typeof loadPageContent === 'function') {
-            loadPageContent(targetUrl, true);
-        } else {
-            window.location.href = targetUrl;
+        function parseToISO(dStr) {
+            if(!dStr) return new Date().toISOString();
+            var parts = dStr.split('-');
+            if(parts.length === 3) {
+                var months = {'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11};
+                var m = months[parts[1]] !== undefined ? months[parts[1]] : 0;
+                var dt = new Date(parseInt(parts[2]), m, parseInt(parts[0]));
+                return dt.toISOString();
+            }
+            return new Date().toISOString();
         }
+
+        var isoDate = parseToISO(dateStr);
+
+        var payload = {
+            iHeaderId: 0,
+            sDocNo: docNo,
+            dDocDate: isoDate,
+            dPostDate: isoDate,
+            iEmpId: parseInt(empVal) || 0,
+            sComments: $('#hdr-comments').val() || '',
+            sEmployeeCode: empCode,
+            sEmployeeName: empName,
+            sDepartmentCode: empDeptCode,
+            sDepartmentName: empDeptName,
+            sDesignationCode: empDesigCode,
+            sDesignationName: empDesigName,
+            sReportingToCode: empCode,
+            sReportingToName: managerName,
+            iCompanyId: 1,
+            iPayYearId: 1,
+            iStatus: 1,
+            iAuthStatus: 0,
+            iCreatedBy: 1,
+            iModifiedBy: 1,
+            iApprovedBy: 0,
+            assets: stagedAssets.map(function(sa, idx) {
+                return {
+                    iBodyId: 0,
+                    iHeaderId: 0,
+                    sDocNo: docNo,
+                    iAssetId: sa.assetId || (idx + 1),
+                    sAssetCode: sa.assetCode,
+                    sAssetName: sa.assetName,
+                    sCategoryCode: sa.categoryCode,
+                    sCategoryName: sa.categoryName,
+                    sTagNumber: sa.tagNumber,
+                    fQuantity: parseFloat(sa.qty) || 1,
+                    sRemarks: sa.remarks || ''
+                };
+            }),
+            assetFile: {
+                iHeaderId: 0,
+                iFileId: 0,
+                sAttachmentFilePath: uploadedBase64Url || '',
+                sAttachmentFileName: uploadedFileName || '',
+                sContentType: uploadedContentType || ''
+            }
+        };
+
+        var localItem = {
+            docNo: docNo,
+            date: dateStr,
+            employeeName: empName,
+            categoryName: stagedAssets[0].categoryName,
+            assetCode: stagedAssets[0].assetCode,
+            assetName: stagedAssets[0].assetName,
+            remarks: stagedAssets[0].remarks,
+            status: 'Allocated'
+        };
+
+        $.ajax({
+            url: '/Master/SaveApiAssetAllocation',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(res) {
+                var existing = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+                existing.unshift(localItem);
+                localStorage.setItem('savedAssetAllocations', JSON.stringify(existing));
+
+                sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset Allocation saved successfully!', type: 'success' }));
+                var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
+                if (typeof loadPageContent === 'function') {
+                    loadPageContent(targetUrl, true);
+                } else {
+                    window.location.href = targetUrl;
+                }
+            },
+            error: function(err) {
+                var existing = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+                existing.unshift(localItem);
+                localStorage.setItem('savedAssetAllocations', JSON.stringify(existing));
+
+                sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset Allocation saved locally (API offline).', type: 'warning' }));
+                var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
+                if (typeof loadPageContent === 'function') {
+                    loadPageContent(targetUrl, true);
+                } else {
+                    window.location.href = targetUrl;
+                }
+            }
+        });
     }
 </script>

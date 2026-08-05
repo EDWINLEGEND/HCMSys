@@ -211,32 +211,71 @@
 
         function loadGridData() {
             table.clear();
-            var savedData = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-            $('#stat-total').text(savedData.length);
+            var localSaved = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
 
-            savedData.reverse().forEach(function(item, index) {
-                var actualIndex = savedData.length - 1 - index;
-                
-                var actionHtml = `
-                    <div class="action-btns" style="text-align:center;">
-                        <a href="#" class="edit-item-btn" data-idx="${actualIndex}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                        <a href="#" class="remove-item-btn" data-idx="${actualIndex}" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                    </div>
-                `;
+            function renderRows(items) {
+                table.clear();
+                $('#stat-total').text(items.length);
 
-                table.row.add([
-                    actionHtml,
-                    item.docNo || item.allocationNo || '-',
-                    item.date || item.allocDate || '-',
-                    item.employeeName || '-',
-                    item.categoryName || '-',
-                    item.assetCode || '-',
-                    item.assetName || '-',
-                    item.remarks || item.allocRemarks || '-',
-                    '<span class="badge badge-success">' + (item.status || 'Allocated') + '</span>'
-                ]);
+                items.forEach(function(item, index) {
+                    var actionHtml = `
+                        <div class="action-btns" style="text-align:center;">
+                            <a href="#" class="edit-item-btn" data-idx="${index}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                            <a href="#" class="remove-item-btn" data-idx="${index}" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                        </div>
+                    `;
+
+                    table.row.add([
+                        actionHtml,
+                        item.docNo || item.sDocNo || item.allocationNo || '-',
+                        item.date || item.dDocDate || item.allocDate || '-',
+                        item.employeeName || item.sEmployeeName || '-',
+                        item.categoryName || item.sCategoryName || '-',
+                        item.assetCode || item.sAssetCode || '-',
+                        item.assetName || item.sAssetName || '-',
+                        item.remarks || item.sComments || item.allocRemarks || '-',
+                        '<span class="badge badge-success">' + (item.status || 'Allocated') + '</span>'
+                    ]);
+                });
+                table.draw(false);
+            }
+
+            $.ajax({
+                url: '/Master/GetApiAssetAllocations',
+                type: 'GET',
+                success: function(apiData) {
+                    var combined = [];
+                    if (Array.isArray(apiData) && apiData.length > 0) {
+                        apiData.forEach(function(item) {
+                            var firstAsset = (item.assets && item.assets.length > 0) ? item.assets[0] : {};
+                            var formattedDate = item.dDocDate ? item.dDocDate.split('T')[0] : '-';
+
+                            combined.push({
+                                docNo: item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0')),
+                                date: formattedDate,
+                                employeeName: item.sEmployeeName || '-',
+                                categoryName: firstAsset.sCategoryName || '-',
+                                assetCode: firstAsset.sAssetCode || '-',
+                                assetName: firstAsset.sAssetName || '-',
+                                remarks: item.sComments || firstAsset.sRemarks || '-',
+                                status: item.iStatus === 1 ? 'Allocated' : 'Active',
+                                iHeaderId: item.iHeaderId
+                            });
+                        });
+                    }
+
+                    localSaved.forEach(function(ls) {
+                        if (!combined.some(c => c.docNo === ls.docNo)) {
+                            combined.push(ls);
+                        }
+                    });
+
+                    renderRows(combined);
+                },
+                error: function() {
+                    renderRows(localSaved);
+                }
             });
-            table.draw(false);
         }
 
         loadGridData();

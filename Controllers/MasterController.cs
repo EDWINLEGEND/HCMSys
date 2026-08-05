@@ -98,6 +98,29 @@ namespace HCMSys.Controllers
             return Json(normalized);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SaveApiAssetAllocation([FromBody] SaveAssetAllocationDto request)
+        {
+            if (request == null) return BadRequest(new { success = false, message = "Invalid request payload." });
+            var result = await _apiService.SaveAssetAllocationAsync(request);
+            return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Save API." });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiAssetAllocations(int companyId = 1, int payYearId = 1)
+        {
+            var allocations = await _apiService.GetAssetAllocationsAsync(companyId, payYearId);
+            return Json(allocations);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiAssetAllocationById(int id)
+        {
+            var allocation = await _apiService.GetAssetAllocationByIdAsync(id);
+            if (allocation == null) return NotFound(new { success = false, message = "Asset allocation not found." });
+            return Json(allocation);
+        }
+
         /// <summary>
         /// ////Project master
         /// </summary>

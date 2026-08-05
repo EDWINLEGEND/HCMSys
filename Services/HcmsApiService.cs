@@ -89,7 +89,7 @@ namespace HCMSys.Services
                 var token = await GetAuthTokenAsync();
                 if (string.IsNullOrEmpty(token)) return new List<EmployeeDto>();
 
-                var request = new HttpRequestMessage(HttpMethod.Get, "api/asset/employees");
+                var request = new HttpRequestMessage(HttpMethod.Get, "api/common/employees");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var response = await _httpClient.SendAsync(request);
@@ -158,6 +158,94 @@ namespace HCMSys.Services
             }
 
             return new List<AssetDto>();
+        }
+
+        public async Task<ApiResponseEnvelope<object>?> SaveAssetAllocationAsync(SaveAssetAllocationDto payload)
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    return new ApiResponseEnvelope<object> { Success = false, Message = "Authentication failed (no token)." };
+                }
+
+                var request = new HttpRequestMessage(HttpMethod.Post, "api/asset/saveassetallocation");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var jsonPayload = JsonSerializer.Serialize(payload);
+                request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.SendAsync(request);
+                var jsonString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                else
+                {
+                    _logger.LogWarning("SaveAssetAllocation API returned non-success code {StatusCode}: {Response}", response.StatusCode, jsonString);
+                    return new ApiResponseEnvelope<object> { Success = false, Message = $"API returned status {response.StatusCode}" };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling SaveAssetAllocation API");
+                return new ApiResponseEnvelope<object> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<List<SaveAssetAllocationDto>> GetAssetAllocationsAsync(int companyId = 1, int payYearId = 1)
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(token)) return new List<SaveAssetAllocationDto>();
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"api/asset/GetAssetAllocation?iCompanyId={companyId}&iPayYearId={payYearId}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<List<SaveAssetAllocationDto>>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    return envelope?.Data ?? new List<SaveAssetAllocationDto>();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching Asset Allocations from API");
+            }
+
+            return new List<SaveAssetAllocationDto>();
+        }
+
+        public async Task<SaveAssetAllocationDto?> GetAssetAllocationByIdAsync(int id)
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(token)) return null;
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"api/asset/GetAssetAllocation/{id}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<SaveAssetAllocationDto>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    return envelope?.Data;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching Asset Allocation by Id from API");
+            }
+
+            return null;
         }
     }
 }

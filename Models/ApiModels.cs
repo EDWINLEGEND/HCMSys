@@ -179,4 +179,131 @@ namespace HCMSys.Models
         [JsonPropertyName("iStatus")]
         public int IStatus { get; set; }
     }
+
+    // --- Asset Allocation DTOs ---
+    public class SaveAssetAllocationDto
+    {
+        [JsonPropertyName("iHeaderId")]
+        public int IHeaderId { get; set; } = 0;
+
+        [JsonPropertyName("sDocNo")]
+        public string SDocNo { get; set; } = string.Empty;
+
+        [JsonPropertyName("dDocDate")]
+        public string DDocDate { get; set; } = string.Empty;
+
+        [JsonPropertyName("dPostDate")]
+        public string DPostDate { get; set; } = string.Empty;
+
+        [JsonPropertyName("iEmpId")]
+        public int IEmpId { get; set; }
+
+        [JsonPropertyName("sComments")]
+        public string? SComments { get; set; }
+
+        [JsonPropertyName("sEmployeeCode")]
+        public string? SEmployeeCode { get; set; }
+
+        [JsonPropertyName("sEmployeeName")]
+        public string? SEmployeeName { get; set; }
+
+        [JsonPropertyName("sDepartmentCode")]
+        public string? SDepartmentCode { get; set; }
+
+        [JsonPropertyName("sDepartmentName")]
+        public string? SDepartmentName { get; set; }
+
+        [JsonPropertyName("sDesignationCode")]
+        public string? SDesignationCode { get; set; }
+
+        [JsonPropertyName("sDesignationName")]
+        public string? SDesignationName { get; set; }
+
+        [JsonPropertyName("sReportingToCode")]
+        public string? SReportingToCode { get; set; }
+
+        [JsonPropertyName("sReportingToName")]
+        public string? SReportingToName { get; set; }
+
+        [JsonPropertyName("iCompanyId")]
+        public int ICompanyId { get; set; } = 1;
+
+        [JsonPropertyName("iPayYearId")]
+        public int IPayYearId { get; set; } = 1;
+
+        [JsonPropertyName("iStatus")]
+        public int IStatus { get; set; } = 1;
+
+        [JsonPropertyName("iAuthStatus")]
+        public int IAuthStatus { get; set; } = 0;
+
+        [JsonPropertyName("iCreatedBy")]
+        public int ICreatedBy { get; set; } = 1;
+
+        [JsonPropertyName("iModifiedBy")]
+        public int IModifiedBy { get; set; } = 1;
+
+        [JsonPropertyName("iApprovedBy")]
+        public int IApprovedBy { get; set; } = 0;
+
+        [JsonPropertyName("assets")]
+        public List<AssetAllocationBodyDto> Assets { get; set; } = new List<AssetAllocationBodyDto>();
+
+        [JsonPropertyName("assetFile")]
+        public AssetAllocationFileDto? AssetFile { get; set; }
+    }
+
+    public class AssetAllocationBodyDto
+    {
+        [JsonPropertyName("iBodyId")]
+        public int IBodyId { get; set; } = 0;
+
+        [JsonPropertyName("iHeaderId")]
+        public int IHeaderId { get; set; } = 0;
+
+        [JsonPropertyName("sDocNo")]
+        public string SDocNo { get; set; } = string.Empty;
+
+        [JsonPropertyName("iAssetId")]
+        public int IAssetId { get; set; }
+
+        [JsonPropertyName("sAssetCode")]
+        public string SAssetCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("sAssetName")]
+        public string SAssetName { get; set; } = string.Empty;
+
+        [JsonPropertyName("sCategoryCode")]
+        public string SCategoryCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("sCategoryName")]
+        public string SCategoryName { get; set; } = string.Empty;
+
+        [JsonPropertyName("sTagNumber")]
+        public string STagNumber { get; set; } = string.Empty;
+
+        [JsonPropertyName("fQuantity")]
+        public decimal FQuantity { get; set; } = 1;
+
+        [JsonPropertyName("sRemarks")]
+        public string? SRemarks { get; set; }
+    }
+
+    public class AssetAllocationFileDto
+    {
+        [JsonPropertyName("iHeaderId")]
+        public int IHeaderId { get; set; } = 0;
+
+        [JsonPropertyName("iFileId")]
+        public int IFileId { get; set; } = 0;
+
+        [JsonPropertyName("sAttachmentFilePath")]
+        public string? SAttachmentFilePath { get; set; }
+
+        [JsonPropertyName("sAttachmentFileName")]
+        public string? SAttachmentFileName { get; set; }
+
+        [JsonPropertyName("sContentType")]
+        public string? SContentType { get; set; }
+    }
 }

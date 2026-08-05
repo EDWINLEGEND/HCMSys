@@ -270,6 +270,8 @@
                         <th>From Date</th>
                         <th>To Date</th>
                         <th class="text-right">Lvs Used No</th>
+                        <th>Contact No</th>
+                        <th>Substitute Employee</th>
                         <th>Document</th>
                         <th class="text-right">Lvs Eligible</th>
                         <th class="text-right">Lvs Approved</th>
@@ -408,8 +410,34 @@
         hdSelect.find('option').filter(function(){ return $(this).text() === 'No'; }).prop('selected', true);
     }
 
+    function updateSubstituteDropdown(selectedEmpVal) {
+        var subSelect = $('#dtl-substitute');
+        var currentVal = subSelect.val();
+        subSelect.empty().append('<option value="">Select Substitute...</option>');
+        
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId || '';
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                if (selectedEmpVal && (empId == selectedEmpVal || empCode == selectedEmpVal)) {
+                    return; // Exclude the applying employee
+                }
+                subSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+            });
+        }
+        if (currentVal && currentVal != selectedEmpVal) {
+            subSelect.val(currentVal);
+        }
+        if (subSelect.data('select2')) {
+            subSelect.trigger('change.select2');
+        }
+    }
+
     function onEmployeeChange() {
         var empVal = $(this).val();
+        updateSubstituteDropdown(empVal);
+
         if (!empVal) {
             clearEmployeeFields();
             return;
@@ -481,6 +509,8 @@
                 <td>${app.start}</td>
                 <td>${app.end}</td>
                 <td class="num-col">${app.duration}</td>
+                <td>${app.contactNo || '-'}</td>
+                <td>${app.substituteEmployee || '-'}</td>
                 <td>${docBtn}</td>
                 <td class="num-col">${(app.eligible || 0).toFixed(1)}</td>
                 <td class="num-col">${(app.approved || 0).toFixed(1)}</td>
@@ -637,6 +667,16 @@
         var dispFrom = formatDateDisplay(f);
         var dispTo = formatDateDisplay(t);
 
+        var contactNo = $('#dtl-contact').val() || '';
+        var subVal = $('#dtl-substitute').val();
+
+        if (subVal && (subVal == empId || String(subVal) === String(empId))) {
+            alertify.log('An employee cannot be selected as their own substitute.', 'error', 5000);
+            return;
+        }
+
+        var subName = (subVal && subVal !== '') ? $('#dtl-substitute option:selected').text() : '-';
+
         var newApp = {
             stagedId: uniqueStagedId,
             id: uniqueStagedId,
@@ -646,6 +686,9 @@
             start: dispFrom,
             end: dispTo,
             duration: usedNow,
+            contactNo: contactNo,
+            substituteEmployee: subName,
+            substituteEmployeeId: subVal,
             eligible: eligible,
             approved: approved,
             unapproved: unapproved,

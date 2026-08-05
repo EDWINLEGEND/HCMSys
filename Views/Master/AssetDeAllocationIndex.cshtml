@@ -200,26 +200,42 @@
 
         function loadGridData() {
             table.clear();
-            var savedData = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-            var deallocated = savedData.filter(function(i) { return i.status === 'De-Allocated'; });
-            $('#stat-total').text(deallocated.length);
+            var savedDeallocs = JSON.parse(localStorage.getItem('savedAssetDeAllocations') || '[]');
+            
+            // Only include items that have a valid De-Allocation Document Number (e.g. DEA-...)
+            var deallocList = [];
+            savedDeallocs.forEach(function(item) {
+                var dNo = item.deAllocDocNo || item.returnDocNo || '';
+                var aCode = item.assetCode || '';
+                
+                // Ensure it is a DEA document number (or custom deallocation doc no), not an ALL allocation doc no
+                if (dNo && (dNo.startsWith('DEA') || (!dNo.startsWith('ALL') && dNo.includes('-')))) {
+                    if (!deallocList.some(c => c.deAllocDocNo === dNo && c.assetCode === aCode)) {
+                        deallocList.push(item);
+                    }
+                }
+            });
 
-            deallocated.reverse().forEach(function(item) {
+            $('#stat-total').text(deallocList.length);
+
+            deallocList.reverse().forEach(function(item) {
+                var dNo = item.deAllocDocNo || item.returnDocNo || '-';
+                var aCode = item.assetCode || '-';
                 var actionHtml = `
                     <div class="action-btns" style="text-align:center;">
-                        <a href="#" class="edit-item-btn" data-alloc="${item.allocationNo}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                        <a href="#" class="remove-item-btn" data-alloc="${item.allocationNo}" title="Revert to Allocated"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                        <a href="#" class="edit-item-btn" data-docno="${dNo}" data-assetcode="${aCode}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                        <a href="#" class="remove-item-btn" data-docno="${dNo}" data-assetcode="${aCode}" title="Revert/Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                     </div>
                 `;
                 table.row.add([
                     actionHtml,
-                    item.deAllocDocNo || item.returnDocNo || '-',
+                    dNo,
                     item.deAllocDate || item.returnDate || '-',
                     item.employeeName || '-',
                     item.categoryName || '-',
-                    item.assetCode || '-',
+                    aCode,
                     item.assetName || '-',
-                    item.deAllocRemarks || item.returnRemarks || '-'
+                    item.deAllocRemarks || item.returnRemarks || 'De-Allocated'
                 ]);
             });
             table.draw(false);
@@ -230,12 +246,14 @@
         // Edit Handler
         $('#data-grid tbody').on('click', '.edit-item-btn', function (e) {
             e.preventDefault();
-            var allocNo = $(this).data('alloc');
-            var savedData = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-            var item = savedData.find(i => i.allocationNo === allocNo);
+            var docNo = $(this).data('docno');
+            var assetCode = $(this).data('assetcode');
+            
+            var deallocs = JSON.parse(localStorage.getItem('savedAssetDeAllocations') || '[]');
+            var item = deallocs.find(i => (i.deAllocDocNo || i.returnDocNo) === docNo && (!assetCode || i.assetCode === assetCode));
 
             if (item) {
-                $('#edit-allocno').val(allocNo);
+                $('#edit-allocno').val(docNo);
                 $('#edit-docno').val(item.deAllocDocNo || item.returnDocNo || '');
                 $('#edit-date').val(item.deAllocDate || item.returnDate || '');
                 $('#edit-employee').val(item.employeeName || '');
@@ -249,46 +267,58 @@
         });
 
         $('#save-edit-btn').click(function() {
-            var allocNo = $('#edit-allocno').val();
-            var savedData = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-            var match = savedData.find(i => i.allocationNo === allocNo);
+            var targetDocNo = $('#edit-allocno').val();
+            var deallocs = JSON.parse(localStorage.getItem('savedAssetDeAllocations') || '[]');
+            var match = deallocs.find(i => (i.deAllocDocNo || i.returnDocNo) === targetDocNo);
             
             if (match) {
                 match.deAllocDate = $('#edit-date').val();
-                match.returnDate = $('#edit-date').val();
                 match.employeeName = $('#edit-employee').val();
                 match.categoryName = $('#edit-category').val();
                 match.assetCode = $('#edit-assetcode').val();
                 match.assetName = $('#edit-assetname').val();
                 match.deAllocRemarks = $('#edit-remarks').val();
-                match.returnRemarks = $('#edit-remarks').val();
 
-                localStorage.setItem('savedAssetAllocations', JSON.stringify(savedData));
-                $('#edit-modal').modal('hide');
-                loadGridData();
-                alertify.log('Asset De-Allocation updated successfully.', 'success', 5000);
+                localStorage.setItem('savedAssetDeAllocations', JSON.stringify(deallocs));
             }
+
+            $('#edit-modal').modal('hide');
+            loadGridData();
+            alertify.log('Asset De-Allocation updated successfully.', 'success', 5000);
         });
 
-        // Revert Handler
+        // Delete/Revert Handler
         $('#data-grid tbody').on('click', '.remove-item-btn', function (e) {
             e.preventDefault();
-            var allocNo = $(this).data('alloc');
+            var docNo = $(this).data('docno');
+            var assetCode = $(this).data('assetcode');
             
-            alertify.confirm('Are you sure you want to revert this de-allocation back to Allocated status?', function (e) {
-                if (e) {
-                    var data = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-                    var match = data.find(i => i.allocationNo === allocNo);
-                    if(match) {
-                        match.status = 'Allocated';
-                        delete match.deAllocDocNo;
-                        delete match.deAllocDate;
-                        delete match.deAllocRemarks;
-                        delete match.returnDocNo;
-                        delete match.returnDate;
-                        delete match.returnRemarks;
+            alertify.confirm('Are you sure you want to revert/delete this de-allocation?', function (confirmed) {
+                if (confirmed) {
+                    var deallocs = JSON.parse(localStorage.getItem('savedAssetDeAllocations') || '[]');
+                    var removedItem = deallocs.find(i => (i.deAllocDocNo || i.returnDocNo) === docNo && (!assetCode || i.assetCode === assetCode));
+                    
+                    deallocs = deallocs.filter(i => !((i.deAllocDocNo || i.returnDocNo) === docNo && (!assetCode || i.assetCode === assetCode)));
+                    localStorage.setItem('savedAssetDeAllocations', JSON.stringify(deallocs));
+
+                    if (removedItem) {
+                        var deallocatedKeys = JSON.parse(localStorage.getItem('deallocatedAssetKeys') || '[]');
+                        var keyToRemove = (removedItem.allocationNo || '') + '|' + (removedItem.assetCode || '');
+                        deallocatedKeys = deallocatedKeys.filter(k => k !== keyToRemove && !k.startsWith(docNo + '|'));
+                        localStorage.setItem('deallocatedAssetKeys', JSON.stringify(deallocatedKeys));
+
+                        var data = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+                        data.forEach(function(match) {
+                            if ((match.docNo || match.allocationNo) === removedItem.allocationNo && match.assetCode === removedItem.assetCode) {
+                                match.status = 'Allocated';
+                                delete match.deAllocDocNo;
+                                delete match.deAllocDate;
+                                delete match.deAllocRemarks;
+                            }
+                        });
+                        localStorage.setItem('savedAssetAllocations', JSON.stringify(data));
                     }
-                    localStorage.setItem('savedAssetAllocations', JSON.stringify(data));
+
                     loadGridData();
                     alertify.log('Record reverted successfully.', 'success', 5000);
                 }

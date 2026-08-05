@@ -208,11 +208,6 @@
                 { "orderable": false, "targets": 0 }
             ]
         });
-
-        function loadGridData() {
-            table.clear();
-            var localSaved = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-
         var currentGridData = [];
 
         function renderRows(items) {
@@ -288,7 +283,7 @@
                         var key1 = lsDoc + '|' + lsCode;
                         var key2 = lsDoc + '|';
                         if (!deletedList.includes(key1) && !deletedList.includes(key2)) {
-                            if (!combined.some(c => c.docNo === lsDoc && c.assetCode === lsCode)) {
+                            if (!combined.some(c => c.docNo === lsDoc && (c.assetCode === lsCode || !lsCode))) {
                                 combined.push(ls);
                             }
                         }

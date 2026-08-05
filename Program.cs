@@ -8,6 +8,14 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure AppConfiguration to disable reloadOnChange in production (prevents inotify resource limit on Render)
+var envName = builder.Environment.EnvironmentName;
+var isDev = builder.Environment.IsDevelopment();
+builder.Configuration.Sources.Clear();
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: isDev)
+                     .AddJsonFile($"appsettings.{envName}.json", optional: true, reloadOnChange: isDev)
+                     .AddEnvironmentVariables();
+
 // Configure logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();

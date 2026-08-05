@@ -665,7 +665,7 @@
     }
 
     /* ── Edit row: Navigate to CreateLeaveApplication form ── */
-    $(document).on('click', 'a.edit-item-btn', function (e) {
+    $(document).off('click', '#tblLeave a.edit-item-btn').on('click', '#tblLeave a.edit-item-btn', function (e) {
         e.preventDefault();
         var row = $(this).closest('tr');
 
@@ -828,7 +828,7 @@
     });
 
     /* ── Delete row ── */
-    $(document).on('click', 'a.remove-item-btn', function (e) {
+    $(document).off('click', '#tblLeave a.remove-item-btn').on('click', '#tblLeave a.remove-item-btn', function (e) {
         e.preventDefault();
         var row  = $(this).closest('tr');
         var code = row.find('td').eq(2).text().trim();

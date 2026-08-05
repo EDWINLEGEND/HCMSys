@@ -242,6 +242,34 @@
 
         updateStats(table);
 
+        // Edit handler
+        $('#trips-grid tbody').on('click', '.edit-item-btn', function (e) {
+            e.preventDefault();
+            var row = table.row($(this).parents('tr'));
+            var rowData = row.data();
+            var docNo = rowData[1];
+            var savedTrips = JSON.parse(localStorage.getItem('savedBusinessTrips') || '[]');
+            var match = savedTrips.find(t => t.docNo === docNo);
+
+            var editObj = match || {
+                docNo: docNo,
+                date: rowData[2],
+                employeeName: rowData[3],
+                currency: rowData[4],
+                totalAmount: rowData[5],
+                status: 'Pending'
+            };
+
+            sessionStorage.setItem('editBusinessTrip', JSON.stringify(editObj));
+            var createUrl = '@Url.Action("CreateBusinessTrip", "Master")';
+            if (typeof loadPageContent === 'function') {
+                loadPageContent(createUrl, true);
+            } else {
+                window.location.href = createUrl;
+            }
+            return false;
+        });
+
         // Delete handler
         $('#trips-grid tbody').on('click', '.remove-item-btn', function (e) {
             e.preventDefault();

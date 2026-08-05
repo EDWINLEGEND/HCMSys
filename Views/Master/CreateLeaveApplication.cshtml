@@ -435,6 +435,8 @@
         }
     }
 
+    var isEditingMode = false;
+
     function onEmployeeChange() {
         var empVal = $(this).val();
         updateSubstituteDropdown(empVal);
@@ -444,9 +446,11 @@
             return;
         }
 
-        stagedLeaves = [];
-        stagedSystemLeaves = [];
-        renderGrids();
+        if (!isEditingMode) {
+            stagedLeaves = [];
+            stagedSystemLeaves = [];
+            renderGrids();
+        }
 
         var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
         if (emp) {
@@ -458,12 +462,16 @@
             $('#hdr-designation').val(desig);
             $('#hdr-department').val(dept);
             $('#hdr-manager').val(mgr);
-            $('#dtl-contact').val(contact);
+            if (!isEditingMode) {
+                $('#dtl-contact').val(contact);
+            }
         }
 
-        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
-        $('#dtl-leavetype').val('').trigger('change');
-        calculateLeaves(); 
+        if (!isEditingMode) {
+            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
+            $('#dtl-leavetype').val('').trigger('change');
+            calculateLeaves(); 
+        }
     }
 
     function onLeaveTypeChange() {
@@ -812,6 +820,7 @@
         try {
             var editData = JSON.parse(editDataStr);
             sessionStorage.removeItem('editLeaveApp');
+            isEditingMode = true;
 
             if (editData.code) {
                 $('#hdr-docno').val(editData.code);
@@ -833,6 +842,48 @@
                 }
             }
 
+            // Populate detail inputs above grid
+            if (editData.type) {
+                var ltOpt = $('#dtl-leavetype option').filter(function() {
+                    var txt = $(this).text().trim().toLowerCase();
+                    var val = $(this).val().trim().toLowerCase();
+                    var target = editData.type.trim().toLowerCase();
+                    return txt === target || val === target;
+                });
+                if (ltOpt.length > 0) {
+                    $('#dtl-leavetype').val(ltOpt.val()).trigger('change');
+                }
+            }
+
+            if (editData.start || editData.fromDate) $('#dtl-fromdate').val(editData.start || editData.fromDate);
+            if (editData.end || editData.toDate) $('#dtl-todate').val(editData.end || editData.toDate);
+            if (editData.duration || editData.usedNow) $('#dtl-duration').val(editData.duration || editData.usedNow);
+            if (editData.duration || editData.usedNow) $('#dtl-noofleaves').val(editData.duration || editData.usedNow);
+            if (editData.contactNo) $('#dtl-contact').val(editData.contactNo);
+
+            if (editData.substituteEmployeeId) {
+                $('#dtl-substitute').val(editData.substituteEmployeeId).trigger('change');
+            } else if (editData.substituteEmployee && editData.substituteEmployee !== '-') {
+                var subOpt = $('#dtl-substitute option').filter(function() {
+                    return $(this).text().toLowerCase().includes(editData.substituteEmployee.toLowerCase());
+                });
+                if (subOpt.length > 0) {
+                    $('#dtl-substitute').val(subOpt.val()).trigger('change');
+                }
+            }
+
+            if (editData.eligible !== undefined) $('#sum-eligible').text(parseFloat(editData.eligible || 0).toFixed(1));
+            if (editData.approved !== undefined) $('#sum-approved').text(parseFloat(editData.approved || 0).toFixed(1));
+            if (editData.unapproved !== undefined) $('#sum-unapproved').text(parseFloat(editData.unapproved || 0).toFixed(1));
+            if (editData.available !== undefined) $('#sum-available').text(parseFloat(editData.available || 0).toFixed(1));
+            if (editData.usedNow !== undefined || editData.duration !== undefined) $('#sum-usednow').text(parseFloat(editData.usedNow || editData.duration || 0).toFixed(1));
+            if (editData.balance !== undefined) $('#sum-balance').text(parseFloat(editData.balance || 0).toFixed(1));
+
+            if (editData.attachmentName) {
+                uploadedFileName = editData.attachmentName;
+                uploadedBase64Url = editData.attachmentUrl || '';
+            }
+
             if (editData.type || editData.start) {
                 var uniqueStagedId = 'id_' + new Date().getTime();
                 var appObj = {
@@ -841,12 +892,12 @@
                     code: editData.code || $('#hdr-docno').val(),
                     name: editData.name || editData.employeeName || $('#hdr-employee option:selected').text(),
                     type: editData.type || editData.leaveTypeName || 'Annual Leave',
-                    start: editData.start || editData.fromDate || $('#hdr-date').val(),
-                    end: editData.end || editData.toDate || $('#hdr-date').val(),
+                    start: editData.start || editData.fromDate || $('#dtl-fromdate').val(),
+                    end: editData.end || editData.toDate || $('#dtl-todate').val(),
                     duration: parseFloat(editData.duration || editData.usedNow || 1),
-                    contactNo: editData.contactNo || '',
-                    substituteEmployee: editData.substituteEmployee || editData.substitute || '-',
-                    substituteEmployeeId: editData.substituteEmployeeId || '',
+                    contactNo: editData.contactNo || $('#dtl-contact').val() || '',
+                    substituteEmployee: editData.substituteEmployee || $('#dtl-substitute option:selected').text() || '-',
+                    substituteEmployeeId: editData.substituteEmployeeId || $('#dtl-substitute').val() || '',
                     eligible: parseFloat(editData.eligible || 0),
                     approved: parseFloat(editData.approved || 0),
                     unapproved: parseFloat(editData.unapproved || 0),
@@ -854,12 +905,44 @@
                     usedNow: parseFloat(editData.usedNow || editData.duration || 1),
                     balance: parseFloat(editData.balance || 0),
                     status: editData.status || 'Pending',
-                    reason: editData.reason || editData.comments || '',
-                    attachmentName: editData.attachmentName || '',
-                    attachmentUrl: editData.attachmentUrl || ''
+                    reason: editData.reason || editData.comments || $('#hdr-comments').val() || '',
+                    attachmentName: editData.attachmentName || uploadedFileName || '',
+                    attachmentUrl: editData.attachmentUrl || uploadedBase64Url || ''
                 };
 
                 stagedLeaves = [appObj];
+
+                stagedSystemLeaves = [];
+                if (appObj.start && appObj.end) {
+                    var f = parseDateObj(appObj.start);
+                    var t = parseDateObj(appObj.end);
+                    var cur = new Date(f);
+                    var monthsNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+                    while (cur <= t) {
+                        var mIndex = cur.getMonth();
+                        var yNum = cur.getFullYear();
+                        var monthLabel = monthsNames[mIndex] + ' ' + yNum;
+                        
+                        var lastDayOfMonth = new Date(yNum, mIndex + 1, 0);
+                        var endChunk = (t < lastDayOfMonth) ? new Date(t) : lastDayOfMonth;
+                        var chunkDiff = Math.ceil(Math.abs(endChunk - cur) / (1000 * 60 * 60 * 24)) + 1;
+                        
+                        stagedSystemLeaves.push({
+                            stagedId: appObj.stagedId,
+                            type: appObj.type,
+                            monthName: monthLabel,
+                            start: formatDateDisplay(cur),
+                            end: formatDateDisplay(endChunk),
+                            duration: chunkDiff,
+                            attachmentName: appObj.attachmentName,
+                            attachmentUrl: appObj.attachmentUrl
+                        });
+
+                        cur = new Date(yNum, mIndex + 1, 1);
+                    }
+                }
+
                 renderGrids();
             }
 
@@ -867,6 +950,8 @@
             alertify.log('Editing Leave Application: ' + (editData.code || ''), 'info', 3000);
         } catch(e) {
             console.error('Error loading edit leave application data:', e);
+        } finally {
+            isEditingMode = false;
         }
     }
 

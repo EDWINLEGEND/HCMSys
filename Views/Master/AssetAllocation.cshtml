@@ -244,9 +244,9 @@
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
         
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('ALL-' + mm + '-' + yy + '-00001');
+        var savedAllocations = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+        var seqNum = String(savedAllocations.length + 1).padStart(5, '0');
+        $('#hdr-docno').val('ALL-' + mm + '-' + yy + '-' + seqNum);
     }
 
     function populateDropdowns() {
@@ -478,7 +478,7 @@
             dDocDate: isoDate,
             dPostDate: isoDate,
             iEmpId: parseInt(empVal) || 0,
-            sComments: $('#hdr-comments').val() || '',
+            sComments: $('#hdr-comments').val() || 'N/A',
             sEmployeeCode: empCode,
             sEmployeeName: empName,
             sDepartmentCode: empDeptCode,
@@ -494,7 +494,7 @@
             iCreatedBy: 1,
             iModifiedBy: 1,
             iApprovedBy: 0,
-            assets: stagedAssets.map(function(sa, idx) {
+            Assets: stagedAssets.map(function(sa, idx) {
                 return {
                     iBodyId: 0,
                     iHeaderId: 0,
@@ -509,7 +509,7 @@
                     sRemarks: sa.remarks || ''
                 };
             }),
-            assetFile: {
+            Attachment: {
                 iHeaderId: 0,
                 iFileId: 0,
                 sAttachmentFilePath: uploadedBase64Url || '',
@@ -518,16 +518,34 @@
             }
         };
 
-        var localItem = {
-            docNo: docNo,
-            date: dateStr,
-            employeeName: empName,
-            categoryName: stagedAssets[0].categoryName,
-            assetCode: stagedAssets[0].assetCode,
-            assetName: stagedAssets[0].assetName,
-            remarks: stagedAssets[0].remarks,
-            status: 'Allocated'
-        };
+        var newLocalItems = stagedAssets.map(function(sa) {
+            return {
+                docNo: docNo,
+                date: dateStr,
+                employeeName: empName,
+                categoryName: sa.categoryName,
+                assetCode: sa.assetCode,
+                assetName: sa.assetName,
+                remarks: sa.remarks || $('#hdr-comments').val() || '-',
+                status: 'Allocated'
+            };
+        });
+
+        function saveLocalAndRedirect(msg, type) {
+            var existing = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+            newLocalItems.forEach(function(item) {
+                existing.unshift(item);
+            });
+            localStorage.setItem('savedAssetAllocations', JSON.stringify(existing));
+
+            sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: msg, type: type }));
+            var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
+            if (typeof loadPageContent === 'function') {
+                loadPageContent(targetUrl, true);
+            } else {
+                window.location.href = targetUrl;
+            }
+        }
 
         $.ajax({
             url: '/Master/SaveApiAssetAllocation',
@@ -535,30 +553,10 @@
             contentType: 'application/json',
             data: JSON.stringify(payload),
             success: function(res) {
-                var existing = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-                existing.unshift(localItem);
-                localStorage.setItem('savedAssetAllocations', JSON.stringify(existing));
-
-                sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset Allocation saved successfully!', type: 'success' }));
-                var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
-                if (typeof loadPageContent === 'function') {
-                    loadPageContent(targetUrl, true);
-                } else {
-                    window.location.href = targetUrl;
-                }
+                saveLocalAndRedirect('Asset Allocation saved successfully!', 'success');
             },
             error: function(err) {
-                var existing = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-                existing.unshift(localItem);
-                localStorage.setItem('savedAssetAllocations', JSON.stringify(existing));
-
-                sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset Allocation saved locally (API offline).', type: 'warning' }));
-                var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
-                if (typeof loadPageContent === 'function') {
-                    loadPageContent(targetUrl, true);
-                } else {
-                    window.location.href = targetUrl;
-                }
+                saveLocalAndRedirect('Asset Allocation saved locally.', 'info');
             }
         });
     }

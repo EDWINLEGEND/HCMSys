@@ -247,25 +247,27 @@
                     var combined = [];
                     if (Array.isArray(apiData) && apiData.length > 0) {
                         apiData.forEach(function(item) {
-                            var firstAsset = (item.assets && item.assets.length > 0) ? item.assets[0] : {};
                             var formattedDate = item.dDocDate ? item.dDocDate.split('T')[0] : '-';
+                            var assetList = (item.assets && item.assets.length > 0) ? item.assets : [{}];
 
-                            combined.push({
-                                docNo: item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0')),
-                                date: formattedDate,
-                                employeeName: item.sEmployeeName || '-',
-                                categoryName: firstAsset.sCategoryName || '-',
-                                assetCode: firstAsset.sAssetCode || '-',
-                                assetName: firstAsset.sAssetName || '-',
-                                remarks: item.sComments || firstAsset.sRemarks || '-',
-                                status: item.iStatus === 1 ? 'Allocated' : 'Active',
-                                iHeaderId: item.iHeaderId
+                            assetList.forEach(function(ast) {
+                                combined.push({
+                                    docNo: item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0')),
+                                    date: formattedDate,
+                                    employeeName: item.sEmployeeName || '-',
+                                    categoryName: ast.sCategoryName || '-',
+                                    assetCode: ast.sAssetCode || '-',
+                                    assetName: ast.sAssetName || '-',
+                                    remarks: item.sComments || ast.sRemarks || '-',
+                                    status: item.iStatus === 1 ? 'Allocated' : 'Active',
+                                    iHeaderId: item.iHeaderId
+                                });
                             });
                         });
                     }
 
                     localSaved.forEach(function(ls) {
-                        if (!combined.some(c => c.docNo === ls.docNo)) {
+                        if (!combined.some(c => c.docNo === ls.docNo && c.assetCode === ls.assetCode)) {
                             combined.push(ls);
                         }
                     });

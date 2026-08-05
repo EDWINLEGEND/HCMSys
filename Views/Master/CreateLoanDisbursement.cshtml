@@ -284,9 +284,9 @@
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
         
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('DSB-' + mm + '-' + yy + '-00001');
+        var saved = JSON.parse(localStorage.getItem('savedLoanDisbursements') || '[]');
+        var seq = String(saved.length + 1).padStart(5, '0');
+        $('#hdr-docno').val('DSB-' + mm + '-' + yy + '-' + seq);
     }
 
     function onRequestNumberChange() {

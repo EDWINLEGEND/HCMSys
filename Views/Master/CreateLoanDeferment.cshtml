@@ -252,9 +252,9 @@
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
         
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('DEF-' + mm + '-' + yy + '-00001');
+        var saved = JSON.parse(localStorage.getItem('savedLoanDeferments') || '[]');
+        var seq = String(saved.length + 1).padStart(5, '0');
+        $('#hdr-docno').val('DEF-' + mm + '-' + yy + '-' + seq);
     }
 
     function onDisbursementChange() {

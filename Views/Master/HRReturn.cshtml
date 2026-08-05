@@ -191,9 +191,9 @@
         var yyyy = d.getFullYear();
         var mmm = d.toLocaleString('default', { month: 'short' }).toUpperCase();
         
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('RET-' + mm + '-' + yy + '-00001');
+        var saved = JSON.parse(localStorage.getItem('savedHRReturns') || '[]');
+        var seq = String(saved.length + 1).padStart(5, '0');
+        $('#hdr-docno').val('RET-' + mm + '-' + yy + '-' + seq);
     }
 
     function populateDropdowns() {

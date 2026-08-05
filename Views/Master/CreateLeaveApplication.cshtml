@@ -369,9 +369,9 @@
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
         
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('WCO-' + mm + '-' + yy + '-00001');
+        var saved = JSON.parse(localStorage.getItem('savedLeaveApplications') || '[]');
+        var seq = String(saved.length + 1).padStart(5, '0');
+        $('#hdr-docno').val('WCO-' + mm + '-' + yy + '-' + seq);
     }
 
     function populateDropdowns() {

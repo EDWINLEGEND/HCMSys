@@ -252,11 +252,11 @@ namespace HCMSys.Models
         [JsonPropertyName("iApprovedBy")]
         public int IApprovedBy { get; set; } = 0;
 
-        [JsonPropertyName("assets")]
+        [JsonPropertyName("Assets")]
         public List<AssetAllocationBodyDto> Assets { get; set; } = new List<AssetAllocationBodyDto>();
 
-        [JsonPropertyName("assetFile")]
-        public AssetAllocationFileDto? AssetFile { get; set; }
+        [JsonPropertyName("Attachment")]
+        public AssetAllocationFileDto? Attachment { get; set; }
     }
 
     public class AssetAllocationBodyDto

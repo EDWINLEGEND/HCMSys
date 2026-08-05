@@ -322,9 +322,9 @@
         var yyyy = d.getFullYear();
         var mmm = d.toLocaleString('default', { month: 'short' });
         
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('BTR-' + mm + '-' + yy + '-00001');
+        var saved = JSON.parse(localStorage.getItem('savedBusinessTrips') || '[]');
+        var seq = String(saved.length + 1).padStart(5, '0');
+        $('#hdr-docno').val('BTR-' + mm + '-' + yy + '-' + seq);
     }
 
     function populateDropdowns() {

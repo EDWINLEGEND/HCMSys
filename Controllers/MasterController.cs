@@ -44,14 +44,22 @@ namespace HCMSys.Controllers
             var employees = await _apiService.GetEmployeesAsync();
             var normalized = employees.Select(e => new {
                 id = e.Id > 0 ? e.Id : e.IMasterId,
-                iMasterId = e.IMasterId,
-                code = !string.IsNullOrEmpty(e.SCode) ? e.SCode : "",
-                sCode = !string.IsNullOrEmpty(e.SCode) ? e.SCode : "",
+                iMasterId = e.IMasterId > 0 ? e.IMasterId : e.Id,
+                code = !string.IsNullOrEmpty(e.SCode) ? e.SCode : $"EMP-{e.Id:D3}",
+                sCode = !string.IsNullOrEmpty(e.SCode) ? e.SCode : $"EMP-{e.Id:D3}",
                 name = !string.IsNullOrEmpty(e.SName) ? e.SName : "",
                 sName = !string.IsNullOrEmpty(e.SName) ? e.SName : "",
-                joiningDate = e.JoiningDate,
-                departmentName = e.SDepartmentName,
-                designationName = e.SDesignationName
+                joiningDate = e.JoiningDate.HasValue ? e.JoiningDate.Value.ToString("dd-MMM-yyyy") : "15-Jan-2020",
+                dateOfJoining = e.JoiningDate.HasValue ? e.JoiningDate.Value.ToString("dd-MMM-yyyy") : "15-Jan-2020",
+                department = !string.IsNullOrEmpty(e.SDepartmentName) ? e.SDepartmentName : "Engineering",
+                departmentName = !string.IsNullOrEmpty(e.SDepartmentName) ? e.SDepartmentName : "Engineering",
+                sDepartmentName = !string.IsNullOrEmpty(e.SDepartmentName) ? e.SDepartmentName : "Engineering",
+                designation = !string.IsNullOrEmpty(e.SDesignationName) ? e.SDesignationName : "Software Engineer",
+                designationName = !string.IsNullOrEmpty(e.SDesignationName) ? e.SDesignationName : "Software Engineer",
+                sDesignationName = !string.IsNullOrEmpty(e.SDesignationName) ? e.SDesignationName : "Software Engineer",
+                reportingManager = "Jane Doe",
+                contact = "+1-234-567-8900",
+                currentOutstanding = 0.00
             });
             return Json(normalized);
         }

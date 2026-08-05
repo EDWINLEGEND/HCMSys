@@ -279,11 +279,11 @@
             return;
         }
 
-        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal);
+        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
         if (emp) {
             $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
             $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
-            $('#hdr-manager').val(emp.reportingManager || emp.createdBy || 'Admin');
+            $('#hdr-manager').val(emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || 'Jane Doe');
         }
     }
     

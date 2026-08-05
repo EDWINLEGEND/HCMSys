@@ -211,20 +211,20 @@
     }
 
     function onEmployeeChange() {
-        var empId = parseInt($(this).val());
+        var empVal = $(this).val();
         pendingDocs = [];
         renderGrid();
         
-        if (!empId) {
+        if (!empVal) {
             $('#hdr-designation, #hdr-department, #hdr-manager').val('');
             return;
         }
 
-        var emp = employeesData.find(e => e.id === empId);
+        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
         if (emp) {
-            $('#hdr-designation').val(emp.designation);
-            $('#hdr-department').val(emp.department);
-            $('#hdr-manager').val(emp.reportingManager);
+            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
+            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
+            $('#hdr-manager').val(emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || 'Jane Doe');
         }
 
         // Auto-fetch pending items

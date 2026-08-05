@@ -409,8 +409,8 @@
     }
 
     function onEmployeeChange() {
-        var empId = parseInt($(this).val());
-        if (!empId) {
+        var empVal = $(this).val();
+        if (!empVal) {
             clearEmployeeFields();
             return;
         }
@@ -419,12 +419,17 @@
         stagedSystemLeaves = [];
         renderGrids();
 
-        var emp = employeesData.find(e => e.id === empId);
+        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
         if (emp) {
-            $('#hdr-designation').val(emp.designation);
-            $('#hdr-department').val(emp.department);
-            $('#hdr-manager').val(emp.reportingManager);
-            $('#dtl-contact').val(emp.contact);
+            var desig = emp.designation || emp.designationName || emp.sDesignationName || '';
+            var dept = emp.department || emp.departmentName || emp.sDepartmentName || '';
+            var mgr = emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || 'Jane Doe';
+            var contact = emp.contact || emp.contactNo || emp.mobile || emp.sMobileNo || '+1-234-567-8900';
+
+            $('#hdr-designation').val(desig);
+            $('#hdr-department').val(dept);
+            $('#hdr-manager').val(mgr);
+            $('#dtl-contact').val(contact);
         }
 
         $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');

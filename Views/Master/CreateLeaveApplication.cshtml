@@ -652,13 +652,33 @@
         var available = eligible - approved - unapproved;
 
         var usedNow = parseFloat($('#dtl-noofleaves').val()) || 0;
-        var balance = available - usedNow;
+
+        if (usedNow <= 0) {
+            alertify.log('No of leaves (used now) must be greater than 0.', 'error', 5000);
+            return;
+        }
+
+        if (usedNow > available) {
+            alertify.log('Requested leave duration (' + usedNow + ' days) exceeds available leave balance (' + available + ' days).', 'error', 5000);
+            return;
+        }
 
         var f = parseDateObj(fromDate);
         var t = parseDateObj(toDate);
 
         if (f > t) {
             alertify.log('To Date cannot be earlier than From Date.', 'error', 5000);
+            return;
+        }
+
+        var hasOverlap = stagedLeaves.some(function(item) {
+            var sF = parseDateObj(item.start);
+            var sT = parseDateObj(item.end);
+            return (f <= sT && t >= sF);
+        });
+
+        if (hasOverlap) {
+            alertify.log('Selected date range overlaps with an already staged leave application.', 'error', 5000);
             return;
         }
         

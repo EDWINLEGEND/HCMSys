@@ -652,6 +652,7 @@
         var available = eligible - approved - unapproved;
 
         var usedNow = parseFloat($('#dtl-noofleaves').val()) || 0;
+        var balance = available - usedNow;
 
         if (usedNow <= 0) {
             alertify.log('No of leaves (used now) must be greater than 0.', 'error', 5000);

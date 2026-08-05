@@ -51,8 +51,66 @@
     <link href="~/lib/datepicker/datepicker.css" rel="stylesheet" />
     <script defer src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
     <link href="~/lib/datatables/css/jquery.dataTables.css" rel="stylesheet" />
-    <script src="~/lib/select2/js/select2.min.js" defer></script>
-    <link defer href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
+    <script src="~/lib/select2/js/select2.min.js"></script>
+    <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
+    <style>
+        /* Global Select2 Styling matching SB Admin 2 & Modern Design */
+        .select2-container--default .select2-selection--single {
+            height: calc(1.5em + .75rem + 2px) !important;
+            border: 1px solid #d1d3e2 !important;
+            border-radius: 0.35rem !important;
+            background-color: #fff !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: calc(1.5em + .75rem) !important;
+            color: #6e707e !important;
+            padding-left: 0.75rem !important;
+            padding-right: 1.75rem !important;
+            font-size: 0.85rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + .75rem) !important;
+            top: 0 !important;
+            right: 5px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #858796 !important;
+        }
+        .select2-dropdown {
+            border: 1px solid #d1d3e2 !important;
+            border-radius: 0.35rem !important;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+            z-index: 9999 !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #d1d3e2 !important;
+            border-radius: 0.25rem !important;
+            padding: 6px 10px !important;
+            font-size: 0.85rem !important;
+            outline: none !important;
+        }
+        .select2-container--default .select2-results__option {
+            padding: 8px 12px !important;
+            font-size: 0.85rem !important;
+            color: #5a5c69 !important;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #4e73df !important;
+            color: #ffffff !important;
+        }
+        .select2-container--default .select2-results__option[aria-selected="true"] {
+            background-color: #eaecf4 !important;
+            color: #2e59d9 !important;
+            font-weight: 600 !important;
+        }
+        .select2-container .select2-selection--multiple {
+            min-height: calc(1.5em + .75rem + 2px) !important;
+            border: 1px solid #d1d3e2 !important;
+            border-radius: 0.35rem !important;
+        }
+    </style>
     <script src="~/alertify.js/alertify.min.js"></script>
     <script>
         if (typeof alertify !== 'undefined') {
@@ -420,6 +478,25 @@
             return def.promise();
         }
 
+        function applySelect2Everywhere(container) {
+            if (typeof $.fn.select2 === 'undefined') return;
+            var $target = container ? $(container) : $(document.body);
+            $target.find('select:not(.no-select2)').each(function() {
+                var $elem = $(this);
+                if ($elem.hasClass('select2-hidden-accessible')) {
+                    return;
+                }
+                var placeholderText = $elem.find('option[value=""]').first().text() || $elem.attr('placeholder') || 'Select...';
+                var isModal = $elem.closest('.modal').length > 0;
+                
+                $elem.select2({
+                    width: '100%',
+                    placeholder: placeholderText,
+                    dropdownParent: isModal ? $elem.closest('.modal') : $(document.body)
+                });
+            });
+        }
+
         function loadPageContent(url, pushState) {
             if (pushState === undefined) pushState = true;
             
@@ -469,6 +546,7 @@
                     updateActiveSidebar(targetFullUrl);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     checkPendingAlert();
+                    setTimeout(function() { applySelect2Everywhere('#main-page-container'); }, 100);
                 },
                 error: function (xhr, status) {
                     if (status !== 'abort') {
@@ -498,6 +576,7 @@
             // 2. Initial Active Sidebar Item & Pending Notification Check
             updateActiveSidebar(window.location.href);
             checkPendingAlert();
+            setTimeout(function() { applySelect2Everywhere(); }, 150);
 
             // 3. Restore and Persist Sidebar Scroll Position
             var savedScroll = sessionStorage.getItem('sidebar_scroll');
@@ -518,6 +597,10 @@
         $(document).on('hidden.bs.modal', '.modal', function () {
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open').css({'padding-right': '', 'overflow': ''});
+        });
+
+        $(document).on('shown.bs.modal', '.modal', function (e) {
+            applySelect2Everywhere(e.target);
         });
 
         // 4. Intercept Clicks for Dynamic Navigation (Permanent Sidebar)

@@ -536,12 +536,28 @@
         });
     }
 
+    var uploadedBase64Url = '';
+    var uploadedFileName = '';
+
     function checkFileSize(input) {
         if (input.files && input.files[0]) {
-            if (input.files[0].size > 25 * 1024 * 1024) {
+            var file = input.files[0];
+            if (file.size > 25 * 1024 * 1024) {
                 alertify.log('File size exceeds 25MB limit.', 'error', 5000);
                 input.value = '';
+                uploadedBase64Url = '';
+                uploadedFileName = '';
+                return;
             }
+            uploadedFileName = file.name;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedBase64Url = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            uploadedBase64Url = '';
+            uploadedFileName = '';
         }
     }
 
@@ -642,8 +658,8 @@
         var reason = $('#hdr-comments').val();
 
         var attInput = document.getElementById('dtl-attachment');
-        var attachmentName = (attInput && attInput.files && attInput.files[0]) ? attInput.files[0].name : '';
-        var attachmentUrl = (attInput && attInput.files && attInput.files[0]) ? URL.createObjectURL(attInput.files[0]) : '';
+        var attachmentName = uploadedFileName || ((attInput && attInput.files && attInput.files[0]) ? attInput.files[0].name : '');
+        var attachmentUrl = uploadedBase64Url || ((attInput && attInput.files && attInput.files[0]) ? URL.createObjectURL(attInput.files[0]) : '');
 
         var duration = parseFloat($('#dtl-duration').val()) || 0;
         var eligible = parseFloat($('#sum-eligible').text()) || 0;

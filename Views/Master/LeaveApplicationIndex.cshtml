@@ -307,7 +307,7 @@
                             <td>20-Feb-2025</td>
                             <td>25-Feb-2025</td>
                             <td>6</td>
-                            <td><a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>WCO-02-25-00021_Doc.pdf</b>'); return false;" class="badge badge-info"><i class="fas fa-file-pdf mr-1"></i> View</a></td>
+                            <td><a href="#" onclick="openDocPreview('WCO-02-25-00021_Doc.pdf', ''); return false;" class="badge badge-info shadow-sm"><i class="fas fa-file-pdf mr-1"></i> View / Preview</a></td>
                             <td>20.0</td>
                             <td>5.0</td>
                             <td>0.0</td>
@@ -329,7 +329,7 @@
                             <td>10-Mar-2025</td>
                             <td>12-Mar-2025</td>
                             <td>3</td>
-                            <td><a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>WCO-03-25-00045_Doc.pdf</b>'); return false;" class="badge badge-info"><i class="fas fa-file-pdf mr-1"></i> View</a></td>
+                            <td><a href="#" onclick="openDocPreview('WCO-03-25-00045_Doc.pdf', ''); return false;" class="badge badge-info shadow-sm"><i class="fas fa-file-pdf mr-1"></i> View / Preview</a></td>
                             <td>10.0</td>
                             <td>2.0</td>
                             <td>0.0</td>
@@ -455,6 +455,32 @@
     </div>
 
     <!-- ════════════════════════════
+         DOCUMENT PREVIEW MODAL
+    ════════════════════════════ -->
+    <div class="modal fade" id="DocPreviewModal" tabindex="-1" role="dialog" aria-labelledby="DocPreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header modal-header-primary d-flex align-items-center justify-content-between">
+                    <h6 class="modal-title" id="DocPreviewModalLabel">
+                        <i class="fas fa-file-alt mr-2"></i>Document Preview
+                    </h6>
+                    <a href="#" class="close-modal-btn" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+                <div class="modal-body text-center p-4" id="docPreviewContainer">
+                </div>
+                <div class="modal-footer bg-light d-flex justify-content-between">
+                    <a id="btnOpenNewTab" href="#" target="_blank" class="btn btn-primary btn-sm">
+                        <i class="fas fa-external-link-alt mr-1"></i> Open in New Tab
+                    </a>
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════
          LOADING OVERLAY
     ════════════════════════════ -->
     <div id="loading">
@@ -473,6 +499,44 @@
 <script defer src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
 <script src="~/alertify.js/alertify.min.js"></script>
 <script>
+    function openDocPreview(docName, docUrl) {
+        var $container = $('#docPreviewContainer');
+        $container.empty();
+        var $newTabBtn = $('#btnOpenNewTab');
+
+        if (!docUrl || docUrl === '#' || docUrl === 'undefined' || docUrl === '') {
+            var sampleText = 'Sample document contents for ' + (docName || 'Document');
+            var blob = new Blob([sampleText], { type: 'text/plain' });
+            var blobUrl = URL.createObjectURL(blob);
+
+            $container.html(`
+                <div class="p-4 border rounded bg-light">
+                    <i class="fas fa-file-pdf text-danger fa-4x mb-3"></i>
+                    <h5 class="font-weight-bold text-gray-800">${docName || 'Document'}</h5>
+                    <p class="text-muted small">Uploaded document attached to this record.</p>
+                </div>
+            `);
+            $newTabBtn.attr('href', blobUrl).show();
+        } else if (docUrl.startsWith('data:image/') || docUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+            $container.html(`<img src="${docUrl}" class="img-fluid rounded shadow-sm" style="max-height: 500px; object-fit: contain;" alt="Document Preview"/>`);
+            $newTabBtn.attr('href', docUrl).show();
+        } else if (docUrl.startsWith('data:application/pdf') || docUrl.endsWith('.pdf')) {
+            $container.html(`<iframe src="${docUrl}" style="width:100%; height:500px; border:none;" class="rounded shadow-sm"></iframe>`);
+            $newTabBtn.attr('href', docUrl).show();
+        } else {
+            $container.html(`
+                <div class="p-4 border rounded bg-light">
+                    <i class="fas fa-file-alt text-primary fa-4x mb-3"></i>
+                    <h5 class="font-weight-bold text-gray-800">${docName || 'Document'}</h5>
+                    <p class="text-muted small">Click "Open in New Tab" to view or download this document.</p>
+                </div>
+            `);
+            $newTabBtn.attr('href', docUrl).show();
+        }
+
+        $('#DocPreviewModal').modal('show');
+    }
+
     // ── Dummy auto-code counter (simulates server getCode) ──
     var dummyCodeCounter = 3;
     function generateCode() {
@@ -480,7 +544,6 @@
     }
 
     function parseDateToHTMLFormat(dateStr) {
-        // parses DD/MM/YYYY to yyyy-mm-dd
         if (!dateStr) return '';
         var parts = dateStr.split('/');
         if(parts.length !== 3) return dateStr;
@@ -488,7 +551,6 @@
     }
 
     function formatDateToDisplay(dateStr) {
-        // parses yyyy-mm-dd to DD/MM/YYYY
         if (!dateStr) return '';
         var parts = dateStr.split('-');
         if(parts.length !== 3) return dateStr;
@@ -516,9 +578,9 @@
         // ── Load from localStorage ──
         var storedLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
         storedLeaves.forEach(function(l) {
-            var docBtn = l.attachmentName 
-                ? '<a href="#" onclick="alertify.alert(\'Document Preview\', \'Attached File: <b>' + l.attachmentName + '</b>\'); return false;" class="badge badge-info"><i class="fas fa-paperclip mr-1"></i> ' + l.attachmentName + '</a>'
-                : '<a href="#" onclick="alertify.alert(\'Document Preview\', \'Attached File: <b>Doc_' + l.code + '.pdf</b>\'); return false;" class="badge badge-info"><i class="fas fa-file-pdf mr-1"></i> View</a>';
+            var safeUrl = (l.attachmentUrl || '').replace(/'/g, "\\'");
+            var safeName = (l.attachmentName || ('Doc_' + l.code + '.pdf')).replace(/'/g, "\\'");
+            var docBtn = '<a href="#" onclick="openDocPreview(\'' + safeName + '\', \'' + safeUrl + '\'); return false;" class="badge badge-info shadow-sm"><i class="fas fa-file-alt mr-1"></i> ' + (l.attachmentName ? l.attachmentName : 'View / Preview') + '</a>';
 
             table.row.add([
                 '<a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Leave-modal" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a> ' +

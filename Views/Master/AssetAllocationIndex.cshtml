@@ -213,32 +213,42 @@
             table.clear();
             var localSaved = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
 
-            function renderRows(items) {
-                table.clear();
-                $('#stat-total').text(items.length);
+        var currentGridData = [];
 
-                items.forEach(function(item, index) {
-                    var actionHtml = `
-                        <div class="action-btns" style="text-align:center;">
-                            <a href="#" class="edit-item-btn" data-idx="${index}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                            <a href="#" class="remove-item-btn" data-idx="${index}" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                        </div>
-                    `;
+        function renderRows(items) {
+            currentGridData = items;
+            table.clear();
+            $('#stat-total').text(items.length);
 
-                    table.row.add([
-                        actionHtml,
-                        item.docNo || item.sDocNo || item.allocationNo || '-',
-                        item.date || item.dDocDate || item.allocDate || '-',
-                        item.employeeName || item.sEmployeeName || '-',
-                        item.categoryName || item.sCategoryName || '-',
-                        item.assetCode || item.sAssetCode || '-',
-                        item.assetName || item.sAssetName || '-',
-                        item.remarks || item.sComments || item.allocRemarks || '-',
-                        '<span class="badge badge-success">' + (item.status || 'Allocated') + '</span>'
-                    ]);
-                });
-                table.draw(false);
-            }
+            items.forEach(function(item) {
+                var dNo = item.docNo || item.sDocNo || item.allocationNo || '-';
+                var aCode = item.assetCode || item.sAssetCode || '-';
+                var actionHtml = `
+                    <div class="action-btns" style="text-align:center;">
+                        <a href="#" class="edit-item-btn" data-docno="${dNo}" data-assetcode="${aCode}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                        <a href="#" class="remove-item-btn" data-docno="${dNo}" data-assetcode="${aCode}" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                    </div>
+                `;
+
+                table.row.add([
+                    actionHtml,
+                    dNo,
+                    item.date || item.dDocDate || item.allocDate || '-',
+                    item.employeeName || item.sEmployeeName || '-',
+                    item.categoryName || item.sCategoryName || '-',
+                    aCode,
+                    item.assetName || item.sAssetName || '-',
+                    item.remarks || item.sComments || item.allocRemarks || '-',
+                    '<span class="badge badge-success">' + (item.status || 'Allocated') + '</span>'
+                ]);
+            });
+            table.draw(false);
+        }
+
+        function loadGridData() {
+            table.clear();
+            var localSaved = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+            var deletedList = JSON.parse(localStorage.getItem('deletedAssetAllocations') || '[]');
 
             $.ajax({
                 url: '/Master/GetApiAssetAllocations',
@@ -249,33 +259,50 @@
                         apiData.forEach(function(item) {
                             var formattedDate = item.dDocDate ? item.dDocDate.split('T')[0] : '-';
                             var assetList = (item.assets && item.assets.length > 0) ? item.assets : [{}];
+                            var itemDocNo = item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0'));
 
                             assetList.forEach(function(ast) {
-                                combined.push({
-                                    docNo: item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0')),
-                                    date: formattedDate,
-                                    employeeName: item.sEmployeeName || '-',
-                                    categoryName: ast.sCategoryName || '-',
-                                    assetCode: ast.sAssetCode || '-',
-                                    assetName: ast.sAssetName || '-',
-                                    remarks: item.sComments || ast.sRemarks || '-',
-                                    status: item.iStatus === 1 ? 'Allocated' : 'Active',
-                                    iHeaderId: item.iHeaderId
-                                });
+                                var astCode = ast.sAssetCode || '';
+                                var key1 = itemDocNo + '|' + astCode;
+                                var key2 = itemDocNo + '|';
+                                if (!deletedList.includes(key1) && !deletedList.includes(key2)) {
+                                    combined.push({
+                                        docNo: itemDocNo,
+                                        date: formattedDate,
+                                        employeeName: item.sEmployeeName || '-',
+                                        categoryName: ast.sCategoryName || '-',
+                                        assetCode: astCode || '-',
+                                        assetName: ast.sAssetName || '-',
+                                        remarks: item.sComments || ast.sRemarks || '-',
+                                        status: item.iStatus === 1 ? 'Allocated' : 'Active',
+                                        iHeaderId: item.iHeaderId
+                                    });
+                                }
                             });
                         });
                     }
 
                     localSaved.forEach(function(ls) {
-                        if (!combined.some(c => c.docNo === ls.docNo && c.assetCode === ls.assetCode)) {
-                            combined.push(ls);
+                        var lsDoc = ls.docNo || ls.sDocNo || '';
+                        var lsCode = ls.assetCode || ls.sAssetCode || '';
+                        var key1 = lsDoc + '|' + lsCode;
+                        var key2 = lsDoc + '|';
+                        if (!deletedList.includes(key1) && !deletedList.includes(key2)) {
+                            if (!combined.some(c => c.docNo === lsDoc && c.assetCode === lsCode)) {
+                                combined.push(ls);
+                            }
                         }
                     });
 
                     renderRows(combined);
                 },
                 error: function() {
-                    renderRows(localSaved);
+                    var filteredLocal = localSaved.filter(function(ls) {
+                        var lsDoc = ls.docNo || ls.sDocNo || '';
+                        var lsCode = ls.assetCode || ls.sAssetCode || '';
+                        return !deletedList.includes(lsDoc + '|' + lsCode) && !deletedList.includes(lsDoc + '|');
+                    });
+                    renderRows(filteredLocal);
                 }
             });
         }
@@ -285,19 +312,20 @@
         // Edit Handler
         $('#data-grid tbody').on('click', '.edit-item-btn', function (e) {
             e.preventDefault();
-            var actualIndex = $(this).data('idx');
-            var savedData = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-            var item = savedData[actualIndex];
+            var docNo = $(this).data('docno');
+            var assetCode = $(this).data('assetcode');
+            
+            var item = currentGridData.find(i => (i.docNo || i.sDocNo || i.allocationNo) === docNo && (!assetCode || (i.assetCode || i.sAssetCode) === assetCode));
 
             if (item) {
-                $('#edit-idx').val(actualIndex);
-                $('#edit-docno').val(item.docNo || item.allocationNo || '');
-                $('#edit-date').val(item.date || item.allocDate || '');
-                $('#edit-employee').val(item.employeeName || '');
-                $('#edit-category').val(item.categoryName || '');
-                $('#edit-assetcode').val(item.assetCode || '');
-                $('#edit-assetname').val(item.assetName || '');
-                $('#edit-remarks').val(item.remarks || item.allocRemarks || '');
+                $('#edit-idx').val(docNo);
+                $('#edit-docno').val(item.docNo || item.sDocNo || item.allocationNo || '');
+                $('#edit-date').val(item.date || item.dDocDate || item.allocDate || '');
+                $('#edit-employee').val(item.employeeName || item.sEmployeeName || '');
+                $('#edit-category').val(item.categoryName || item.sCategoryName || '');
+                $('#edit-assetcode').val(item.assetCode || item.sAssetCode || '');
+                $('#edit-assetname').val(item.assetName || item.sAssetName || '');
+                $('#edit-remarks').val(item.remarks || item.sComments || item.allocRemarks || '');
                 $('#edit-status').val(item.status || 'Allocated');
 
                 $('#edit-modal').modal('show');
@@ -305,37 +333,52 @@
         });
 
         $('#save-edit-btn').click(function() {
-            var actualIndex = parseInt($('#edit-idx').val());
+            var targetDocNo = $('#edit-idx').val();
             var savedData = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+            var match = savedData.find(i => (i.docNo || i.sDocNo || i.allocationNo) === targetDocNo);
             
-            if (savedData[actualIndex]) {
-                savedData[actualIndex].date = $('#edit-date').val();
-                savedData[actualIndex].allocDate = $('#edit-date').val();
-                savedData[actualIndex].employeeName = $('#edit-employee').val();
-                savedData[actualIndex].categoryName = $('#edit-category').val();
-                savedData[actualIndex].assetCode = $('#edit-assetcode').val();
-                savedData[actualIndex].assetName = $('#edit-assetname').val();
-                savedData[actualIndex].remarks = $('#edit-remarks').val();
-                savedData[actualIndex].allocRemarks = $('#edit-remarks').val();
-                savedData[actualIndex].status = $('#edit-status').val();
+            if (match) {
+                match.date = $('#edit-date').val();
+                match.employeeName = $('#edit-employee').val();
+                match.categoryName = $('#edit-category').val();
+                match.assetCode = $('#edit-assetcode').val();
+                match.assetName = $('#edit-assetname').val();
+                match.remarks = $('#edit-remarks').val();
+                match.status = $('#edit-status').val();
 
                 localStorage.setItem('savedAssetAllocations', JSON.stringify(savedData));
-                $('#edit-modal').modal('hide');
-                loadGridData();
-                alertify.log('Asset Allocation updated successfully.', 'success', 5000);
             }
+            $('#edit-modal').modal('hide');
+            loadGridData();
+            alertify.log('Asset Allocation updated successfully.', 'success', 5000);
         });
 
         // Delete Handler
         $('#data-grid tbody').on('click', '.remove-item-btn', function (e) {
             e.preventDefault();
-            var actualIndex = $(this).data('idx');
+            var docNo = $(this).data('docno');
+            var assetCode = $(this).data('assetcode');
             
-            alertify.confirm('Are you sure you want to delete this allocation?', function (e) {
-                if (e) {
-                    var data = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-                    data.splice(actualIndex, 1);
-                    localStorage.setItem('savedAssetAllocations', JSON.stringify(data));
+            alertify.confirm('Are you sure you want to delete this allocation?', function (confirmed) {
+                if (confirmed) {
+                    var localData = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
+                    localData = localData.filter(function(i) {
+                        var iDoc = i.docNo || i.sDocNo || i.allocationNo;
+                        var iCode = i.assetCode || i.sAssetCode;
+                        if (assetCode && assetCode !== '-' && iCode) {
+                            return !(iDoc === docNo && iCode === assetCode);
+                        }
+                        return iDoc !== docNo;
+                    });
+                    localStorage.setItem('savedAssetAllocations', JSON.stringify(localData));
+
+                    var deletedList = JSON.parse(localStorage.getItem('deletedAssetAllocations') || '[]');
+                    var delKey = docNo + '|' + (assetCode && assetCode !== '-' ? assetCode : '');
+                    if (!deletedList.includes(delKey)) {
+                        deletedList.push(delKey);
+                        localStorage.setItem('deletedAssetAllocations', JSON.stringify(deletedList));
+                    }
+
                     loadGridData();
                     $('.alertify-log, .alertify-logs > *').remove();
                     alertify.log('Record deleted successfully.', 'success', 2500);

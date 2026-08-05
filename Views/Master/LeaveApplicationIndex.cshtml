@@ -623,9 +623,12 @@
         var approvedCount = 0;
         var pendingCount = 0;
         table.rows().every(function() {
-            var statusHtml = this.node().cells[7].innerHTML;
-            if (statusHtml.includes('Approved')) approvedCount++;
-            if (statusHtml.includes('Pending')) pendingCount++;
+            var node = this.node();
+            if (node) {
+                var statusCellHtml = node.cells && node.cells.length > 15 ? node.cells[15].innerHTML : $(node).html();
+                if (statusCellHtml.includes('Approved')) approvedCount++;
+                else if (statusCellHtml.includes('Pending')) pendingCount++;
+            }
         });
         
         $('#stat-active').text(approvedCount);

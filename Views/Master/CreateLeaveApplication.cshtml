@@ -298,7 +298,6 @@
                         <th>From Date</th>
                         <th>To Date</th>
                         <th class="text-right">Lvs Used No</th>
-                        <th>Document</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -460,9 +459,14 @@
         var uTbody = $('#user-grid-table tbody');
         uTbody.empty();
         stagedLeaves.forEach(function(app) {
-            var docBtn = app.attachmentName
-                ? `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>${app.attachmentName}</b>'); return false;" class="badge badge-info"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`
-                : `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>Leave_Doc_${app.stagedId}.pdf</b>'); return false;" class="badge badge-info"><i class="fas fa-file-pdf mr-1"></i> Preview Doc</a>`;
+            var docBtn = '';
+            if (app.attachmentUrl) {
+                docBtn = `<a href="${app.attachmentUrl}" target="_blank" class="badge badge-success shadow-sm" title="Click to open/view document in new tab"><i class="fas fa-external-link-alt mr-1"></i> View ${app.attachmentName}</a>`;
+            } else if (app.attachmentName) {
+                docBtn = `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>${app.attachmentName}</b>'); return false;" class="badge badge-info shadow-sm"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`;
+            } else {
+                docBtn = `<a href="#" onclick="alertify.alert('Document Preview', 'No document uploaded.'); return false;" class="badge badge-secondary shadow-sm"><i class="fas fa-file-pdf mr-1"></i> Preview Doc</a>`;
+            }
 
             var tr = `<tr>
                 <td class="action-btns" style="text-align:center;">
@@ -486,17 +490,12 @@
         var sTbody = $('#system-grid-table tbody');
         sTbody.empty();
         stagedSystemLeaves.forEach(function(app) {
-            var docBtn = app.attachmentName
-                ? `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>${app.attachmentName}</b>'); return false;" class="badge badge-info"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`
-                : `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>Sys_Doc_${app.stagedId}.pdf</b>'); return false;" class="badge badge-info"><i class="fas fa-file-pdf mr-1"></i> Preview Doc</a>`;
-
             var tr = `<tr>
                 <td>${app.type || '-'}</td>
                 <td>${app.monthName}</td>
                 <td>${app.start}</td>
                 <td>${app.end}</td>
                 <td class="num-col">${app.duration}</td>
-                <td>${docBtn}</td>
             </tr>`;
             sTbody.append(tr);
         });
@@ -524,7 +523,7 @@
 
     function clearEmployeeFields() {
         $('#hdr-designation, #hdr-department, #hdr-manager, #dtl-contact').val('');
-        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-balance').text('0.0');
+        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
         stagedLeaves = [];
         stagedSystemLeaves = [];
         renderGrids();
@@ -609,6 +608,7 @@
 
         var attInput = document.getElementById('dtl-attachment');
         var attachmentName = (attInput && attInput.files && attInput.files[0]) ? attInput.files[0].name : '';
+        var attachmentUrl = (attInput && attInput.files && attInput.files[0]) ? URL.createObjectURL(attInput.files[0]) : '';
 
         var duration = parseFloat($('#dtl-duration').val()) || 0;
         var eligible = parseFloat($('#sum-eligible').text()) || 0;
@@ -649,7 +649,8 @@
             balance: balance,
             status: 'Pending',
             reason: reason,
-            attachmentName: attachmentName
+            attachmentName: attachmentName,
+            attachmentUrl: attachmentUrl
         };
 
         stagedLeaves.push(newApp);
@@ -675,13 +676,26 @@
                 start: formatDateDisplay(cur),
                 end: formatDateDisplay(endChunk),
                 duration: chunkDiff,
-                attachmentName: attachmentName
+                attachmentName: attachmentName,
+                attachmentUrl: attachmentUrl
             });
 
             cur = new Date(yNum, mIndex + 1, 1);
         }
 
         renderGrids();
+
+        // Reset details section & blue summary panel to 0.0 until next leave is selected
+        $('#dtl-leavetype').val('').trigger('change');
+        $('#dtl-substitute').val('').trigger('change');
+        $('#dtl-weeklyoff').val(0);
+        $('#dtl-publicholiday').val(0);
+        $('#dtl-duration').val(0);
+        $('#dtl-noofleaves').val(0);
+        $('#dtl-attachment').val('');
+
+        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
+
         alertify.log('Leave details added to grid.', 'success', 5000);
     }
 

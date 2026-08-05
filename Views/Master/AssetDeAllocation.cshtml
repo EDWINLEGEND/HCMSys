@@ -232,7 +232,7 @@
             if (emp) {
                 $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
                 $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
-                $('#hdr-manager').val(emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || 'Jane Doe');
+                $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '');
             }
         });
 

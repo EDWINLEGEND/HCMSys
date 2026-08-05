@@ -451,7 +451,7 @@
         if (emp) {
             var desig = emp.designation || emp.designationName || emp.sDesignationName || '';
             var dept = emp.department || emp.departmentName || emp.sDepartmentName || '';
-            var mgr = emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || 'Jane Doe';
+            var mgr = emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '';
             var contact = emp.contact || emp.contactNo || emp.mobile || emp.sMobileNo || '+1-234-567-8900';
 
             $('#hdr-designation').val(desig);
@@ -494,11 +494,11 @@
         stagedLeaves.forEach(function(app) {
             var docBtn = '';
             if (app.attachmentUrl) {
-                docBtn = `<a href="${app.attachmentUrl}" target="_blank" class="badge badge-success shadow-sm" title="Click to open/view document in new tab"><i class="fas fa-external-link-alt mr-1"></i> View ${app.attachmentName}</a>`;
+                docBtn = `<a href="${app.attachmentUrl}" target="_blank" class="badge badge-success shadow-sm" title="Open document in new tab"><i class="fas fa-external-link-alt mr-1"></i> View ${app.attachmentName}</a>`;
             } else if (app.attachmentName) {
-                docBtn = `<a href="#" onclick="alertify.alert('Document Preview', 'Attached File: <b>${app.attachmentName}</b>'); return false;" class="badge badge-info shadow-sm"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`;
+                docBtn = `<a href="#" onclick="openDocPreview('${app.attachmentName}', ''); return false;" class="badge badge-info shadow-sm" title="Open document in new tab"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`;
             } else {
-                docBtn = `<a href="#" onclick="alertify.alert('Document Preview', 'No document uploaded.'); return false;" class="badge badge-secondary shadow-sm"><i class="fas fa-file-pdf mr-1"></i> Preview Doc</a>`;
+                docBtn = `<span class="badge badge-secondary shadow-sm"><i class="fas fa-file-pdf mr-1"></i> No Document</span>`;
             }
 
             var tr = `<tr>

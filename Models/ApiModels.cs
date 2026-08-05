@@ -122,6 +122,12 @@ namespace HCMSys.Models
 
         [JsonPropertyName("sStatus")]
         public string SStatus { get; set; } = string.Empty;
+
+        [JsonPropertyName("sReportingToCode")]
+        public string SReportingToCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("sReportingToName")]
+        public string SReportingToName { get; set; } = string.Empty;
     }
 
     // --- Asset Category DTOs ---

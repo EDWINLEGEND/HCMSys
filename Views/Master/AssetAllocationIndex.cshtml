@@ -335,7 +335,8 @@
                     data.splice(actualIndex, 1);
                     localStorage.setItem('savedAssetAllocations', JSON.stringify(data));
                     loadGridData();
-                    alertify.log('Record deleted successfully.', 'success', 5000);
+                    $('.alertify-log, .alertify-logs > *').remove();
+                    alertify.log('Record deleted successfully.', 'success', 2500);
                 }
             });
         });

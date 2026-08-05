@@ -353,7 +353,7 @@
         if (emp) {
             var desig = emp.designation || emp.designationName || emp.sDesignationName || '';
             var dept = emp.department || emp.departmentName || emp.sDepartmentName || '';
-            var mgr = emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || 'Jane Doe';
+            var mgr = emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '';
             var doj = emp.dateOfJoining || emp.joiningDate || emp.sJoiningDate || '15-Jan-2020';
             var out = emp.currentOutstanding || 0;
 

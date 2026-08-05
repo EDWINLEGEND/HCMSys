@@ -446,13 +446,18 @@
                 try {
                     var alertObj = JSON.parse(pendingAlert);
                     if (typeof alertify !== 'undefined') {
-                        alertify.set({ delay: 5000 });
-                        alertify.log(alertObj.msg, alertObj.type || 'success', 5000);
+                        $('.alertify-log, .alertify-logs > *').remove();
+                        alertify.set({ delay: 3000 });
+                        alertify.log(alertObj.msg, alertObj.type || 'success', 3000);
                     }
                 } catch(e) {}
                 sessionStorage.removeItem('pendingAlert');
             }
         }
+
+        $(document).on('click', '.alertify-log', function() {
+            $(this).fadeOut(150, function() { $(this).remove(); });
+        });
 
         var activeAjaxRequest = null;
 
@@ -496,6 +501,19 @@
                 });
             });
         }
+
+        window.openDocPreview = function(filename, url) {
+            if (url && (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:'))) {
+                window.open(url, '_blank');
+            } else {
+                var docHtml = `<!DOCTYPE html><html><head><title>${filename || 'Document Preview'}</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/><style>body{font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:60px;background:#f8f9fc;color:#5a5c69;text-align:center;} .card{background:#fff;padding:50px;border-radius:12px;box-shadow:0 0.15rem 1.75rem 0 rgba(58,59,69,0.15);display:inline-block;max-width:600px;width:100%;border-left:5px solid #4e73df;} h3{color:#4e73df;margin-top:0;font-weight:700;} .doc-icon{font-size:4rem;color:#4e73df;margin-bottom:20px;}</style></head><body><div class="card"><div class="doc-icon"><i class="fas fa-file-pdf"></i></div><h3>Document Viewer</h3><p style="font-size:1.1rem;margin:15px 0;"><strong>Filename:</strong> ${filename || 'Attachment.pdf'}</p><p style="color:#858796;">Document opened in a new tab.</p></div></body></html>`;
+                var win = window.open('', '_blank');
+                if (win) {
+                    win.document.write(docHtml);
+                    win.document.close();
+                }
+            }
+        };
 
         function loadPageContent(url, pushState) {
             if (pushState === undefined) pushState = true;

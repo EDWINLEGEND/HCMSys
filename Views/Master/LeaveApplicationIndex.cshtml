@@ -818,7 +818,8 @@
                     localStorage.setItem('leaveApps', JSON.stringify(updatedLeaves));
                     
                     updateStats();
-                    alertify.log(code + ' - Leave Application Deleted', 'success');
+                    $('.alertify-log, .alertify-logs > *').remove();
+                    alertify.log(code + ' - Leave Application Deleted', 'success', 2500);
                     $('#loading').fadeOut();
                 }, 300);
             }
@@ -843,7 +844,19 @@
             .appendTo('body')
             .animate({ opacity: 1 }, 200)
             .delay(2200)
-            .animate({ opacity: 0 }, 300, function () { $(this).remove(); });
+    }
+
+    function openDocPreview(filename, url) {
+        if (url && (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:'))) {
+            window.open(url, '_blank');
+        } else {
+            var docHtml = `<html><head><title>${filename || 'Document Preview'}</title><style>body{font-family:Segoe UI,sans-serif;padding:40px;background:#f8f9fc;color:#4e73df;text-align:center;} .box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 0.15rem 1.75rem 0 rgba(58,59,69,0.15);display:inline-block;} h2{margin-top:0;}</style></head><body><div class="box"><h2>Document Viewer</h2><p>Document: <strong>${filename || 'Attachment.pdf'}</strong></p><p style="color:#858796;">Document opened in a new tab.</p></div></body></html>`;
+            var win = window.open('', '_blank');
+            if (win) {
+                win.document.write(docHtml);
+                win.document.close();
+            }
+        }
     }
 </script>
 </body>

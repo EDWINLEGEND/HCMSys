@@ -283,7 +283,8 @@
         if (emp) {
             $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
             $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
-            $('#hdr-manager').val(emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || 'Jane Doe');
+            var mgrName = emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '';
+            $('#hdr-manager').val(mgrName);
         }
     }
     
@@ -484,8 +485,8 @@
             sDepartmentName: empDeptName,
             sDesignationCode: empDesigCode,
             sDesignationName: empDesigName,
-            sReportingToCode: empCode,
-            sReportingToName: managerName,
+            sReportingToCode: emp ? (emp.sReportingToCode || emp.reportingToCode || '') : '',
+            sReportingToName: managerName || (emp ? (emp.sReportingToName || emp.reportingToName || '') : ''),
             iCompanyId: 1,
             iPayYearId: 1,
             iStatus: 1,

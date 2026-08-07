@@ -288,10 +288,10 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
-            $.getJSON('/api-assets/loan_type.json')
+            $.getJSON('/Master/GetApiEmployees'),
+            $.getJSON('/api-assets1/loan_type.json')
         ).done(function(empRes, loanRes) {
-            employeesData = empRes;
+            employeesData = empRes[0] || empRes;
             loanTypesData = loanRes[0] || loanRes;
             if (Array.isArray(loanTypesData) && loanTypesData.length > 0 && Array.isArray(loanTypesData[0])) {
                 loanTypesData = loanTypesData[0];

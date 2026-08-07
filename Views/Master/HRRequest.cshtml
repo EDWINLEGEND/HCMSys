@@ -199,10 +199,10 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
-            $.getJSON('/api-assets/request_master.json')
+            $.getJSON('/Master/GetApiEmployees'),
+            $.getJSON('/api-assets1/request_master.json')
         ).done(function(empRes, reqRes) {
-            employeesData = empRes;
+            employeesData = empRes[0] || empRes;
             requestMasterData = reqRes[0] || reqRes;
             
             populateDropdowns();

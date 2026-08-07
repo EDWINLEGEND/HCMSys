@@ -210,8 +210,8 @@
     $(document).ready(function() {
         initHeader();
 
-        fetchWithFallback('/Master/GetApiEmployees', '/api-assets1/employee.json').done(function(empRes) {
-            employeesData = empRes;
+        $.getJSON('/Master/GetApiEmployees').done(function(empRes) {
+            employeesData = empRes[0] || empRes;
             populateDropdowns();
             $('#hdr-employee').select2({ width: '100%' });
             $('#modal-employee-select').select2({ dropdownParent: $('#inHandAssetsModal'), width: '100%' });

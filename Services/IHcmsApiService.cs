@@ -13,5 +13,7 @@ namespace HCMSys.Services
         Task<ApiResponseEnvelope<object>?> SaveAssetAllocationAsync(SaveAssetAllocationDto request);
         Task<List<SaveAssetAllocationDto>> GetAssetAllocationsAsync(int companyId = 1, int payYearId = 1);
         Task<SaveAssetAllocationDto?> GetAssetAllocationByIdAsync(int id);
+        Task<List<LeaveBalanceDto>> GetLeaveBalancesAsync();
+        Task<LeaveTypeOptionsDto> GetLeaveTypesAsync();
     }
 }

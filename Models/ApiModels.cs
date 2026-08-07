@@ -312,4 +312,71 @@ namespace HCMSys.Models
         [JsonPropertyName("sContentType")]
         public string? SContentType { get; set; }
     }
+
+    // --- Leave DTOs ---
+    public class LeaveBalanceDto
+    {
+        [JsonPropertyName("employeeId")]
+        public int EmployeeId { get; set; }
+
+        [JsonPropertyName("eligible")]
+        public decimal Eligible { get; set; }
+
+        [JsonPropertyName("approved")]
+        public decimal Approved { get; set; }
+
+        [JsonPropertyName("unapproved")]
+        public decimal Unapproved { get; set; }
+    }
+
+    public class LeaveTypeItemDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("code")]
+        public string Code { get; set; } = string.Empty;
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("eligible")]
+        public decimal Eligible { get; set; }
+
+        [JsonPropertyName("approved")]
+        public decimal Approved { get; set; }
+
+        [JsonPropertyName("unapproved")]
+        public decimal Unapproved { get; set; }
+    }
+
+    public class PaymentTypeDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class HalfDayDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class LeaveTypeOptionsDto
+    {
+        [JsonPropertyName("leaveTypes")]
+        public List<LeaveTypeItemDto> LeaveTypes { get; set; } = new List<LeaveTypeItemDto>();
+
+        [JsonPropertyName("paymentTypes")]
+        public List<PaymentTypeDto> PaymentTypes { get; set; } = new List<PaymentTypeDto>();
+
+        [JsonPropertyName("halfDay")]
+        public List<HalfDayDto> HalfDay { get; set; } = new List<HalfDayDto>();
+    }
 }

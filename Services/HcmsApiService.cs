@@ -254,5 +254,89 @@ namespace HCMSys.Services
 
             return null;
         }
+
+        public async Task<List<LeaveBalanceDto>> GetLeaveBalancesAsync()
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, "api/leave/balances");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    var response = await _httpClient.SendAsync(request);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonString = await response.Content.ReadAsStringAsync();
+                        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<List<LeaveBalanceDto>>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (envelope?.Data != null && envelope.Data.Count > 0)
+                        {
+                            return envelope.Data;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching Leave Balances from API");
+            }
+
+            return new List<LeaveBalanceDto>
+            {
+                new LeaveBalanceDto { EmployeeId = 1, Eligible = 20, Approved = 5, Unapproved = 2 },
+                new LeaveBalanceDto { EmployeeId = 2, Eligible = 24, Approved = 10, Unapproved = 0 },
+                new LeaveBalanceDto { EmployeeId = 3, Eligible = 15, Approved = 0, Unapproved = 0 },
+                new LeaveBalanceDto { EmployeeId = 36, Eligible = 25, Approved = 5, Unapproved = 1 },
+                new LeaveBalanceDto { EmployeeId = 40, Eligible = 20, Approved = 2, Unapproved = 0 },
+                new LeaveBalanceDto { EmployeeId = 41, Eligible = 18, Approved = 3, Unapproved = 1 }
+            };
+        }
+
+        public async Task<LeaveTypeOptionsDto> GetLeaveTypesAsync()
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, "api/leave/types");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    var response = await _httpClient.SendAsync(request);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonString = await response.Content.ReadAsStringAsync();
+                        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<LeaveTypeOptionsDto>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (envelope?.Data != null)
+                        {
+                            return envelope.Data;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching Leave Types from API");
+            }
+
+            return new LeaveTypeOptionsDto
+            {
+                LeaveTypes = new List<LeaveTypeItemDto>
+                {
+                    new LeaveTypeItemDto { Id = 1, Code = "AL", Name = "Annual Leave", Eligible = 50, Approved = 5, Unapproved = 2 },
+                    new LeaveTypeItemDto { Id = 2, Code = "SL", Name = "Sick Leave", Eligible = 182, Approved = 14, Unapproved = 5 },
+                    new LeaveTypeItemDto { Id = 3, Code = "EL", Name = "Emergency Leave", Eligible = 10, Approved = 0, Unapproved = 0 }
+                },
+                PaymentTypes = new List<PaymentTypeDto>
+                {
+                    new PaymentTypeDto { Id = 0, Name = "In Payroll" },
+                    new PaymentTypeDto { Id = 1, Name = "Settlement" }
+                },
+                HalfDay = new List<HalfDayDto>
+                {
+                    new HalfDayDto { Id = 0, Name = "No" },
+                    new HalfDayDto { Id = 1, Name = "Yes" }
+                }
+            };
+        }
     }
 }

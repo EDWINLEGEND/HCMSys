@@ -123,6 +123,20 @@ namespace HCMSys.Controllers
             return Json(allocation);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetApiLeaveBalances()
+        {
+            var balances = await _apiService.GetLeaveBalancesAsync();
+            return Json(balances);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiLeaveTypes()
+        {
+            var types = await _apiService.GetLeaveTypesAsync();
+            return Json(types);
+        }
+
         /// <summary>
         /// ////Project master
         /// </summary>

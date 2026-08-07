@@ -328,13 +328,13 @@
     $(document).ready(function() {
         initHeader();
 
-        // Fetch JSON data
+        // Fetch API data
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
-            $.getJSON('/api-assets/leave_balances.json'),
-            $.getJSON('/api-assets/leavetype.json')
+            $.getJSON('/Master/GetApiEmployees'),
+            $.getJSON('/Master/GetApiLeaveBalances'),
+            $.getJSON('/Master/GetApiLeaveTypes')
         ).done(function(empRes, balRes, optRes) {
-            employeesData = empRes;
+            employeesData = empRes[0] || empRes;
             leaveBalancesData = balRes[0] || balRes;
             leaveOptionsData = optRes[0] || optRes;
             

@@ -155,14 +155,14 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
-            $.getJSON('/api-assets/leavetype.json'),
-            fetchWithFallback('/Master/GetApiAssetCategories', '/api-assets/asset_category.json')
+            $.getJSON('/Master/GetApiEmployees'),
+            $.getJSON('/Master/GetApiLeaveTypes'),
+            $.getJSON('/Master/GetApiAssetCategories')
         ).done(function(empRes, leaveRes, catRes) {
-            employeesData = empRes;
+            employeesData = empRes[0] || empRes;
             var leaveData = leaveRes[0] || leaveRes;
             leaveTypesData = leaveData.leaveTypes || leaveData;
-            categoriesData = catRes;
+            categoriesData = catRes[0] || catRes;
             
             // Automatically add initial clean row
             addRow();

@@ -211,18 +211,18 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
-            fetchWithFallback('/Master/GetApiAssetCategories', '/api-assets/asset_category.json'),
-            fetchWithFallback('/Master/GetApiAssets', '/api-assets/asset_code.json')
+            $.getJSON('/Master/GetApiEmployees'),
+            $.getJSON('/Master/GetApiAssetCategories'),
+            $.getJSON('/Master/GetApiAssets')
         ).done(function(empRes, catRes, codeRes) {
-            employeesData = empRes;
-            assetCategoryData = catRes;
-            assetCodeData = codeRes;
+            employeesData = empRes[0] || empRes;
+            assetCategoryData = catRes[0] || catRes;
+            assetCodeData = codeRes[0] || codeRes;
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {
-            alertify.log('Failed to load data', 'error', 5000);
+            alertify.log('Failed to load asset allocation data', 'error', 5000);
         });
 
         $('#hdr-employee').change(onEmployeeChange);

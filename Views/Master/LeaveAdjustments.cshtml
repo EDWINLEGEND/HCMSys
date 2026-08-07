@@ -154,10 +154,10 @@
         initHeader();
 
         $.when(
-            fetchWithFallback('/Master/GetApiEmployees', '/api-assets/employee.json'),
-            $.getJSON('/api-assets/leavetype.json')
+            $.getJSON('/Master/GetApiEmployees'),
+            $.getJSON('/Master/GetApiLeaveTypes')
         ).done(function(empRes, leaveRes) {
-            employeesData = empRes;
+            employeesData = empRes[0] || empRes;
             var leaveData = leaveRes[0] || leaveRes;
             leaveTypesData = leaveData.leaveTypes || leaveData;
             

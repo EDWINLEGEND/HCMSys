@@ -230,7 +230,7 @@
                 table.row.add([
                     actionHtml,
                     dNo,
-                    item.deAllocDate || item.returnDate || '-',
+                    window.formatDateDisplay(item.deAllocDate || item.returnDate),
                     item.employeeName || '-',
                     item.categoryName || '-',
                     aCode,

@@ -200,14 +200,14 @@
                         <a href="#" title="Delete"><i class="fas fa-trash-alt"></i></a>
                     </td>
                     <td><strong>${item.disbursementNo}</strong></td>
-                    <td>${item.disbursementDate}</td>
+                    <td>${window.formatDateDisplay(item.disbursementDate)}</td>
                     <td>${item.requestNo}</td>
                     <td>${item.employeeCode} - ${item.employeeName}</td>
                     <td>${item.loanTypeName}</td>
                     <td class="num-col">${item.sanctionedAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                     <td class="num-col">${item.interestRate}%</td>
                     <td class="num-col">${item.noOfMonths} Mos</td>
-                    <td>${item.emiStartDate}</td>
+                    <td>${window.formatDateDisplay(item.emiStartDate)}</td>
                     <td class="num-col">${item.monthlyEmi.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                     <td><span class="badge badge-success">${item.status}</span></td>
                 </tr>`;

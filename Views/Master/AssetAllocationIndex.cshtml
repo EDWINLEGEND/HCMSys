@@ -228,7 +228,7 @@
                 table.row.add([
                     actionHtml,
                     dNo,
-                    item.date || item.dDocDate || item.allocDate || '-',
+                    window.formatDateDisplay(item.date || item.dDocDate || item.allocDate),
                     item.employeeName || item.sEmployeeName || '-',
                     item.categoryName || item.sCategoryName || '-',
                     aCode,
@@ -252,7 +252,7 @@
                     var combined = [];
                     if (Array.isArray(apiData) && apiData.length > 0) {
                         apiData.forEach(function(item) {
-                            var formattedDate = item.dDocDate ? item.dDocDate.split('T')[0] : '-';
+                            var formattedDate = item.dDocDate ? window.formatDateDisplay(item.dDocDate) : '-';
                             var assetList = (item.assets && item.assets.length > 0) ? item.assets : [{}];
                             var itemDocNo = item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0'));
 

@@ -214,12 +214,12 @@
                         <a href="#" title="Delete"><i class="fas fa-trash-alt"></i></a>
                     </td>
                     <td><strong>${item.docNo}</strong></td>
-                    <td>${item.date}</td>
+                    <td>${window.formatDateDisplay(item.date)}</td>
                     <td>${item.employeeCode} - ${item.employeeName}</td>
                     <td>${item.loanTypeName}</td>
                     <td class="num-col">${item.loanAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                    <td>${item.neededBy}</td>
-                    <td>${item.emiStartDate}</td>
+                    <td>${window.formatDateDisplay(item.neededBy)}</td>
+                    <td>${window.formatDateDisplay(item.emiStartDate)}</td>
                     <td><span class="badge badge-info">${item.emiType}</span></td>
                     <td class="num-col">${item.noOfMonths}</td>
                     <td class="num-col">${item.emiAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>

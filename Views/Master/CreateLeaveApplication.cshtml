@@ -515,8 +515,8 @@
                     <a href="#" class="remove-item-btn" title="Delete" onclick="deleteStagedLeave('${app.stagedId}'); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                 </td>
                 <td>${app.type || '-'}</td>
-                <td>${app.start}</td>
-                <td>${app.end}</td>
+                <td>${window.formatDateDisplay(app.start)}</td>
+                <td>${window.formatDateDisplay(app.end)}</td>
                 <td class="num-col">${app.duration}</td>
                 <td>${app.contactNo || '-'}</td>
                 <td>${app.substituteEmployee || '-'}</td>

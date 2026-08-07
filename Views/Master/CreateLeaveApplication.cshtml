@@ -502,10 +502,10 @@
         uTbody.empty();
         stagedLeaves.forEach(function(app) {
             var docBtn = '';
-            if (app.attachmentUrl) {
-                docBtn = `<a href="${app.attachmentUrl}" target="_blank" class="badge badge-success shadow-sm" title="Open document in new tab"><i class="fas fa-external-link-alt mr-1"></i> View ${app.attachmentName}</a>`;
-            } else if (app.attachmentName) {
-                docBtn = `<a href="#" onclick="openDocPreview('${app.attachmentName}', ''); return false;" class="badge badge-info shadow-sm" title="Open document in new tab"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName}</a>`;
+            var safeUrl = (app.attachmentUrl || '').replace(/'/g, "\\'");
+            var safeName = (app.attachmentName || 'Attachment.pdf').replace(/'/g, "\\'");
+            if (app.attachmentUrl || app.attachmentName) {
+                docBtn = `<a href="#" onclick="openDocPreview('${safeName}', '${safeUrl}'); return false;" class="badge badge-info shadow-sm" title="Open document in new tab"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName || 'View Document'}</a>`;
             } else {
                 docBtn = `<span class="badge badge-secondary shadow-sm"><i class="fas fa-file-pdf mr-1"></i> No Document</span>`;
             }

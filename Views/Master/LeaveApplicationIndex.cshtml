@@ -503,12 +503,9 @@
         var $container = $('#docPreviewContainer');
         $container.empty();
         var $newTabBtn = $('#btnOpenNewTab');
+        var blobUrl = window.getDocBlobUrl(docName, docUrl);
 
         if (!docUrl || docUrl === '#' || docUrl === 'undefined' || docUrl === '') {
-            var sampleText = 'Sample document contents for ' + (docName || 'Document');
-            var blob = new Blob([sampleText], { type: 'text/plain' });
-            var blobUrl = URL.createObjectURL(blob);
-
             $container.html(`
                 <div class="p-4 border rounded bg-light">
                     <i class="fas fa-file-pdf text-danger fa-4x mb-3"></i>
@@ -516,13 +513,10 @@
                     <p class="text-muted small">Uploaded document attached to this record.</p>
                 </div>
             `);
-            $newTabBtn.attr('href', blobUrl).show();
         } else if (docUrl.startsWith('data:image/') || docUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-            $container.html(`<img src="${docUrl}" class="img-fluid rounded shadow-sm" style="max-height: 500px; object-fit: contain;" alt="Document Preview"/>`);
-            $newTabBtn.attr('href', docUrl).show();
+            $container.html(`<img src="${blobUrl}" class="img-fluid rounded shadow-sm" style="max-height: 500px; object-fit: contain;" alt="Document Preview"/>`);
         } else if (docUrl.startsWith('data:application/pdf') || docUrl.endsWith('.pdf')) {
-            $container.html(`<iframe src="${docUrl}" style="width:100%; height:500px; border:none;" class="rounded shadow-sm"></iframe>`);
-            $newTabBtn.attr('href', docUrl).show();
+            $container.html(`<iframe src="${blobUrl}" style="width:100%; height:500px; border:none;" class="rounded shadow-sm"></iframe>`);
         } else {
             $container.html(`
                 <div class="p-4 border rounded bg-light">
@@ -531,8 +525,13 @@
                     <p class="text-muted small">Click "Open in New Tab" to view or download this document.</p>
                 </div>
             `);
-            $newTabBtn.attr('href', docUrl).show();
         }
+
+        $newTabBtn.off('click').on('click', function (e) {
+            e.preventDefault();
+            window.openDocPreview(docName, docUrl);
+            return false;
+        }).show();
 
         $('#DocPreviewModal').modal('show');
     }
@@ -874,18 +873,7 @@
             .delay(2200)
     }
 
-    function openDocPreview(filename, url) {
-        if (url && (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:'))) {
-            window.open(url, '_blank');
-        } else {
-            var docHtml = `<html><head><title>${filename || 'Document Preview'}</title><style>body{font-family:Segoe UI,sans-serif;padding:40px;background:#f8f9fc;color:#4e73df;text-align:center;} .box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 0.15rem 1.75rem 0 rgba(58,59,69,0.15);display:inline-block;} h2{margin-top:0;}</style></head><body><div class="box"><h2>Document Viewer</h2><p>Document: <strong>${filename || 'Attachment.pdf'}</strong></p><p style="color:#858796;">Document opened in a new tab.</p></div></body></html>`;
-            var win = window.open('', '_blank');
-            if (win) {
-                win.document.write(docHtml);
-                win.document.close();
-            }
-        }
-    }
+
 </script>
 </body>
 </html>

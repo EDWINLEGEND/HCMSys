@@ -502,16 +502,64 @@
             });
         }
 
-        window.openDocPreview = function(filename, url) {
-            if (url && (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:'))) {
-                window.open(url, '_blank');
-            } else {
-                var docHtml = `<!DOCTYPE html><html><head><title>${filename || 'Document Preview'}</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/><style>body{font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:60px;background:#f8f9fc;color:#5a5c69;text-align:center;} .card{background:#fff;padding:50px;border-radius:12px;box-shadow:0 0.15rem 1.75rem 0 rgba(58,59,69,0.15);display:inline-block;max-width:600px;width:100%;border-left:5px solid #4e73df;} h3{color:#4e73df;margin-top:0;font-weight:700;} .doc-icon{font-size:4rem;color:#4e73df;margin-bottom:20px;}</style></head><body><div class="card"><div class="doc-icon"><i class="fas fa-file-pdf"></i></div><h3>Document Viewer</h3><p style="font-size:1.1rem;margin:15px 0;"><strong>Filename:</strong> ${filename || 'Attachment.pdf'}</p><p style="color:#858796;">Document opened in a new tab.</p></div></body></html>`;
-                var win = window.open('', '_blank');
-                if (win) {
-                    win.document.write(docHtml);
-                    win.document.close();
+        window.getDocBlobUrl = function(filename, url) {
+            if (url && typeof url === 'string' && url.trim() !== '' && url !== '#' && url !== 'undefined' && url !== 'null') {
+                var trimmed = url.trim();
+                if (trimmed.startsWith('data:')) {
+                    try {
+                        var parts = trimmed.split(',');
+                        var mimeMatch = parts[0].match(/:(.*?);/);
+                        var mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+                        var bstr = atob(parts[1]);
+                        var n = bstr.length;
+                        var u8arr = new Uint8Array(n);
+                        while (n--) {
+                            u8arr[n] = bstr.charCodeAt(n);
+                        }
+                        var blob = new Blob([u8arr], { type: mime });
+                        return URL.createObjectURL(blob);
+                    } catch (e) {
+                        console.error('Error converting Data URL to Blob:', e);
+                        return trimmed;
+                    }
                 }
+                return trimmed;
+            }
+            
+            var isPdf = (filename && filename.toLowerCase().endsWith('.pdf'));
+            var docHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>${filename || 'Document Preview'}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <style>
+        body { font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 60px 20px; background: #f8f9fc; color: #5a5c69; text-align: center; margin: 0; }
+        .card { background: #fff; padding: 50px 40px; border-radius: 12px; box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,0.15); display: inline-block; max-width: 600px; width: 100%; border-top: 5px solid #4e73df; }
+        h3 { color: #4e73df; margin-top: 0; font-weight: 700; font-size: 1.5rem; }
+        .doc-icon { font-size: 4rem; color: #e74a3b; margin-bottom: 20px; }
+        .doc-info { background: #eaecf4; padding: 15px; border-radius: 8px; font-weight: 600; word-break: break-all; margin: 20px 0; color: #2e59d9; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="doc-icon"><i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file-alt'}"></i></div>
+        <h3>Document Preview</h3>
+        <p style="color: #858796;">Viewing document attached to application record.</p>
+        <div class="doc-info">${filename || 'Attachment.pdf'}</div>
+        <p style="font-size: 0.9rem; color: #858796;">Document opened successfully in a new tab.</p>
+    </div>
+</body>
+</html>`;
+            var blob = new Blob([docHtml], { type: 'text/html' });
+            return URL.createObjectURL(blob);
+        };
+
+        window.openDocPreview = function(filename, url) {
+            var blobUrl = window.getDocBlobUrl(filename, url);
+            var win = window.open(blobUrl, '_blank');
+            if (!win) {
+                window.location.href = blobUrl;
             }
         };
 

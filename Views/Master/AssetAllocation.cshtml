@@ -215,9 +215,12 @@
             $.getJSON('/Master/GetApiAssetCategories'),
             $.getJSON('/Master/GetApiAssets')
         ).done(function(empRes, catRes, codeRes) {
-            employeesData = empRes[0] || empRes;
-            assetCategoryData = catRes[0] || catRes;
-            assetCodeData = codeRes[0] || codeRes;
+            var empArr = empRes[0] || empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
+            var catArr = catRes[0] || catRes;
+            assetCategoryData = Array.isArray(catArr) ? (Array.isArray(catArr[0]) ? catArr[0] : catArr) : [];
+            var codeArr = codeRes[0] || codeRes;
+            assetCodeData = Array.isArray(codeArr) ? (Array.isArray(codeArr[0]) ? codeArr[0] : codeArr) : [];
             
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });

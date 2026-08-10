@@ -375,20 +375,22 @@
 
                 if (isEmpMatch && (item.iStatus === 1 || !item.iStatus)) {
                     var itemDocNo = item.sDocNo || item.docNo || ('AST' + String(item.iHeaderId || item.id || 1).padStart(6, '0'));
-                    var assetList = (item.assets && item.assets.length > 0) ? item.assets : ((item.Assets && item.Assets.length > 0) ? item.Assets : []);
+                    var assetList = (item.assets && item.assets.length > 0) ? item.assets :
+                                    ((item.Assets && item.Assets.length > 0) ? item.Assets :
+                                    ((item.sAssetCode || item.assetCode) ? [item] : []));
 
                     assetList.forEach(function(ast) {
-                        var astCode = ast.sAssetCode || ast.assetCode || '';
+                        var astCode = ast.sAssetCode || ast.assetCode || item.sAssetCode || item.assetCode || '';
                         var key = itemDocNo + '|' + astCode;
                         if (!deallocatedKeys.includes(key)) {
                             allInHand.push({
                                 allocationNo: itemDocNo,
-                                categoryName: ast.sCategoryName || ast.categoryName || '-',
+                                categoryName: ast.sCategoryName || ast.categoryName || item.sCategoryName || item.categoryName || '-',
                                 assetCode: astCode || '-',
-                                assetName: ast.sAssetName || ast.assetName || '-',
-                                tagNumber: ast.sTagNumber || ast.tagNumber || '-',
-                                qty: ast.fQuantity || ast.qty || 1,
-                                remarks: ast.sRemarks || ast.remarks || '',
+                                assetName: ast.sAssetName || ast.assetName || item.sAssetName || item.assetName || '-',
+                                tagNumber: ast.sTagNumber || ast.tagNumber || item.sTagNumber || item.tagNumber || '-',
+                                qty: ast.fQuantity || ast.qty || item.fQuantity || item.qty || 1,
+                                remarks: ast.sRemarks || ast.remarks || item.sRemarks || item.remarks || item.sComments || '',
                                 employeeId: empId,
                                 employeeName: item.sEmployeeName || empName
                             });

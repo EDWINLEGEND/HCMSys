@@ -262,12 +262,14 @@
 
                     if (allocationsArray.length > 0) {
                         allocationsArray.forEach(function(item) {
-                            var formattedDate = item.dDocDate ? window.formatDateDisplay(item.dDocDate) : '-';
-                            var assetList = (item.assets && item.assets.length > 0) ? item.assets : ((item.Assets && item.Assets.length > 0) ? item.Assets : [{}]);
-                            var itemDocNo = item.sDocNo || ('AST' + String(item.iHeaderId || item.id || 1).padStart(6, '0'));
+                            var formattedDate = item.dDocDate ? window.formatDateDisplay(item.dDocDate) : (item.date ? window.formatDateDisplay(item.date) : '-');
+                            var assetList = (item.assets && item.assets.length > 0) ? item.assets :
+                                            ((item.Assets && item.Assets.length > 0) ? item.Assets :
+                                            ((item.sAssetCode || item.assetCode) ? [item] : [item]));
+                            var itemDocNo = item.sDocNo || item.docNo || ('AST' + String(item.iHeaderId || item.id || 1).padStart(6, '0'));
 
                             assetList.forEach(function(ast) {
-                                var astCode = ast.sAssetCode || ast.assetCode || '';
+                                var astCode = ast.sAssetCode || ast.assetCode || item.sAssetCode || item.assetCode || '';
                                 var key1 = itemDocNo + '|' + astCode;
                                 var key2 = itemDocNo + '|';
                                 if (!deletedList.includes(key1) && !deletedList.includes(key2)) {
@@ -275,11 +277,11 @@
                                         docNo: itemDocNo,
                                         date: formattedDate,
                                         employeeName: item.sEmployeeName || item.employeeName || '-',
-                                        categoryName: ast.sCategoryName || ast.categoryName || '-',
+                                        categoryName: ast.sCategoryName || ast.categoryName || item.sCategoryName || item.categoryName || '-',
                                         assetCode: astCode || '-',
-                                        assetName: ast.sAssetName || ast.assetName || '-',
-                                        remarks: item.sComments || ast.sRemarks || ast.remarks || '-',
-                                        status: item.iStatus === 1 ? 'Allocated' : 'Active',
+                                        assetName: ast.sAssetName || ast.assetName || item.sAssetName || item.assetName || '-',
+                                        remarks: item.sComments || ast.sRemarks || ast.remarks || item.remarks || '-',
+                                        status: item.iStatus === 1 ? 'Allocated' : (item.status || 'Active'),
                                         iHeaderId: item.iHeaderId
                                     });
                                 }

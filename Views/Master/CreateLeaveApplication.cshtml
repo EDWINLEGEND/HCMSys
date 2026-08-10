@@ -324,6 +324,8 @@
 
     var stagedLeaves = [];
     var stagedSystemLeaves = [];
+    var editingStagedId = null;
+    var isAddingToGrid = false;
 
     $(document).ready(function() {
         initHeader();
@@ -573,8 +575,11 @@
     function deleteStagedLeave(stagedId) {
         alertify.confirm('Are you sure you want to remove this leave from the grid?', function (e) {
             if (e) {
-                stagedLeaves = stagedLeaves.filter(function(app) { return app.stagedId !== stagedId; });
-                stagedSystemLeaves = stagedSystemLeaves.filter(function(app) { return app.stagedId !== stagedId; });
+                if (editingStagedId && String(editingStagedId) === String(stagedId)) {
+                    editingStagedId = null;
+                }
+                stagedLeaves = stagedLeaves.filter(function(app) { return String(app.stagedId) !== String(stagedId) && String(app.id) !== String(stagedId); });
+                stagedSystemLeaves = stagedSystemLeaves.filter(function(app) { return String(app.stagedId) !== String(stagedId) && String(app.id) !== String(stagedId); });
                 calculateLeaves();
                 renderGrids();
             }
@@ -586,21 +591,60 @@
         $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
         stagedLeaves = [];
         stagedSystemLeaves = [];
+        editingStagedId = null;
         renderGrids();
     }
 
     function parseDateObj(dStr) {
         if (!dStr) return new Date();
+        if (dStr instanceof Date) return new Date(dStr.getTime());
+        dStr = String(dStr).trim();
+        if (dStr.includes('T')) {
+            dStr = dStr.split('T')[0];
+        }
+
+        var months = {
+            'jan':0,'feb':1,'mar':2,'apr':3,'may':4,'jun':5,'jul':6,'aug':7,'sep':8,'oct':9,'nov':10,'dec':11,
+            '01':0,'02':1,'03':2,'04':3,'05':4,'06':5,'07':6,'08':7,'09':8,'10':9,'11':10,'12':11,
+            '1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8
+        };
+
         if (dStr.includes('-')) {
             var p = dStr.split('-');
-            var months = {'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11};
-            var m = months[p[1]] !== undefined ? months[p[1]] : 0;
-            return new Date(parseInt(p[2]), m, parseInt(p[0]));
+            if (p.length === 3) {
+                if (p[0].length === 4) {
+                    var y = parseInt(p[0]);
+                    var mKey = p[1].toLowerCase();
+                    var m = months[mKey] !== undefined ? months[mKey] : (parseInt(p[1]) - 1);
+                    var d = parseInt(p[2]);
+                    return new Date(y, m, d);
+                } else if (p[2].length === 4) {
+                    var y = parseInt(p[2]);
+                    var mKey = p[1].toLowerCase();
+                    var m = months[mKey] !== undefined ? months[mKey] : (parseInt(p[1]) - 1);
+                    var d = parseInt(p[0]);
+                    return new Date(y, m, d);
+                }
+            }
         } else if (dStr.includes('/')) {
             var p = dStr.split('/');
-            return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+            if (p.length === 3) {
+                if (p[0].length === 4) {
+                    var y = parseInt(p[0]);
+                    var m = parseInt(p[1]) - 1;
+                    var d = parseInt(p[2]);
+                    return new Date(y, m, d);
+                } else if (p[2].length === 4) {
+                    var y = parseInt(p[2]);
+                    var m = parseInt(p[1]) - 1;
+                    var d = parseInt(p[0]);
+                    return new Date(y, m, d);
+                }
+            }
         }
-        return new Date(dStr);
+
+        var parsed = new Date(dStr);
+        return isNaN(parsed.getTime()) ? new Date() : parsed;
     }
 
     function formatDateDisplay(d) {
@@ -652,6 +696,10 @@
     }
 
     function addToGrid() {
+        if (isAddingToGrid) return;
+        isAddingToGrid = true;
+        setTimeout(function() { isAddingToGrid = false; }, 600);
+
         var empId = $('#hdr-employee').val();
         var fromDate = $('#dtl-fromdate').val();
         var toDate = $('#dtl-todate').val();
@@ -698,6 +746,9 @@
         }
 
         var hasOverlap = stagedLeaves.some(function(item) {
+            if (editingStagedId && (String(item.stagedId) === String(editingStagedId) || String(item.id) === String(editingStagedId))) {
+                return false;
+            }
             var sF = parseDateObj(item.start);
             var sT = parseDateObj(item.end);
             return (f <= sT && t >= sF);
@@ -708,7 +759,7 @@
             return;
         }
         
-        var uniqueStagedId = 'id_' + new Date().getTime();
+        var targetStagedId = editingStagedId || ('id_' + new Date().getTime());
 
         var dispFrom = formatDateDisplay(f);
         var dispTo = formatDateDisplay(t);
@@ -724,8 +775,8 @@
         var subName = (subVal && subVal !== '') ? $('#dtl-substitute option:selected').text() : '-';
 
         var newApp = {
-            stagedId: uniqueStagedId,
-            id: uniqueStagedId,
+            stagedId: targetStagedId,
+            id: targetStagedId,
             code: code,
             name: empName,
             type: leaveType,
@@ -747,7 +798,18 @@
             attachmentUrl: attachmentUrl
         };
 
-        stagedLeaves.push(newApp);
+        if (editingStagedId) {
+            var exIdx = stagedLeaves.findIndex(function(l) { return String(l.stagedId) === String(editingStagedId) || String(l.id) === String(editingStagedId); });
+            if (exIdx !== -1) {
+                stagedLeaves[exIdx] = newApp;
+            } else {
+                stagedLeaves.push(newApp);
+            }
+            stagedSystemLeaves = stagedSystemLeaves.filter(function(s) { return String(s.stagedId) !== String(editingStagedId); });
+            editingStagedId = null;
+        } else {
+            stagedLeaves.push(newApp);
+        }
 
         // System Grid (Monthly Breakdown)
         var cur = new Date(f);
@@ -764,7 +826,7 @@
             var chunkDiff = Math.ceil(Math.abs(endChunk - cur) / (1000 * 60 * 60 * 24)) + 1;
             
             stagedSystemLeaves.push({
-                stagedId: uniqueStagedId,
+                stagedId: targetStagedId,
                 type: leaveType,
                 monthName: monthLabel,
                 start: formatDateDisplay(cur),
@@ -855,8 +917,10 @@
                 }
             }
 
-            if (editData.start || editData.fromDate) $('#dtl-fromdate').val(editData.start || editData.fromDate);
-            if (editData.end || editData.toDate) $('#dtl-todate').val(editData.end || editData.toDate);
+            var rawStart = editData.start || editData.fromDate;
+            var rawEnd = editData.end || editData.toDate;
+            if (rawStart) $('#dtl-fromdate').val(formatDateDisplay(parseDateObj(rawStart)));
+            if (rawEnd) $('#dtl-todate').val(formatDateDisplay(parseDateObj(rawEnd)));
             if (editData.duration || editData.usedNow) $('#dtl-duration').val(editData.duration || editData.usedNow);
             if (editData.duration || editData.usedNow) $('#dtl-noofleaves').val(editData.duration || editData.usedNow);
             if (editData.contactNo) $('#dtl-contact').val(editData.contactNo);
@@ -886,14 +950,18 @@
 
             if (editData.type || editData.start) {
                 var uniqueStagedId = 'id_' + new Date().getTime();
+                var formattedStart = formatDateDisplay(parseDateObj(editData.start || editData.fromDate || $('#dtl-fromdate').val()));
+                var formattedEnd = formatDateDisplay(parseDateObj(editData.end || editData.toDate || $('#dtl-todate').val()));
                 var appObj = {
                     stagedId: editData.stagedId || uniqueStagedId,
                     id: editData.id || uniqueStagedId,
                     code: editData.code || $('#hdr-docno').val(),
                     name: editData.name || editData.employeeName || $('#hdr-employee option:selected').text(),
                     type: editData.type || editData.leaveTypeName || 'Annual Leave',
-                    start: editData.start || editData.fromDate || $('#dtl-fromdate').val(),
-                    end: editData.end || editData.toDate || $('#dtl-todate').val(),
+                    start: formattedStart,
+                    end: formattedEnd,
+                    fromDate: formattedStart,
+                    toDate: formattedEnd,
                     duration: parseFloat(editData.duration || editData.usedNow || 1),
                     contactNo: editData.contactNo || $('#dtl-contact').val() || '',
                     substituteEmployee: editData.substituteEmployee || $('#dtl-substitute option:selected').text() || '-',
@@ -911,6 +979,7 @@
                 };
 
                 stagedLeaves = [appObj];
+                editingStagedId = appObj.stagedId;
 
                 stagedSystemLeaves = [];
                 if (appObj.start && appObj.end) {
@@ -964,6 +1033,13 @@
         var existingLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
         
         stagedLeaves.forEach(function(staged) {
+            var normStart = formatDateDisplay(parseDateObj(staged.start || staged.fromDate));
+            var normEnd = formatDateDisplay(parseDateObj(staged.end || staged.toDate));
+            staged.start = normStart;
+            staged.end = normEnd;
+            staged.fromDate = normStart;
+            staged.toDate = normEnd;
+
             var idx = existingLeaves.findIndex(function(l) { 
                 return (l.code && l.code === staged.code) || (l.id && String(l.id) === String(staged.id)); 
             });

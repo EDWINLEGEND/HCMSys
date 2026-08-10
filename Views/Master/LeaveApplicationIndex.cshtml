@@ -294,51 +294,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- ── Dummy Data Rows ── -->
-                        <tr>
-                            <td class="action-btns" style="text-align:center;">
-                                <a href="#" class="edit-item-btn" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                                <a href="#" class="remove-item-btn" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                            </td>
-                            <td>1</td>
-                            <td>WCO-02-25-00021</td>
-                            <td>John Doe</td>
-                            <td>Annual Leave</td>
-                            <td>20-Feb-2025</td>
-                            <td>25-Feb-2025</td>
-                            <td>6</td>
-                            <td><a href="#" onclick="openDocPreview('WCO-02-25-00021_Doc.pdf', ''); return false;" class="badge badge-info shadow-sm"><i class="fas fa-file-pdf mr-1"></i> View / Preview</a></td>
-                            <td>20.0</td>
-                            <td>5.0</td>
-                            <td>0.0</td>
-                            <td>15.0</td>
-                            <td>6.0</td>
-                            <td>9.0</td>
-                            <td style="text-align:center;"><span class="badge badge-success">Approved</span></td>
-                            <td style="display:none;">Vacation</td>
-                        </tr>
-                        <tr>
-                            <td class="action-btns" style="text-align:center;">
-                                <a href="#" class="edit-item-btn" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                                <a href="#" class="remove-item-btn" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                            </td>
-                            <td>2</td>
-                            <td>WCO-03-25-00045</td>
-                            <td>Jane Smith</td>
-                            <td>Sick Leave</td>
-                            <td>10-Mar-2025</td>
-                            <td>12-Mar-2025</td>
-                            <td>3</td>
-                            <td><a href="#" onclick="openDocPreview('WCO-03-25-00045_Doc.pdf', ''); return false;" class="badge badge-info shadow-sm"><i class="fas fa-file-pdf mr-1"></i> View / Preview</a></td>
-                            <td>10.0</td>
-                            <td>2.0</td>
-                            <td>0.0</td>
-                            <td>8.0</td>
-                            <td>3.0</td>
-                            <td>5.0</td>
-                            <td style="text-align:center;"><span class="badge badge-warning">Pending</span></td>
-                            <td style="display:none;">Fever and cold</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -537,7 +492,7 @@
     }
 
     // ── Dummy auto-code counter (simulates server getCode) ──
-    var dummyCodeCounter = 3;
+    var dummyCodeCounter = 1;
     function generateCode() {
         return 'LVA-' + String(dummyCodeCounter).padStart(4, '0');
     }
@@ -604,7 +559,7 @@
         updateStats();
 
         // ── Generate first code on load ──
-        var maxId = 2;
+        var maxId = 0;
         storedLeaves.forEach(function(l) { if(parseInt(l.id) > maxId) maxId = parseInt(l.id); });
         dummyCodeCounter = maxId + 1;
         getNo();

@@ -370,10 +370,26 @@
         var dd = String(d.getDate()).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
+
+        var todayFormatted = dd + '-' + mmm + '-' + yyyy;
+        $('#hdr-date').val(todayFormatted);
+        $('#hdr-postdate').val(todayFormatted);
         
-        var saved = JSON.parse(localStorage.getItem('savedLeaveApplications') || '[]');
-        var seq = String(saved.length + 1).padStart(5, '0');
-        $('#hdr-docno').val('WCO-' + mm + '-' + yy + '-' + seq);
+        if (!isEditingMode) {
+            var saved = JSON.parse(localStorage.getItem('leaveApps') || '[]');
+            var maxSeq = 0;
+            saved.forEach(function(item) {
+                if (item.code) {
+                    var parts = item.code.split('-');
+                    if (parts.length >= 4) {
+                        var num = parseInt(parts[parts.length - 1]);
+                        if (!isNaN(num) && num > maxSeq) maxSeq = num;
+                    }
+                }
+            });
+            var seq = String(maxSeq + 1).padStart(5, '0');
+            $('#hdr-docno').val('WCO-' + mm + '-' + yy + '-' + seq);
+        }
     }
 
     function populateDropdowns() {
@@ -648,6 +664,10 @@
     }
 
     function formatDateDisplay(d) {
+        if (!d) return '';
+        if (typeof d === 'string') {
+            d = parseDateObj(d);
+        }
         var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         var dd = String(d.getDate()).padStart(2, '0');
         var mmm = months[d.getMonth()];
@@ -698,19 +718,29 @@
     function addToGrid() {
         if (isAddingToGrid) return;
         isAddingToGrid = true;
-        setTimeout(function() { isAddingToGrid = false; }, 600);
+
+        function failGridAdd(msg) {
+            isAddingToGrid = false;
+            if (msg) {
+                alertify.log(msg, 'error', 5000);
+            }
+        }
+
+        calculateLeaves();
 
         var empId = $('#hdr-employee').val();
         var fromDate = $('#dtl-fromdate').val();
         var toDate = $('#dtl-todate').val();
+        var leaveTypeVal = $('#dtl-leavetype').val();
         var leaveType = $('#dtl-leavetype option:selected').text();
         
-        if(!empId || !fromDate || !toDate || !$('#dtl-leavetype').val()) {
-            alertify.log('Please fill all required fields (Employee, Leave Type, Dates).', 'error', 5000);
+        if (!empId || !fromDate || !toDate || !leaveTypeVal) {
+            failGridAdd('Please fill all required fields (Employee, Leave Type, Dates).');
             return;
         }
 
-        var empName = $('#hdr-employee option:selected').text().split(' - ')[1];
+        var selText = $('#hdr-employee option:selected').text().trim();
+        var empName = selText.includes(' - ') ? selText.split(' - ').slice(1).join(' - ') : selText;
         var code = $('#hdr-docno').val();
         var reason = $('#hdr-comments').val();
 
@@ -728,12 +758,12 @@
         var balance = available - usedNow;
 
         if (usedNow <= 0) {
-            alertify.log('No of leaves (used now) must be greater than 0.', 'error', 5000);
+            failGridAdd('No of leaves (used now) must be greater than 0. Please select valid dates.');
             return;
         }
 
-        if (usedNow > available) {
-            alertify.log('Requested leave duration (' + usedNow + ' days) exceeds available leave balance (' + available + ' days).', 'error', 5000);
+        if (available > 0 && usedNow > available) {
+            failGridAdd('Requested leave duration (' + usedNow + ' days) exceeds available leave balance (' + available + ' days).');
             return;
         }
 
@@ -741,7 +771,7 @@
         var t = parseDateObj(toDate);
 
         if (f > t) {
-            alertify.log('To Date cannot be earlier than From Date.', 'error', 5000);
+            failGridAdd('To Date cannot be earlier than From Date.');
             return;
         }
 
@@ -755,23 +785,20 @@
         });
 
         if (hasOverlap) {
-            alertify.log('Selected date range overlaps with an already staged leave application.', 'error', 5000);
+            failGridAdd('Selected date range overlaps with an already staged leave application.');
             return;
         }
-        
-        var targetStagedId = editingStagedId || ('id_' + new Date().getTime());
 
+        var subVal = $('#dtl-substitute').val();
+        if (subVal && (subVal == empId || String(subVal) === String(empId))) {
+            failGridAdd('An employee cannot be selected as their own substitute.');
+            return;
+        }
+
+        var targetStagedId = editingStagedId || ('id_' + new Date().getTime());
         var dispFrom = formatDateDisplay(f);
         var dispTo = formatDateDisplay(t);
-
         var contactNo = $('#dtl-contact').val() || '';
-        var subVal = $('#dtl-substitute').val();
-
-        if (subVal && (subVal == empId || String(subVal) === String(empId))) {
-            alertify.log('An employee cannot be selected as their own substitute.', 'error', 5000);
-            return;
-        }
-
         var subName = (subVal && subVal !== '') ? $('#dtl-substitute option:selected').text() : '-';
 
         var newApp = {
@@ -822,7 +849,6 @@
             
             var lastDayOfMonth = new Date(yNum, mIndex + 1, 0);
             var endChunk = (t < lastDayOfMonth) ? new Date(t) : lastDayOfMonth;
-            
             var chunkDiff = Math.ceil(Math.abs(endChunk - cur) / (1000 * 60 * 60 * 24)) + 1;
             
             stagedSystemLeaves.push({
@@ -842,6 +868,7 @@
         renderGrids();
         resetLeaveDetailsForm();
         alertify.log('Leave details added to grid.', 'success', 3000);
+        setTimeout(function() { isAddingToGrid = false; }, 300);
     }
 
     function resetLeaveDetailsForm() {
@@ -1031,21 +1058,36 @@
         }
 
         var existingLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
+
+        var maxId = 0;
+        existingLeaves.forEach(function(l) {
+            var nid = parseInt(l.id);
+            if (!isNaN(nid) && nid > maxId) maxId = nid;
+        });
         
         stagedLeaves.forEach(function(staged) {
-            var normStart = formatDateDisplay(parseDateObj(staged.start || staged.fromDate));
-            var normEnd = formatDateDisplay(parseDateObj(staged.end || staged.toDate));
+            var normStart = formatDateDisplay(staged.start || staged.fromDate);
+            var normEnd = formatDateDisplay(staged.end || staged.toDate);
             staged.start = normStart;
             staged.end = normEnd;
             staged.fromDate = normStart;
             staged.toDate = normEnd;
 
+            if (!staged.code) {
+                staged.code = $('#hdr-docno').val();
+            }
+
             var idx = existingLeaves.findIndex(function(l) { 
-                return (l.code && l.code === staged.code) || (l.id && String(l.id) === String(staged.id)); 
+                return (staged.id && !String(staged.id).startsWith('id_') && String(l.id) === String(staged.id)) || 
+                       (l.code && staged.code && l.code === staged.code); 
             });
+
             if (idx !== -1) {
+                staged.id = existingLeaves[idx].id;
                 existingLeaves[idx] = staged;
             } else {
+                maxId++;
+                staged.id = maxId;
                 existingLeaves.push(staged);
             }
         });

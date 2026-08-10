@@ -1077,10 +1077,12 @@
                 staged.code = $('#hdr-docno').val();
             }
 
-            var idx = existingLeaves.findIndex(function(l) { 
-                return (staged.id && !String(staged.id).startsWith('id_') && String(l.id) === String(staged.id)) || 
-                       (l.code && staged.code && l.code === staged.code); 
-            });
+            var idx = -1;
+            if (staged.id && !String(staged.id).startsWith('id_')) {
+                idx = existingLeaves.findIndex(function(l) { 
+                    return String(l.id) === String(staged.id); 
+                });
+            }
 
             if (idx !== -1) {
                 staged.id = existingLeaves[idx].id;

@@ -250,25 +250,35 @@
                 type: 'GET',
                 success: function(apiData) {
                     var combined = [];
-                    if (Array.isArray(apiData) && apiData.length > 0) {
-                        apiData.forEach(function(item) {
+                    var allocationsArray = [];
+
+                    if (Array.isArray(apiData)) {
+                        allocationsArray = apiData;
+                    } else if (apiData && Array.isArray(apiData.data)) {
+                        allocationsArray = apiData.data;
+                    } else if (apiData && apiData.data && Array.isArray(apiData.data.allocations)) {
+                        allocationsArray = apiData.data.allocations;
+                    }
+
+                    if (allocationsArray.length > 0) {
+                        allocationsArray.forEach(function(item) {
                             var formattedDate = item.dDocDate ? window.formatDateDisplay(item.dDocDate) : '-';
-                            var assetList = (item.assets && item.assets.length > 0) ? item.assets : [{}];
-                            var itemDocNo = item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0'));
+                            var assetList = (item.assets && item.assets.length > 0) ? item.assets : ((item.Assets && item.Assets.length > 0) ? item.Assets : [{}]);
+                            var itemDocNo = item.sDocNo || ('AST' + String(item.iHeaderId || item.id || 1).padStart(6, '0'));
 
                             assetList.forEach(function(ast) {
-                                var astCode = ast.sAssetCode || '';
+                                var astCode = ast.sAssetCode || ast.assetCode || '';
                                 var key1 = itemDocNo + '|' + astCode;
                                 var key2 = itemDocNo + '|';
                                 if (!deletedList.includes(key1) && !deletedList.includes(key2)) {
                                     combined.push({
                                         docNo: itemDocNo,
                                         date: formattedDate,
-                                        employeeName: item.sEmployeeName || '-',
-                                        categoryName: ast.sCategoryName || '-',
+                                        employeeName: item.sEmployeeName || item.employeeName || '-',
+                                        categoryName: ast.sCategoryName || ast.categoryName || '-',
                                         assetCode: astCode || '-',
-                                        assetName: ast.sAssetName || '-',
-                                        remarks: item.sComments || ast.sRemarks || '-',
+                                        assetName: ast.sAssetName || ast.assetName || '-',
+                                        remarks: item.sComments || ast.sRemarks || ast.remarks || '-',
                                         status: item.iStatus === 1 ? 'Allocated' : 'Active',
                                         iHeaderId: item.iHeaderId
                                     });

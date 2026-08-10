@@ -196,11 +196,7 @@
 </div>
 
 <!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="~/alertify.js/alertify.min.js"></script>
 
 <script>
     var employeesData = [];
@@ -211,10 +207,14 @@
         initHeader();
 
         $.getJSON('/Master/GetApiEmployees').done(function(empRes) {
-            employeesData = empRes[0] || empRes;
+            employeesData = Array.isArray(empRes) ? (Array.isArray(empRes[0]) ? empRes[0] : empRes) : [];
             populateDropdowns();
-            $('#hdr-employee').select2({ width: '100%' });
-            $('#modal-employee-select').select2({ dropdownParent: $('#inHandAssetsModal'), width: '100%' });
+            if (typeof $.fn.select2 !== 'undefined') {
+                try {
+                    $('#hdr-employee').select2({ width: '100%' });
+                    $('#modal-employee-select').select2({ dropdownParent: $('#inHandAssetsModal'), width: '100%' });
+                } catch(e) {}
+            }
         }).fail(function() {
             alertify.log('Failed to load employee data.', 'error', 5000);
         });
@@ -228,11 +228,13 @@
                 return;
             }
 
-            var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
-            if (emp) {
-                $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
-                $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
-                $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '');
+            if (Array.isArray(employeesData)) {
+                var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
+                if (emp) {
+                    $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
+                    $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
+                    $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '');
+                }
             }
         });
 
@@ -267,30 +269,74 @@
         var empSelect = $('#hdr-employee');
         var modalEmpSelect = $('#modal-employee-select');
         
+        var currHdrVal = empSelect.val();
+        var currModalVal = modalEmpSelect.val();
+
         empSelect.empty().append('<option value="">Select Employee...</option>');
         modalEmpSelect.empty().append('<option value="">Select Employee...</option>');
 
-        employeesData.forEach(function(emp) {
-            var empId = emp.id || emp.iMasterId;
-            var empCode = emp.code || emp.sCode || '';
-            var empName = emp.name || emp.sName || '';
-            empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
-            modalEmpSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
-        });
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.id || emp.iMasterId;
+                var empCode = emp.code || emp.sCode || '';
+                var empName = emp.name || emp.sName || '';
+                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+                modalEmpSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+            });
+        }
+
+        if (currHdrVal) empSelect.val(currHdrVal);
+        if (currModalVal) modalEmpSelect.val(currModalVal);
     }
 
     function openInHandAssetsModal() {
-        populateDropdowns();
+        try {
+            var currentEmpId = $('#hdr-employee').val();
 
-        var currentEmpId = $('#hdr-employee').val();
-        if (currentEmpId) {
-            $('#modal-employee-select').val(currentEmpId).trigger('change.select2');
-        } else {
-            $('#modal-employee-select').val('').trigger('change.select2');
+            populateDropdowns();
+
+            if (currentEmpId) {
+                $('#hdr-employee').val(currentEmpId);
+                $('#modal-employee-select').val(currentEmpId);
+            } else {
+                $('#modal-employee-select').val('');
+            }
+
+            if (typeof $.fn.select2 !== 'undefined') {
+                try { $('#hdr-employee').trigger('change.select2'); } catch(e) {}
+                try { $('#modal-employee-select').trigger('change.select2'); } catch(e) {}
+            }
+
+            renderModalAssetsTable();
+        } catch (err) {
+            console.error("Error preparing modal data:", err);
+        } finally {
+            $('#inHandAssetsModal').modal('show');
+        }
+    }
+
+    function checkEmployeeMatch(itemEmpId, itemEmpCode, itemEmpName, targetEmpId, targetEmpCode, targetEmpName) {
+        if (!targetEmpId) return false;
+        
+        var tIdStr = String(targetEmpId).trim();
+        var tCodeStr = targetEmpCode ? String(targetEmpCode).toLowerCase().trim() : '';
+        var tNameStr = targetEmpName ? String(targetEmpName).toLowerCase().trim() : '';
+
+        // 1. Direct ID match
+        if (itemEmpId && String(itemEmpId).trim() === tIdStr) return true;
+        
+        // 2. Direct Code match
+        if (itemEmpCode && tCodeStr && String(itemEmpCode).toLowerCase().trim() === tCodeStr) return true;
+        
+        // 3. Name or substring match
+        if (itemEmpName) {
+            var itemStr = String(itemEmpName).toLowerCase().trim();
+            if (tNameStr && (itemStr === tNameStr || itemStr.indexOf(tNameStr) !== -1 || tNameStr.indexOf(itemStr) !== -1)) return true;
+            if (tCodeStr && itemStr.indexOf(tCodeStr) !== -1) return true;
+            if (tIdStr && itemStr.indexOf(tIdStr) !== -1) return true;
         }
 
-        renderModalAssetsTable();
-        $('#inHandAssetsModal').modal('show');
+        return false;
     }
 
     function renderModalAssetsTable() {
@@ -312,87 +358,55 @@
         var localSaved = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
         var deallocatedKeys = JSON.parse(localStorage.getItem('deallocatedAssetKeys') || '[]');
 
-        $.ajax({
-            url: '/Master/GetApiAssetAllocations',
-            type: 'GET',
-            success: function(apiData) {
-                var allInHand = [];
+        function processAllocations(apiData) {
+            var allInHand = [];
+            var allocationsArray = [];
 
-                if (Array.isArray(apiData) && apiData.length > 0) {
-                    apiData.forEach(function(item) {
-                        var isEmpMatch = String(item.iEmpId) === String(empId) ||
-                                         (empCode && item.sEmployeeCode === empCode) ||
-                                         (empName && item.sEmployeeName && item.sEmployeeName.toLowerCase() === empName.toLowerCase());
+            if (Array.isArray(apiData)) {
+                allocationsArray = apiData;
+            } else if (apiData && Array.isArray(apiData.data)) {
+                allocationsArray = apiData.data;
+            } else if (apiData && apiData.data && Array.isArray(apiData.data.allocations)) {
+                allocationsArray = apiData.data.allocations;
+            }
 
-                        if (isEmpMatch && (item.iStatus === 1 || !item.iStatus)) {
-                            var itemDocNo = item.sDocNo || ('AST' + String(item.iHeaderId).padStart(6, '0'));
-                            var assetList = (item.assets && item.assets.length > 0) ? item.assets : [];
+            allocationsArray.forEach(function(item) {
+                var isEmpMatch = checkEmployeeMatch(item.iEmpId || item.empId || item.employeeId, item.sEmployeeCode || item.employeeCode, item.sEmployeeName || item.employeeName, empId, empCode, empName);
 
-                            assetList.forEach(function(ast) {
-                                var astCode = ast.sAssetCode || '';
-                                var key = itemDocNo + '|' + astCode;
-                                if (!deallocatedKeys.includes(key)) {
-                                    allInHand.push({
-                                        allocationNo: itemDocNo,
-                                        categoryName: ast.sCategoryName || '-',
-                                        assetCode: astCode || '-',
-                                        assetName: ast.sAssetName || '-',
-                                        tagNumber: ast.sTagNumber || '-',
-                                        qty: ast.fQuantity || 1,
-                                        remarks: ast.sRemarks || '',
-                                        employeeId: empId,
-                                        employeeName: item.sEmployeeName || empName
-                                    });
-                                }
+                if (isEmpMatch && (item.iStatus === 1 || !item.iStatus)) {
+                    var itemDocNo = item.sDocNo || item.docNo || ('AST' + String(item.iHeaderId || item.id || 1).padStart(6, '0'));
+                    var assetList = (item.assets && item.assets.length > 0) ? item.assets : ((item.Assets && item.Assets.length > 0) ? item.Assets : []);
+
+                    assetList.forEach(function(ast) {
+                        var astCode = ast.sAssetCode || ast.assetCode || '';
+                        var key = itemDocNo + '|' + astCode;
+                        if (!deallocatedKeys.includes(key)) {
+                            allInHand.push({
+                                allocationNo: itemDocNo,
+                                categoryName: ast.sCategoryName || ast.categoryName || '-',
+                                assetCode: astCode || '-',
+                                assetName: ast.sAssetName || ast.assetName || '-',
+                                tagNumber: ast.sTagNumber || ast.tagNumber || '-',
+                                qty: ast.fQuantity || ast.qty || 1,
+                                remarks: ast.sRemarks || ast.remarks || '',
+                                employeeId: empId,
+                                employeeName: item.sEmployeeName || empName
                             });
                         }
                     });
                 }
+            });
 
-                localSaved.forEach(function(ls) {
-                    var isEmpMatch = String(ls.employeeId) === String(empId) ||
-                                     (empCode && ls.employeeCode === empCode) ||
-                                     (empName && ls.employeeName && ls.employeeName.toLowerCase() === empName.toLowerCase());
+            localSaved.forEach(function(ls) {
+                var isEmpMatch = checkEmployeeMatch(ls.employeeId || ls.iEmpId || ls.empId, ls.employeeCode || ls.sEmployeeCode, ls.employeeName || ls.sEmployeeName, empId, empCode, empName);
 
-                    if (isEmpMatch && (ls.status === 'Allocated' || !ls.status)) {
-                        var lsDoc = ls.docNo || ls.allocationNo || '-';
-                        var lsCode = ls.assetCode || '-';
-                        var key = lsDoc + '|' + lsCode;
+                if (isEmpMatch && (ls.status === 'Allocated' || !ls.status)) {
+                    var lsDoc = ls.docNo || ls.allocationNo || '-';
+                    var lsCode = ls.assetCode || '-';
+                    var key = lsDoc + '|' + lsCode;
 
-                        if (!deallocatedKeys.includes(key)) {
-                            if (!allInHand.some(a => a.allocationNo === lsDoc && a.assetCode === lsCode)) {
-                                allInHand.push({
-                                    allocationNo: lsDoc,
-                                    categoryName: ls.categoryName || '-',
-                                    assetCode: lsCode,
-                                    assetName: ls.assetName || '-',
-                                    tagNumber: ls.tagNumber || '-',
-                                    qty: ls.qty || 1,
-                                    remarks: ls.remarks || '',
-                                    employeeId: empId,
-                                    employeeName: ls.employeeName || empName
-                                });
-                            }
-                        }
-                    }
-                });
-
-                currentModalAllocations = allInHand;
-                displayModalRows();
-            },
-            error: function() {
-                var allInHand = [];
-                localSaved.forEach(function(ls) {
-                    var isEmpMatch = String(ls.employeeId) === String(empId) ||
-                                     (empCode && ls.employeeCode === empCode) ||
-                                     (empName && ls.employeeName && ls.employeeName.toLowerCase() === empName.toLowerCase());
-
-                    if (isEmpMatch && (ls.status === 'Allocated' || !ls.status)) {
-                        var lsDoc = ls.docNo || ls.allocationNo || '-';
-                        var lsCode = ls.assetCode || '-';
-                        var key = lsDoc + '|' + lsCode;
-
-                        if (!deallocatedKeys.includes(key)) {
+                    if (!deallocatedKeys.includes(key)) {
+                        if (!allInHand.some(a => a.allocationNo === lsDoc && a.assetCode === lsCode)) {
                             allInHand.push({
                                 allocationNo: lsDoc,
                                 categoryName: ls.categoryName || '-',
@@ -406,10 +420,21 @@
                             });
                         }
                     }
-                });
+                }
+            });
 
-                currentModalAllocations = allInHand;
-                displayModalRows();
+            currentModalAllocations = allInHand;
+            displayModalRows();
+        }
+
+        $.ajax({
+            url: '/Master/GetApiAssetAllocations',
+            type: 'GET',
+            success: function(apiData) {
+                processAllocations(apiData);
+            },
+            error: function() {
+                processAllocations([]);
             }
         });
     }

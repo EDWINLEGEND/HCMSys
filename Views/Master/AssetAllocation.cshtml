@@ -524,10 +524,14 @@
             return {
                 docNo: docNo,
                 date: dateStr,
+                employeeId: empVal,
+                employeeCode: empCode,
                 employeeName: empName,
                 categoryName: sa.categoryName,
                 assetCode: sa.assetCode,
                 assetName: sa.assetName,
+                tagNumber: sa.tagNumber,
+                qty: sa.qty,
                 remarks: sa.remarks || $('#hdr-comments').val() || '-',
                 status: 'Allocated'
             };

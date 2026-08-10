@@ -180,7 +180,36 @@ namespace HCMSys.Services
                 var request = new HttpRequestMessage(HttpMethod.Post, "api/asset/saveassetallocation");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var jsonPayload = JsonSerializer.Serialize(payload);
+                // Build a robust payload dictionary with both camelCase and PascalCase keys to ensure remote API binding success
+                var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["iHeaderId"] = payload.IHeaderId,
+                    ["sDocNo"] = payload.SDocNo,
+                    ["dDocDate"] = payload.DDocDate,
+                    ["dPostDate"] = payload.DPostDate,
+                    ["iEmpId"] = payload.IEmpId,
+                    ["sComments"] = string.IsNullOrWhiteSpace(payload.SComments) ? "N/A" : payload.SComments,
+                    ["sEmployeeCode"] = payload.SEmployeeCode ?? "",
+                    ["sEmployeeName"] = payload.SEmployeeName ?? "",
+                    ["sDepartmentCode"] = payload.SDepartmentCode ?? "",
+                    ["sDepartmentName"] = payload.SDepartmentName ?? "",
+                    ["sDesignationCode"] = payload.SDesignationCode ?? "",
+                    ["sDesignationName"] = payload.SDesignationName ?? "",
+                    ["sReportingToCode"] = payload.SReportingToCode ?? "",
+                    ["sReportingToName"] = payload.SReportingToName ?? "",
+                    ["iCompanyId"] = payload.ICompanyId,
+                    ["iPayYearId"] = payload.IPayYearId,
+                    ["iStatus"] = payload.IStatus,
+                    ["iAuthStatus"] = payload.IAuthStatus,
+                    ["iCreatedBy"] = payload.ICreatedBy,
+                    ["iModifiedBy"] = payload.IModifiedBy,
+                    ["iApprovedBy"] = payload.IApprovedBy,
+                    ["Assets"] = payload.Assets ?? new List<AssetAllocationBodyDto>(),
+                    ["assets"] = payload.Assets ?? new List<AssetAllocationBodyDto>(),
+                    ["Attachment"] = payload.Attachment ?? new AssetAllocationFileDto()
+                };
+
+                var jsonPayload = JsonSerializer.Serialize(dict);
                 request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.SendAsync(request);
@@ -217,8 +246,23 @@ namespace HCMSys.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonString = await response.Content.ReadAsStringAsync();
-                    var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<List<SaveAssetAllocationDto>>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    return envelope?.Data ?? new List<SaveAssetAllocationDto>();
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                    // 1. Try envelope ApiResponseEnvelope<List<SaveAssetAllocationDto>>
+                    try
+                    {
+                        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<List<SaveAssetAllocationDto>>>(jsonString, options);
+                        if (envelope?.Data != null) return envelope.Data;
+                    }
+                    catch { }
+
+                    // 2. Try direct List<SaveAssetAllocationDto>
+                    try
+                    {
+                        var directList = JsonSerializer.Deserialize<List<SaveAssetAllocationDto>>(jsonString, options);
+                        if (directList != null) return directList;
+                    }
+                    catch { }
                 }
             }
             catch (Exception ex)

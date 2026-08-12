@@ -159,10 +159,12 @@
             $.getJSON('/Master/GetApiLeaveTypes'),
             $.getJSON('/Master/GetApiAssetCategories')
         ).done(function(empRes, leaveRes, catRes) {
-            employeesData = empRes[0] || empRes;
-            var leaveData = leaveRes[0] || leaveRes;
-            leaveTypesData = leaveData.leaveTypes || leaveData;
-            categoriesData = catRes[0] || catRes;
+            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
+            var leaveData = (leaveRes && leaveRes[0]) ? leaveRes[0] : leaveRes;
+            leaveTypesData = leaveData.leaveTypes || (Array.isArray(leaveData) ? leaveData : []);
+            var catArr = (catRes && catRes[0]) ? catRes[0] : catRes;
+            categoriesData = Array.isArray(catArr) ? (Array.isArray(catArr[0]) ? catArr[0] : catArr) : [];
             
             // Automatically add initial clean row
             addRow();
@@ -293,8 +295,8 @@
                 return false;
             }
 
-            var empObj = employeesData.find(e => e.id == empId);
-            var leaveObj = leaveTypesData.find(l => l.id == leaveTypeId);
+            var empObj = employeesData.find(e => e.id == empId || e.iMasterId == empId || e.code == empId || e.sCode == empId);
+            var leaveObj = leaveTypesData.find(l => l.id == leaveTypeId || l.code == leaveTypeId);
             var catObj = categoriesData.find(c => c.code == categoryCode);
 
             var empName = empObj ? (empObj.code + ' - ' + empObj.name) : 'Employee';

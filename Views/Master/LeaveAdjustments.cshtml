@@ -157,9 +157,10 @@
             $.getJSON('/Master/GetApiEmployees'),
             $.getJSON('/Master/GetApiLeaveTypes')
         ).done(function(empRes, leaveRes) {
-            employeesData = empRes[0] || empRes;
-            var leaveData = leaveRes[0] || leaveRes;
-            leaveTypesData = leaveData.leaveTypes || leaveData;
+            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
+            var leaveData = (leaveRes && leaveRes[0]) ? leaveRes[0] : leaveRes;
+            leaveTypesData = leaveData.leaveTypes || (Array.isArray(leaveData) ? leaveData : []);
             
             // Automatically add initial clean row
             addRow();
@@ -284,8 +285,8 @@
                 return false;
             }
 
-            var empObj = employeesData.find(e => e.id == empId);
-            var leaveObj = leaveTypesData.find(l => l.id == leaveTypeId);
+            var empObj = employeesData.find(e => e.id == empId || e.iMasterId == empId || e.code == empId || e.sCode == empId);
+            var leaveObj = leaveTypesData.find(l => l.id == leaveTypeId || l.code == leaveTypeId);
 
             var empName = empObj ? (empObj.code + ' - ' + empObj.name) : 'Employee';
             var leaveTypeName = leaveObj ? (leaveObj.code + ' - ' + leaveObj.name) : 'Leave';

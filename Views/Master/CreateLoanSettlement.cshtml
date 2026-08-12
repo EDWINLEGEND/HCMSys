@@ -231,14 +231,32 @@
         initHeader();
 
         $.getJSON('/api-assets1/loan_disbursements.json', function(res) {
-            disbursementsData = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : res;
+            var staticDisbs = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
+            var savedDisbs = JSON.parse(localStorage.getItem('savedLoanDisbursements') || '[]');
+            disbursementsData = savedDisbs.concat(staticDisbs);
+            
             var disbSelect = $('#hdr-disbursementno');
             disbSelect.empty().append('<option value="">Select Disbursement No...</option>');
             if (Array.isArray(disbursementsData)) {
                 disbursementsData.forEach(function(d) {
-                    disbSelect.append(`<option value="${d.disbursementNo}">${d.disbursementNo} - ${d.employeeName || d.employee} (${d.loanTypeName || d.loanType})</option>`);
+                    var dNo = d.disbursementNo || d.docNo || '';
+                    var eName = d.employeeName || d.employee || 'Employee';
+                    var lName = d.loanTypeName || d.loanType || 'Loan';
+                    disbSelect.append(`<option value="${dNo}">${dNo} - ${eName} (${lName})</option>`);
                 });
             }
+            disbSelect.select2({ width: '100%' });
+        }).fail(function() {
+            var savedDisbs = JSON.parse(localStorage.getItem('savedLoanDisbursements') || '[]');
+            disbursementsData = savedDisbs;
+            var disbSelect = $('#hdr-disbursementno');
+            disbSelect.empty().append('<option value="">Select Disbursement No...</option>');
+            disbursementsData.forEach(function(d) {
+                var dNo = d.disbursementNo || d.docNo || '';
+                var eName = d.employeeName || d.employee || 'Employee';
+                var lName = d.loanTypeName || d.loanType || 'Loan';
+                disbSelect.append(`<option value="${dNo}">${dNo} - ${eName} (${lName})</option>`);
+            });
             disbSelect.select2({ width: '100%' });
         });
     });

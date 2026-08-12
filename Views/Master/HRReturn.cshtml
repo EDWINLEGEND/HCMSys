@@ -168,7 +168,8 @@
         initHeader();
 
         $.getJSON('/Master/GetApiEmployees').done(function(empRes) {
-            employeesData = empRes[0] || empRes;
+            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {

@@ -279,7 +279,8 @@
             $.getJSON('/api-assets1/city.json'),
             $.getJSON('/api-assets1/city_rate_matrix.json')
         ).done(function(empRes, curRes, cityRes, rateRes) {
-            employeesData = empRes[0] || empRes;
+            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
             currencyData = curRes[0] || curRes;
             if (Array.isArray(currencyData) && currencyData.length > 0 && Array.isArray(currencyData[0])) {
                 currencyData = currencyData[0];

@@ -291,7 +291,8 @@
             $.getJSON('/Master/GetApiEmployees'),
             $.getJSON('/api-assets1/loan_type.json')
         ).done(function(empRes, loanRes) {
-            employeesData = empRes[0] || empRes;
+            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
             loanTypesData = loanRes[0] || loanRes;
             if (Array.isArray(loanTypesData) && loanTypesData.length > 0 && Array.isArray(loanTypesData[0])) {
                 loanTypesData = loanTypesData[0];

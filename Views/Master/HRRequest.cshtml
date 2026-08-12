@@ -202,7 +202,8 @@
             $.getJSON('/Master/GetApiEmployees'),
             $.getJSON('/api-assets1/request_master.json')
         ).done(function(empRes, reqRes) {
-            employeesData = empRes[0] || empRes;
+            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
             requestMasterData = reqRes[0] || reqRes;
             
             populateDropdowns();

@@ -311,8 +311,17 @@
         $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
 
         $.getJSON('/Master/GetApiAssetAllocations').done(function(allocs) {
-            var count = Array.isArray(allocs) ? allocs.length : (allocs && allocs.data ? allocs.data.length : 0);
-            var nextNum = count + 1;
+            var rawList = Array.isArray(allocs) ? allocs : (allocs && allocs.data ? allocs.data : []);
+            var maxNum = 0;
+            rawList.forEach(function(item) {
+                var dNo = item.sDocNo || item.docNo || '';
+                var match = dNo.match(/\d+/);
+                if (match) {
+                    var n = parseInt(match[0], 10);
+                    if (!isNaN(n) && n > maxNum) maxNum = n;
+                }
+            });
+            var nextNum = Math.max(maxNum, rawList.length) + 1;
             $('#hdr-docno').val('AST' + String(nextNum).padStart(6, '0'));
         }).fail(function() {
             $('#hdr-docno').val('AST000001');

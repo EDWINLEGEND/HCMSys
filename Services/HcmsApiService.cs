@@ -182,8 +182,16 @@ namespace HCMSys.Services
 
                 var formData = new MultipartFormDataContent();
 
-                // 1. Scalar form-data fields matching Docs/API (2).pdf Page 10
-                formData.Add(new StringContent(payload.IHeaderId.ToString()), "iHeaderId");
+                // 1. Scalar form-data fields matching Docs/API.pdf Page 10 / Postman specification
+                if (payload.IHeaderId > 0)
+                {
+                    formData.Add(new StringContent(payload.IHeaderId.ToString()), "iHeaderId");
+                }
+                else
+                {
+                    formData.Add(new StringContent("0"), "iHeaderId");
+                }
+
                 formData.Add(new StringContent(payload.SDocNo ?? ""), "sDocNo");
 
                 // Normalize dates to YYYY-MM-DD format as required by remote API
@@ -195,17 +203,17 @@ namespace HCMSys.Services
                 formData.Add(new StringContent(payload.IEmpId.ToString()), "iEmpId");
                 formData.Add(new StringContent(payload.ICompanyId.ToString()), "iCompanyId");
                 formData.Add(new StringContent(payload.IPayYearId.ToString()), "iPayYearId");
-                formData.Add(new StringContent(string.IsNullOrWhiteSpace(payload.SComments) ? "N/A" : payload.SComments), "sComments");
+                formData.Add(new StringContent(string.IsNullOrWhiteSpace(payload.SComments) ? "Test allocation" : payload.SComments), "sComments");
 
                 // 2. Serialized JSON string array for Assets field: [{"iAssetId":1,"fQuantity":1,"sRemarks":"..."}]
                 var assetItems = (payload.Assets ?? new List<AssetAllocationBodyDto>()).Select(a => new {
                     iAssetId = a.IAssetId > 0 ? a.IAssetId : 1,
-                    fQuantity = a.FQuantity > 0 ? a.FQuantity : 1,
-                    sRemarks = a.SRemarks ?? ""
+                    fQuantity = a.FQuantity > 0 ? (int)a.FQuantity : 1,
+                    sRemarks = !string.IsNullOrWhiteSpace(a.SRemarks) ? a.SRemarks : "N/A"
                 }).ToList();
 
                 var assetsJson = JsonSerializer.Serialize(assetItems);
-                formData.Add(new StringContent(assetsJson, Encoding.UTF8, "application/json"), "Assets");
+                formData.Add(new StringContent(assetsJson), "Assets");
 
                 // 3. File Attachment
                 byte[]? attachmentBytes = fileBytes;
@@ -280,12 +288,31 @@ namespace HCMSys.Services
         private static string NormalizeDateToYMD(string? dateStr)
         {
             if (string.IsNullOrWhiteSpace(dateStr)) return DateTime.UtcNow.ToString("yyyy-MM-dd");
-            if (DateTime.TryParse(dateStr, out var parsed))
+            if (DateTime.TryParse(dateStr, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
             {
                 return parsed.ToString("yyyy-MM-dd");
             }
-            var parts = dateStr.Split('-');
-            if (parts.Length == 3 && parts[0].Length == 4) return dateStr;
+            var parts = dateStr.Split('-', '/', '.');
+            if (parts.Length == 3)
+            {
+                if (parts[0].Length == 4)
+                {
+                    return $"{parts[0]}-{parts[1].PadLeft(2, '0')}-{parts[2].PadLeft(2, '0')}";
+                }
+                if (parts[2].Length == 4)
+                {
+                    var months = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        {"Jan", "01"}, {"Feb", "02"}, {"Mar", "03"}, {"Apr", "04"},
+                        {"May", "05"}, {"Jun", "06"}, {"Jul", "07"}, {"Aug", "08"},
+                        {"Sep", "09"}, {"Oct", "10"}, {"Nov", "11"}, {"Dec", "12"}
+                    };
+                    var m = months.ContainsKey(parts[1]) ? months[parts[1]] : parts[1].PadLeft(2, '0');
+                    var d = parts[0].PadLeft(2, '0');
+                    var y = parts[2];
+                    return $"{y}-{m}-{d}";
+                }
+            }
             return DateTime.UtcNow.ToString("yyyy-MM-dd");
         }
 

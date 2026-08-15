@@ -355,7 +355,6 @@
         var empCode = selectedEmp ? (selectedEmp.code || selectedEmp.sCode || '') : '';
         var empName = selectedEmp ? (selectedEmp.name || selectedEmp.sName || '') : '';
 
-        var localSaved = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
         var deallocatedKeys = JSON.parse(localStorage.getItem('deallocatedAssetKeys') || '[]');
 
         function processAllocations(apiData) {
@@ -396,32 +395,6 @@
                             });
                         }
                     });
-                }
-            });
-
-            localSaved.forEach(function(ls) {
-                var isEmpMatch = checkEmployeeMatch(ls.employeeId || ls.iEmpId || ls.empId, ls.employeeCode || ls.sEmployeeCode, ls.employeeName || ls.sEmployeeName, empId, empCode, empName);
-
-                if (isEmpMatch && (ls.status === 'Allocated' || !ls.status)) {
-                    var lsDoc = ls.docNo || ls.allocationNo || '-';
-                    var lsCode = ls.assetCode || '-';
-                    var key = lsDoc + '|' + lsCode;
-
-                    if (!deallocatedKeys.includes(key)) {
-                        if (!allInHand.some(a => a.allocationNo === lsDoc && a.assetCode === lsCode)) {
-                            allInHand.push({
-                                allocationNo: lsDoc,
-                                categoryName: ls.categoryName || '-',
-                                assetCode: lsCode,
-                                assetName: ls.assetName || '-',
-                                tagNumber: ls.tagNumber || '-',
-                                qty: ls.qty || 1,
-                                remarks: ls.remarks || '',
-                                employeeId: empId,
-                                employeeName: ls.employeeName || empName
-                            });
-                        }
-                    }
                 }
             });
 
@@ -582,15 +555,6 @@
 
         localStorage.setItem('deallocatedAssetKeys', JSON.stringify(deallocatedKeys));
         localStorage.setItem('savedAssetDeAllocations', JSON.stringify(savedDeAllocations));
-
-        var allAllocations = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-        allAllocations.forEach(function(a) {
-            var match = inHandAssets.some(ih => (a.docNo === ih.allocationNo || a.allocationNo === ih.allocationNo) && a.assetCode === ih.assetCode);
-            if (match) {
-                a.status = 'De-Allocated';
-            }
-        });
-        localStorage.setItem('savedAssetAllocations', JSON.stringify(allAllocations));
 
         sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset De-Allocation saved successfully!', type: 'success' }));
         var targetUrl = '@Url.Action("AssetDeAllocationIndex", "Master")';

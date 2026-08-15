@@ -306,17 +306,6 @@
                         var keyToRemove = (removedItem.allocationNo || '') + '|' + (removedItem.assetCode || '');
                         deallocatedKeys = deallocatedKeys.filter(k => k !== keyToRemove && !k.startsWith(docNo + '|'));
                         localStorage.setItem('deallocatedAssetKeys', JSON.stringify(deallocatedKeys));
-
-                        var data = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-                        data.forEach(function(match) {
-                            if ((match.docNo || match.allocationNo) === removedItem.allocationNo && match.assetCode === removedItem.assetCode) {
-                                match.status = 'Allocated';
-                                delete match.deAllocDocNo;
-                                delete match.deAllocDate;
-                                delete match.deAllocRemarks;
-                            }
-                        });
-                        localStorage.setItem('savedAssetAllocations', JSON.stringify(data));
                     }
 
                     loadGridData();

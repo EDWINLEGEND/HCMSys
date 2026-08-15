@@ -10,7 +10,7 @@ namespace HCMSys.Services
         Task<List<EmployeeDto>> GetEmployeesAsync();
         Task<List<AssetCategoryDto>> GetAssetCategoriesAsync();
         Task<List<AssetDto>> GetAssetsAsync();
-        Task<ApiResponseEnvelope<object>?> SaveAssetAllocationAsync(SaveAssetAllocationDto request);
+        Task<ApiResponseEnvelope<object>?> SaveAssetAllocationAsync(SaveAssetAllocationDto request, byte[]? fileBytes = null, string? fileName = null, string? contentType = null);
         Task<List<SaveAssetAllocationDto>> GetAssetAllocationsAsync(int companyId = 1, int payYearId = 1);
         Task<SaveAssetAllocationDto?> GetAssetAllocationByIdAsync(int id);
         Task<List<LeaveBalanceDto>> GetLeaveBalancesAsync();

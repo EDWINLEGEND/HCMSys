@@ -257,6 +257,26 @@ namespace HCMSys.Models
 
         [JsonPropertyName("Attachment")]
         public AssetAllocationFileDto? Attachment { get; set; }
+
+        [JsonPropertyName("assetFile")]
+        public AssetAllocationFileDto? AssetFile { get; set; }
+
+        public AssetAllocationFileDto? GetEffectiveAttachment()
+        {
+            return Attachment ?? AssetFile;
+        }
+    }
+
+    public class AssetAllocationSaveItemDto
+    {
+        [JsonPropertyName("iAssetId")]
+        public int IAssetId { get; set; }
+
+        [JsonPropertyName("fQuantity")]
+        public decimal FQuantity { get; set; } = 1;
+
+        [JsonPropertyName("sRemarks")]
+        public string SRemarks { get; set; } = string.Empty;
     }
 
     public class AssetAllocationBodyDto

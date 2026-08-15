@@ -75,7 +75,10 @@
                     <i class="fas fa-boxes fa-sm text-primary mr-2"></i> Asset Allocation
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
-                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveAllocation()">
+                    <a href="@Url.Action("AssetAllocationIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm mr-2">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm" onclick="saveAllocation()">
                         <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
                     </button>
                 </div>
@@ -86,7 +89,7 @@
     <form id="allocationForm" autocomplete="off">
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General</div>
+            <div class="card-header card-header-custom">General Information</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
@@ -121,12 +124,13 @@
                     </div>
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Comments</label>
-                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter comments or allocation remarks..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
                         <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Attachment (Max 25MB)</label>
                         <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                        <small class="text-muted">Upload handover sheet, photo, or invoice.</small>
                     </div>
                 </div>
             </div>
@@ -150,24 +154,23 @@
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-control" id="dtl-assetname" readonly />
+                        <label class="form-label">Asset Name</label>
+                        <input type="text" class="form-control" id="dtl-assetname" readonly placeholder="Auto-populated" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Tag Number</label>
-                        <input type="text" class="form-control" id="dtl-assettag" readonly />
+                        <input type="text" class="form-control" id="dtl-assettag" readonly placeholder="Auto-populated" />
                     </div>
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Remarks</label>
-                        <input type="text" class="form-control" id="dtl-remarks" />
+                        <input type="text" class="form-control" id="dtl-remarks" placeholder="Optional item remarks (e.g. Serial, Condition)" />
                     </div>
                     
-                    <!-- Hidden Qty field as requested -->
                     <input type="hidden" id="dtl-qty" value="1" />
                     
                     <div class="col-md-12 text-right mt-2">
                         <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addToGrid()">
-                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Asset to List
                         </button>
                     </div>
                 </div>
@@ -175,6 +178,7 @@
         </div>
     </form>
 
+    <!-- DETAILED ASSETS GRID -->
     <div class="card shadow mb-4">
         <div class="card-header card-header-custom bg-secondary">Assets Detailed</div>
         <div class="card-body p-0">
@@ -184,14 +188,15 @@
                         <tr>
                             <th style="width: 60px; text-align:center;">Action</th>
                             <th>Asset Category</th>
-                            <th>Assets Code</th>
+                            <th>Asset Code</th>
                             <th>Asset Name</th>
                             <th>Tag Number</th>
-                            <th class="num-col">Qty</th>
+                            <th class="num-col" style="width:70px;">Qty</th>
                             <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <tr id="empty-row"><td colspan="7" class="text-center text-muted py-3">No assets added yet. Select Category & Code above and click "Add Asset to List".</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -225,7 +230,9 @@
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
         }).fail(function() {
-            alertify.log('Failed to load asset allocation data', 'error', 5000);
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to load asset allocation masters', 'error', 5000);
+            }
         });
 
         $('#hdr-employee').change(onEmployeeChange);
@@ -242,16 +249,19 @@
         var d = new Date();
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         var mmm = months[d.getMonth()];
-        var mm = String(d.getMonth() + 1).padStart(2, '0');
         var dd = String(d.getDate()).padStart(2, '0');
-        var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
         
-        var savedAllocations = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-        var seqNum = String(savedAllocations.length + 1).padStart(5, '0');
         $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
         $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-docno').val('ALL-' + mm + '-' + yy + '-' + seqNum);
+
+        $.getJSON('/Master/GetApiAssetAllocations').done(function(allocs) {
+            var count = Array.isArray(allocs) ? allocs.length : (allocs && allocs.data ? allocs.data.length : 0);
+            var nextNum = count + 1;
+            $('#hdr-docno').val('AST' + String(nextNum).padStart(6, '0'));
+        }).fail(function() {
+            $('#hdr-docno').val('AST000001');
+        });
     }
 
     function populateDropdowns() {
@@ -259,10 +269,10 @@
         empSelect.empty().append('<option value="">Select Employee...</option>');
         if (Array.isArray(employeesData)) {
             employeesData.forEach(function(emp) {
-                var empId = emp.id || emp.iMasterId || '';
-                var empCode = emp.code || emp.sCode || '';
-                var empName = emp.name || emp.sName || '';
-                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
+                empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
         }
 
@@ -270,9 +280,10 @@
         catSelect.empty().append('<option value="">Select Category...</option>');
         if (Array.isArray(assetCategoryData)) {
             assetCategoryData.forEach(function(cat) {
-                var catCode = cat.code || cat.sCode || '';
-                var catName = cat.name || cat.sName || '';
-                catSelect.append(`<option value="${catCode}">${catCode} - ${catName}</option>`);
+                var catId = cat.iMasterId || cat.id || '';
+                var catCode = cat.sCode || cat.code || '';
+                var catName = cat.sName || cat.name || '';
+                catSelect.append(`<option value="${catCode}" data-cat-id="${catId}" data-cat-name="${catName}">${catCode} - ${catName}</option>`);
             });
         }
     }
@@ -295,6 +306,10 @@
     
     function onCategoryChange() {
         var catCode = $(this).val();
+        var catOption = $(this).find('option:selected');
+        var catId = catOption.data('cat-id');
+        var catName = catOption.data('cat-name');
+        
         var codeSelect = $('#dtl-assetcode');
         codeSelect.empty().append('<option value="">Select Asset Code...</option>');
         
@@ -306,12 +321,15 @@
             return;
         }
 
-        var filteredCodes = assetCodeData.filter(c => 
-            c.categoryCode == catCode || 
-            c.sCategoryCode == catCode || 
-            c.iCategoryId == catCode ||
-            c.categoryName == catCode
-        );
+        var filteredCodes = assetCodeData.filter(function(c) {
+            var cCatCode = c.sCategoryCode || c.categoryCode;
+            var cCatId = c.iCategoryId || c.categoryId;
+            var cCatName = c.sCategoryName || c.categoryName;
+            
+            return (cCatCode && cCatCode.toLowerCase() === catCode.toLowerCase()) ||
+                   (catId && cCatId && String(cCatId) === String(catId)) ||
+                   (catName && cCatName && cCatName.toLowerCase() === catName.toLowerCase());
+        });
 
         // Fallback: If no code matched by category, show all codes
         if (!filteredCodes || filteredCodes.length === 0) {
@@ -319,9 +337,11 @@
         }
 
         filteredCodes.forEach(function(codeItem) {
-            var cCode = codeItem.code || codeItem.sCode;
-            var cName = codeItem.name || codeItem.sName;
-            codeSelect.append(`<option value="${cCode}">${cCode} - ${cName}</option>`);
+            var cId = codeItem.iMasterId || codeItem.id || 1;
+            var cCode = codeItem.sCode || codeItem.code || '';
+            var cName = codeItem.sName || codeItem.name || '';
+            var cTag = codeItem.sTagNumber || codeItem.tagNumber || '';
+            codeSelect.append(`<option value="${cCode}" data-asset-id="${cId}" data-asset-name="${cName}" data-asset-tag="${cTag}">${cCode} - ${cName}</option>`);
         });
         
         codeSelect.prop('disabled', false).trigger('change');
@@ -332,20 +352,22 @@
         if (!aCode) {
             $('#dtl-assetname').val('');
             $('#dtl-assettag').val('');
-            $('#dtl-assetcode').data('assetId', 0);
             return;
         }
-        var asset = assetCodeData.find(c => c.code == aCode || c.sCode == aCode);
-        if (asset) {
-            $('#dtl-assetname').val(asset.name || asset.sName || '');
-            $('#dtl-assettag').val(asset.tagNumber || asset.sTagNumber || 'N/A');
-            $('#dtl-assetcode').data('assetId', asset.iMasterId || asset.id || 1);
-        }
-    }
+        var selectedOpt = $(this).find('option:selected');
+        var assetName = selectedOpt.data('asset-name');
+        var assetTag = selectedOpt.data('asset-tag');
 
-    var uploadedBase64Url = '';
-    var uploadedFileName = '';
-    var uploadedContentType = '';
+        if (!assetName) {
+            var asset = assetCodeData.find(c => (c.sCode || c.code) == aCode);
+            if (asset) {
+                assetName = asset.sName || asset.name || '';
+                assetTag = asset.sTagNumber || asset.tagNumber || 'N/A';
+            }
+        }
+        $('#dtl-assetname').val(assetName || '');
+        $('#dtl-assettag').val(assetTag || 'N/A');
+    }
 
     function checkFileSize(input) {
         if (input.files && input.files[0]) {
@@ -353,22 +375,7 @@
             if (file.size > 25 * 1024 * 1024) {
                 alertify.log('File size exceeds 25MB limit.', 'error', 5000);
                 input.value = '';
-                uploadedBase64Url = '';
-                uploadedFileName = '';
-                uploadedContentType = '';
-                return;
             }
-            uploadedFileName = file.name;
-            uploadedContentType = file.type;
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                uploadedBase64Url = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        } else {
-            uploadedBase64Url = '';
-            uploadedFileName = '';
-            uploadedContentType = '';
         }
     }
 
@@ -376,15 +383,20 @@
         var uTbody = $('#user-grid-table tbody');
         uTbody.empty();
         
+        if (stagedAssets.length === 0) {
+            uTbody.append('<tr id="empty-row"><td colspan="7" class="text-center text-muted py-3">No assets added yet. Select Category & Code above and click "Add Asset to List".</td></tr>');
+            return;
+        }
+
         stagedAssets.forEach(function(item) {
             var tr = `<tr>
                 <td class="action-btns" style="text-align:center;">
                     <a href="#" class="remove-item-btn" title="Delete" onclick="deleteStagedAsset('${item.stagedId}'); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                 </td>
                 <td>${item.categoryName || '-'}</td>
-                <td>${item.assetCode || '-'}</td>
+                <td><strong>${item.assetCode || '-'}</strong></td>
                 <td>${item.assetName || '-'}</td>
-                <td>${item.tagNumber || '-'}</td>
+                <td><span class="badge badge-light border">${item.tagNumber || '-'}</span></td>
                 <td class="num-col">${item.qty}</td>
                 <td>${item.remarks || '-'}</td>
             </tr>`;
@@ -393,12 +405,8 @@
     }
 
     function deleteStagedAsset(stagedId) {
-        alertify.confirm('Are you sure you want to remove this asset?', function (e) {
-            if (e) {
-                stagedAssets = stagedAssets.filter(function(item) { return item.stagedId !== stagedId; });
-                renderGrid();
-            }
-        });
+        stagedAssets = stagedAssets.filter(function(item) { return item.stagedId !== stagedId; });
+        renderGrid();
     }
 
     function addToGrid() {
@@ -410,12 +418,20 @@
             return;
         }
 
-        var categoryName = $('#dtl-assetcategory option:selected').text().split(' - ')[1];
-        var assetName = $('#dtl-assetname').val();
-        var tagNumber = $('#dtl-assettag').val();
-        var remarks = $('#dtl-remarks').val();
-        var qty = $('#dtl-qty').val();
-        var assetId = $('#dtl-assetcode').data('assetId') || 1;
+        var catOpt = $('#dtl-assetcategory option:selected');
+        var categoryName = catOpt.data('cat-name') || catOpt.text().split(' - ')[1] || catOpt.text();
+        
+        var astOpt = $('#dtl-assetcode option:selected');
+        var assetId = parseInt(astOpt.data('asset-id')) || 1;
+        var assetName = $('#dtl-assetname').val() || astOpt.data('asset-name') || '';
+        var tagNumber = $('#dtl-assettag').val() || astOpt.data('asset-tag') || 'N/A';
+        var remarks = $('#dtl-remarks').val() || '';
+        var qty = $('#dtl-qty').val() || 1;
+
+        if (!assetId || assetId <= 0) {
+            var match = assetCodeData.find(a => (a.sCode || a.code) == assetCode);
+            if (match) assetId = match.iMasterId || match.id || 1;
+        }
 
         var uniqueStagedId = 'id_' + new Date().getTime();
 
@@ -441,7 +457,7 @@
 
     function saveAllocation() {
         if (stagedAssets.length === 0) {
-            alertify.log('No assets added to the grid.', 'error', 5000);
+            alertify.log('Please add at least one asset to the list.', 'error', 5000);
             return;
         }
 
@@ -454,118 +470,83 @@
         var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
         var empCode = emp ? (emp.sCode || emp.code || '') : '';
         var empName = emp ? (emp.sName || emp.name || '') : '';
-        var empDeptCode = emp ? (emp.sDepartmentCode || emp.departmentCode || '') : '';
         var empDeptName = emp ? (emp.sDepartmentName || emp.departmentName || $('#hdr-department').val() || '') : '';
-        var empDesigCode = emp ? (emp.sDesignationCode || emp.designationCode || '') : '';
         var empDesigName = emp ? (emp.sDesignationName || emp.designationName || $('#hdr-designation').val() || '') : '';
         var managerName = $('#hdr-manager').val();
 
         var docNo = $('#hdr-docno').val();
         var dateStr = $('#hdr-date').val();
+        var postDateStr = $('#hdr-postdate').val() || dateStr;
 
-        function parseToISO(dStr) {
-            if(!dStr) return new Date().toISOString();
+        function parseToYMD(dStr) {
+            if(!dStr) return new Date().toISOString().split('T')[0];
             var parts = dStr.split('-');
             if(parts.length === 3) {
-                var months = {'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11};
-                var m = months[parts[1]] !== undefined ? months[parts[1]] : 0;
-                var dt = new Date(parseInt(parts[2]), m, parseInt(parts[0]));
-                return dt.toISOString();
+                var months = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'};
+                var m = months[parts[1]] || '01';
+                var d = String(parts[0]).padStart(2, '0');
+                var y = parts[2];
+                return y + '-' + m + '-' + d;
             }
-            return new Date().toISOString();
+            return new Date().toISOString().split('T')[0];
         }
 
-        var isoDate = parseToISO(dateStr);
+        var ymdDate = parseToYMD(dateStr);
+        var ymdPostDate = parseToYMD(postDateStr);
 
-        var payload = {
-            iHeaderId: 0,
-            sDocNo: docNo,
-            dDocDate: isoDate,
-            dPostDate: isoDate,
-            iEmpId: parseInt(empVal) || 0,
-            sComments: $('#hdr-comments').val() || 'N/A',
-            sEmployeeCode: empCode,
-            sEmployeeName: empName,
-            sDepartmentCode: empDeptCode,
-            sDepartmentName: empDeptName,
-            sDesignationCode: empDesigCode,
-            sDesignationName: empDesigName,
-            sReportingToCode: emp ? (emp.sReportingToCode || emp.reportingToCode || '') : '',
-            sReportingToName: managerName || (emp ? (emp.sReportingToName || emp.reportingToName || '') : ''),
-            iCompanyId: 1,
-            iPayYearId: 1,
-            iStatus: 1,
-            iAuthStatus: 0,
-            iCreatedBy: 1,
-            iModifiedBy: 1,
-            iApprovedBy: 0,
-            Assets: stagedAssets.map(function(sa, idx) {
-                return {
-                    iBodyId: 0,
-                    iHeaderId: 0,
-                    sDocNo: docNo,
-                    iAssetId: sa.assetId || (idx + 1),
-                    sAssetCode: sa.assetCode,
-                    sAssetName: sa.assetName,
-                    sCategoryCode: sa.categoryCode,
-                    sCategoryName: sa.categoryName,
-                    sTagNumber: sa.tagNumber,
-                    fQuantity: parseFloat(sa.qty) || 1,
-                    sRemarks: sa.remarks || ''
-                };
-            }),
-            Attachment: {
-                iHeaderId: 0,
-                iFileId: 0,
-                sAttachmentFilePath: uploadedBase64Url || '',
-                sAttachmentFileName: uploadedFileName || '',
-                sContentType: uploadedContentType || ''
-            }
-        };
-
-        var newLocalItems = stagedAssets.map(function(sa) {
+        var assetsPayload = stagedAssets.map(function(sa) {
             return {
-                docNo: docNo,
-                date: dateStr,
-                employeeId: empVal,
-                employeeCode: empCode,
-                employeeName: empName,
-                categoryName: sa.categoryName,
-                assetCode: sa.assetCode,
-                assetName: sa.assetName,
-                tagNumber: sa.tagNumber,
-                qty: sa.qty,
-                remarks: sa.remarks || $('#hdr-comments').val() || '-',
-                status: 'Allocated'
+                iAssetId: sa.assetId,
+                fQuantity: parseFloat(sa.qty) || 1,
+                sRemarks: sa.remarks || "N/A"
             };
         });
 
-        function saveLocalAndRedirect(msg, type) {
-            var existing = JSON.parse(localStorage.getItem('savedAssetAllocations') || '[]');
-            newLocalItems.forEach(function(item) {
-                existing.unshift(item);
-            });
-            localStorage.setItem('savedAssetAllocations', JSON.stringify(existing));
+        var formData = new FormData();
+        formData.append('iHeaderId', '0');
+        formData.append('sDocNo', docNo);
+        formData.append('dDocDate', ymdDate);
+        formData.append('dPostDate', ymdPostDate);
+        formData.append('iEmpId', parseInt(empVal) || (emp ? (emp.iMasterId || emp.id) : 36));
+        formData.append('iCompanyId', '1');
+        formData.append('iPayYearId', '1');
+        formData.append('sComments', $('#hdr-comments').val() || 'Test allocation');
+        formData.append('sEmployeeCode', empCode);
+        formData.append('sEmployeeName', empName);
+        formData.append('sDepartmentName', empDeptName);
+        formData.append('sDesignationName', empDesigName);
+        formData.append('sReportingToName', managerName);
+        formData.append('Assets', JSON.stringify(assetsPayload));
 
-            sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: msg, type: type }));
-            var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
-            if (typeof loadPageContent === 'function') {
-                loadPageContent(targetUrl, true);
-            } else {
-                window.location.href = targetUrl;
-            }
+        var fileInput = document.getElementById('hdr-attachment');
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            formData.append('Attachment', fileInput.files[0]);
         }
 
         $.ajax({
             url: '/Master/SaveApiAssetAllocation',
             type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(payload),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(res) {
-                saveLocalAndRedirect('Asset Allocation saved successfully!', 'success');
+                var isSuccess = res && (res.success === true || res.statusCode === 200);
+                if (isSuccess) {
+                    var savedDoc = (res.data && typeof res.data === 'string') ? res.data : docNo;
+                    sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset Allocation saved successfully! (' + savedDoc + ')', type: 'success' }));
+                    var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
+                    if (typeof loadPageContent === 'function') {
+                        loadPageContent(targetUrl, true);
+                    } else {
+                        window.location.href = targetUrl;
+                    }
+                } else {
+                    var errMsg = (res && res.message) ? res.message : 'Error saving Asset Allocation';
+                    alertify.log(errMsg, 'error', 5000);
+                }
             },
-            error: function(err) {
-                saveLocalAndRedirect('Asset Allocation saved locally.', 'info');
+            error: function(xhr, status, err) {
+                alertify.log('Failed to save Asset Allocation: ' + (xhr.responseText || err || 'Server error'), 'error', 5000);
             }
         });
     }

@@ -1,0 +1,9 @@
+[
+  { "iMasterId": 1, "id": 1, "sCode": "IT001", "code": "IT001", "sName": "Computers & Laptops", "name": "Computers & Laptops", "iStatus": 0 },
+  { "iMasterId": 2, "id": 2, "sCode": "IT002", "code": "IT002", "sName": "Monitors", "name": "Monitors", "iStatus": 0 },
+  { "iMasterId": 3, "id": 3, "sCode": "IT003", "code": "IT003", "sName": "Printers & Scanners", "name": "Printers & Scanners", "iStatus": 0 },
+  { "iMasterId": 4, "id": 4, "sCode": "IT004", "code": "IT004", "sName": "Networking Equipment", "name": "Networking Equipment", "iStatus": 0 },
+  { "iMasterId": 5, "id": 5, "sCode": "IT005", "code": "IT005", "sName": "Office Furniture", "name": "Office Furniture", "iStatus": 0 },
+  { "iMasterId": 6, "id": 6, "sCode": "IT006", "code": "IT006", "sName": "Tablets", "name": "Tablets", "iStatus": 0 },
+  { "iMasterId": 7, "id": 7, "sCode": "IT007", "code": "IT007", "sName": "OFF 150826", "name": "OFF 150826", "iStatus": 0 }
+]

@@ -1,0 +1,53 @@
+[
+  {
+    "iMasterId": 1,
+    "id": 1,
+    "sName": "Dell Latitude 7440",
+    "name": "Dell Latitude 7440",
+    "sCode": "AST0001",
+    "code": "AST0001",
+    "iCategoryId": 1,
+    "categoryId": 1,
+    "sCategoryCode": "IT001",
+    "categoryCode": "IT001",
+    "sCategoryName": "Computers & Laptops",
+    "categoryName": "Computers & Laptops",
+    "sTagNumber": "JHJK-96576",
+    "tagNumber": "JHJK-96576",
+    "iStatus": 0
+  },
+  {
+    "iMasterId": 2,
+    "id": 2,
+    "sName": "HP LaserJet Pro M404",
+    "name": "HP LaserJet Pro M404",
+    "sCode": "AST0002",
+    "code": "AST0002",
+    "iCategoryId": 1,
+    "categoryId": 1,
+    "sCategoryCode": "IT001",
+    "categoryCode": "IT001",
+    "sCategoryName": "Computers & Laptops",
+    "categoryName": "Computers & Laptops",
+    "sTagNumber": "JHJK-45476",
+    "tagNumber": "JHJK-45476",
+    "iStatus": 0
+  },
+  {
+    "iMasterId": 3,
+    "id": 3,
+    "sName": "Samsung Galaxy S25",
+    "name": "Samsung Galaxy S25",
+    "sCode": "AST0003",
+    "code": "AST0003",
+    "iCategoryId": 2,
+    "categoryId": 2,
+    "sCategoryCode": "IT002",
+    "categoryCode": "IT002",
+    "sCategoryName": "Monitors",
+    "categoryName": "Monitors",
+    "sTagNumber": "ASDS-476776",
+    "tagNumber": "ASDS-476776",
+    "iStatus": 0
+  }
+]

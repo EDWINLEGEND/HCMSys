@@ -101,10 +101,67 @@ namespace HCMSys.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveApiAssetAllocation([FromBody] SaveAssetAllocationDto request)
+        public async Task<IActionResult> SaveApiAssetAllocation()
         {
-            if (request == null) return BadRequest(new { success = false, message = "Invalid request payload." });
-            var result = await _apiService.SaveAssetAllocationAsync(request);
+            SaveAssetAllocationDto? dto = null;
+            byte[]? fileBytes = null;
+            string? fileName = null;
+            string? contentType = null;
+
+            if (Request.HasFormContentType)
+            {
+                var form = await Request.ReadFormAsync();
+                dto = new SaveAssetAllocationDto
+                {
+                    IHeaderId = int.TryParse(form["iHeaderId"], out var hId) ? hId : 0,
+                    SDocNo = form["sDocNo"].ToString() ?? "",
+                    DDocDate = form["dDocDate"].ToString() ?? "",
+                    DPostDate = form["dPostDate"].ToString() ?? "",
+                    IEmpId = int.TryParse(form["iEmpId"], out var empId) ? empId : 0,
+                    ICompanyId = int.TryParse(form["iCompanyId"], out var compId) ? compId : 1,
+                    IPayYearId = int.TryParse(form["iPayYearId"], out var pyId) ? pyId : 1,
+                    SComments = form["sComments"].ToString(),
+                    SEmployeeCode = form["sEmployeeCode"].ToString(),
+                    SEmployeeName = form["sEmployeeName"].ToString(),
+                    SDepartmentName = form["sDepartmentName"].ToString(),
+                    SDesignationName = form["sDesignationName"].ToString(),
+                    SReportingToName = form["sReportingToName"].ToString()
+                };
+
+                var assetsStr = form["Assets"].ToString();
+                if (!string.IsNullOrEmpty(assetsStr))
+                {
+                    try
+                    {
+                        var parsedAssets = System.Text.Json.JsonSerializer.Deserialize<List<AssetAllocationBodyDto>>(assetsStr, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (parsedAssets != null) dto.Assets = parsedAssets;
+                    }
+                    catch { }
+                }
+
+                if (form.Files.Count > 0)
+                {
+                    var formFile = form.Files[0];
+                    using var ms = new System.IO.MemoryStream();
+                    await formFile.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
+                    fileName = formFile.FileName;
+                    contentType = formFile.ContentType;
+                }
+            }
+            else
+            {
+                using var reader = new System.IO.StreamReader(Request.Body);
+                var body = await reader.ReadToEndAsync();
+                if (!string.IsNullOrEmpty(body))
+                {
+                    dto = System.Text.Json.JsonSerializer.Deserialize<SaveAssetAllocationDto>(body, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+            }
+
+            if (dto == null) return BadRequest(new { success = false, message = "Invalid request payload." });
+
+            var result = await _apiService.SaveAssetAllocationAsync(dto, fileBytes, fileName, contentType);
             return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Save API." });
         }
 

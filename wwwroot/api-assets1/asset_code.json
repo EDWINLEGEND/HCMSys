@@ -1,7 +1,0 @@
-[
-  { "id": 1, "name": "Dell XPS 15", "code": "AST-LAP-001", "categoryCode": "CAT-LAP", "tagNumber": "TAG-101" },
-  { "id": 2, "name": "MacBook Pro M2", "code": "AST-LAP-002", "categoryCode": "CAT-LAP", "tagNumber": "TAG-102" },
-  { "id": 3, "name": "iPhone 13", "code": "AST-MOB-001", "categoryCode": "CAT-MOB", "tagNumber": "TAG-201" },
-  { "id": 4, "Name": "Samsung Galaxy S22", "code": "AST-MOB-002", "categoryCode": "CAT-MOB", "tagNumber": "TAG-202" },
-  { "id": 5, "name": "Honda City", "code": "AST-VEH-001", "categoryCode": "CAT-VEH", "tagNumber": "TAG-301" }
-]

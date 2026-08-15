@@ -71,14 +71,14 @@
     <div class="card shadow mb-3">
         <div class="card-header py-3">
             <div class="page-title-bar">
-                <div class="page-title-text">
+                <div class="page-title-text" id="page-header-title">
                     <i class="fas fa-boxes fa-sm text-primary mr-2"></i> Asset Allocation
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
                     <a href="@Url.Action("AssetAllocationIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm mr-2">
                         <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
                     </a>
-                    <button type="button" class="btn btn-success btn-sm shadow-sm" onclick="saveAllocation()">
+                    <button type="button" class="btn btn-success btn-sm shadow-sm" id="btn-save-allocation" onclick="saveAllocation()">
                         <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
                     </button>
                 </div>
@@ -87,6 +87,8 @@
     </div>
 
     <form id="allocationForm" autocomplete="off">
+        <input type="hidden" id="hdr-header-id" value="0" />
+
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
             <div class="card-header card-header-custom">General Information</div>
@@ -130,7 +132,7 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Attachment (Max 25MB)</label>
                         <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
-                        <small class="text-muted">Upload handover sheet, photo, or invoice.</small>
+                        <small class="text-muted" id="attachment-note">Upload handover sheet, photo, or invoice.</small>
                     </div>
                 </div>
             </div>
@@ -211,15 +213,31 @@
     var assetCategoryData = [];
     var assetCodeData = [];
     var stagedAssets = [];
+    var allocatedAssetsMap = {}; // Maps assetCode or assetId -> { empName, docNo, headerId }
+    var editHeaderId = 0;
+    var isEditMode = false;
 
     $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var paramId = urlParams.get('id') || '@ViewBag.EditId';
+        editHeaderId = parseInt(paramId) || 0;
+        isEditMode = editHeaderId > 0;
+
+        if (isEditMode) {
+            $('#page-header-title').html('<i class="fas fa-edit fa-sm text-primary mr-2"></i> Edit Asset Allocation <span class="badge badge-primary font-weight-bold ml-2">Edit Mode</span>');
+            $('#btn-save-allocation').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Allocation');
+            $('#hdr-header-id').val(editHeaderId);
+        }
+
         initHeader();
 
+        // Load Masters and existing allocations in parallel
         $.when(
             $.getJSON('/Master/GetApiEmployees'),
             $.getJSON('/Master/GetApiAssetCategories'),
-            $.getJSON('/Master/GetApiAssets')
-        ).done(function(empRes, catRes, codeRes) {
+            $.getJSON('/Master/GetApiAssets'),
+            $.getJSON('/Master/GetApiAssetAllocations')
+        ).done(function(empRes, catRes, codeRes, allocsRes) {
             var empArr = empRes[0] || empRes;
             employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
             var catArr = catRes[0] || catRes;
@@ -227,8 +245,16 @@
             var codeArr = codeRes[0] || codeRes;
             assetCodeData = Array.isArray(codeArr) ? (Array.isArray(codeArr[0]) ? codeArr[0] : codeArr) : [];
             
+            var allAllocs = allocsRes[0] || allocsRes;
+            var allocsList = Array.isArray(allAllocs) ? allAllocs : (allAllocs && allAllocs.data ? allAllocs.data : []);
+            
+            buildAllocatedAssetsMap(allocsList);
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
+
+            if (isEditMode) {
+                loadAllocationForEdit(editHeaderId, allocsList);
+            }
         }).fail(function() {
             if (typeof alertify !== 'undefined') {
                 alertify.log('Failed to load asset allocation masters', 'error', 5000);
@@ -245,7 +271,36 @@
         });
     });
 
+    // Rule: 1 Asset can only be allocated to one person at a time
+    function buildAllocatedAssetsMap(allocations) {
+        allocatedAssetsMap = {};
+        if (!Array.isArray(allocations)) return;
+
+        allocations.forEach(function(alloc) {
+            var aHeaderId = alloc.iHeaderId || alloc.id || 0;
+            // Exclude the current document being edited so its assets are allowed
+            if (isEditMode && aHeaderId === editHeaderId) return;
+
+            var empName = alloc.sEmployeeName || alloc.employeeName || 'Unknown Employee';
+            var docNo = alloc.sDocNo || alloc.docNo || ('AST' + String(aHeaderId).padStart(6, '0'));
+            var status = alloc.iStatus !== undefined ? alloc.iStatus : 1;
+
+            if (status === 1 || alloc.status === 'Allocated') {
+                var assetList = alloc.assets || alloc.Assets || [];
+                assetList.forEach(function(ast) {
+                    var astCode = ast.sAssetCode || ast.assetCode;
+                    var astId = ast.iAssetId || ast.assetId;
+                    var info = { empName: empName, docNo: docNo, headerId: aHeaderId };
+                    if (astCode) allocatedAssetsMap[astCode.toUpperCase()] = info;
+                    if (astId) allocatedAssetsMap[astId] = info;
+                });
+            }
+        });
+    }
+
     function initHeader() {
+        if (isEditMode) return;
+
         var d = new Date();
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         var mmm = months[d.getMonth()];
@@ -261,6 +316,67 @@
             $('#hdr-docno').val('AST' + String(nextNum).padStart(6, '0'));
         }).fail(function() {
             $('#hdr-docno').val('AST000001');
+        });
+    }
+
+    function loadAllocationForEdit(headerId, cachedList) {
+        function applyAllocationData(alloc) {
+            if (!alloc) return;
+
+            $('#hdr-docno').val(alloc.sDocNo || alloc.docNo || '');
+            if (alloc.dDocDate) $('#hdr-date').val(window.formatDateDisplay(alloc.dDocDate));
+            if (alloc.dPostDate) $('#hdr-postdate').val(window.formatDateDisplay(alloc.dPostDate));
+            if (alloc.sComments) $('#hdr-comments').val(alloc.sComments);
+
+            var empId = alloc.iEmpId || alloc.empId || '';
+            if (empId) {
+                $('#hdr-employee').val(empId).trigger('change');
+            } else if (alloc.sEmployeeName) {
+                var matched = employeesData.find(e => (e.sName || e.name) === alloc.sEmployeeName);
+                if (matched) $('#hdr-employee').val(matched.iMasterId || matched.id).trigger('change');
+            }
+
+            var fileObj = alloc.assetFile || alloc.Attachment || alloc.attachment;
+            if (fileObj && fileObj.sAttachmentFilePath) {
+                $('#attachment-note').html(`Current Attachment: <a href="javascript:void(0)" class="text-primary font-weight-bold" onclick="window.openDocPreview('${fileObj.sAttachmentFileName || 'Attachment'}', '${fileObj.sAttachmentFilePath}')"><i class="fas fa-paperclip mr-1"></i>${fileObj.sAttachmentFileName || 'View Attached File'}</a> (Upload new file to replace)`);
+            }
+
+            var assetList = alloc.assets || alloc.Assets || [];
+            stagedAssets = [];
+
+            assetList.forEach(function(ast) {
+                var masterAst = assetCodeData.find(a => (a.sCode || a.code) === (ast.sAssetCode || ast.assetCode) || (a.iMasterId || a.id) === (ast.iAssetId || ast.assetId)) || {};
+                var astCode = ast.sAssetCode || ast.assetCode || masterAst.sCode || masterAst.code || '';
+                var astName = ast.sAssetName || ast.assetName || masterAst.sName || masterAst.name || '';
+                var catCode = ast.sCategoryCode || ast.categoryCode || masterAst.sCategoryCode || masterAst.categoryCode || '';
+                var catName = ast.sCategoryName || ast.categoryName || masterAst.sCategoryName || masterAst.categoryName || '';
+                var tagNum = ast.sTagNumber || ast.tagNumber || masterAst.sTagNumber || masterAst.tagNumber || 'N/A';
+                var qty = ast.fQuantity || ast.qty || 1;
+                var remarks = ast.sRemarks || ast.remarks || '';
+                var assetId = ast.iAssetId || ast.assetId || masterAst.iMasterId || masterAst.id || 1;
+
+                stagedAssets.push({
+                    stagedId: 'id_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000),
+                    assetId: assetId,
+                    categoryCode: catCode,
+                    categoryName: catName,
+                    assetCode: astCode,
+                    assetName: astName,
+                    tagNumber: tagNum,
+                    qty: qty,
+                    remarks: remarks
+                });
+            });
+
+            renderGrid();
+        }
+
+        $.getJSON('/Master/GetApiAssetAllocationById?id=' + headerId).done(function(res) {
+            var alloc = (res && res.data) ? res.data : res;
+            applyAllocationData(alloc);
+        }).fail(function() {
+            var match = cachedList.find(a => (a.iHeaderId || a.id) == headerId || (a.sDocNo || a.docNo) == headerId);
+            if (match) applyAllocationData(match);
         });
     }
 
@@ -331,7 +447,6 @@
                    (catName && cCatName && cCatName.toLowerCase() === catName.toLowerCase());
         });
 
-        // Fallback: If no code matched by category, show all codes
         if (!filteredCodes || filteredCodes.length === 0) {
             filteredCodes = assetCodeData;
         }
@@ -341,7 +456,14 @@
             var cCode = codeItem.sCode || codeItem.code || '';
             var cName = codeItem.sName || codeItem.name || '';
             var cTag = codeItem.sTagNumber || codeItem.tagNumber || '';
-            codeSelect.append(`<option value="${cCode}" data-asset-id="${cId}" data-asset-name="${cName}" data-asset-tag="${cTag}">${cCode} - ${cName}</option>`);
+
+            // Rule check: 1 asset can only be allocated to one person
+            var allocatedInfo = allocatedAssetsMap[cCode.toUpperCase()] || allocatedAssetsMap[cId];
+            if (allocatedInfo) {
+                codeSelect.append(`<option value="${cCode}" disabled style="color:#aaa;">${cCode} - ${cName} (Already Allocated to ${allocatedInfo.empName})</option>`);
+            } else {
+                codeSelect.append(`<option value="${cCode}" data-asset-id="${cId}" data-asset-name="${cName}" data-asset-tag="${cTag}">${cCode} - ${cName}</option>`);
+            }
         });
         
         codeSelect.prop('disabled', false).trigger('change');
@@ -418,6 +540,13 @@
             return;
         }
 
+        // Rule Check 1: Already added to this allocation list
+        var isAlreadyInGrid = stagedAssets.some(sa => (sa.assetCode || '').toUpperCase() === assetCode.toUpperCase());
+        if (isAlreadyInGrid) {
+            alertify.log('Asset ' + assetCode + ' is already added to this allocation list.', 'error', 5000);
+            return;
+        }
+
         var catOpt = $('#dtl-assetcategory option:selected');
         var categoryName = catOpt.data('cat-name') || catOpt.text().split(' - ')[1] || catOpt.text();
         
@@ -431,6 +560,13 @@
         if (!assetId || assetId <= 0) {
             var match = assetCodeData.find(a => (a.sCode || a.code) == assetCode);
             if (match) assetId = match.iMasterId || match.id || 1;
+        }
+
+        // Rule Check 2: 1 asset can only be allocated to one person
+        var allocatedInfo = allocatedAssetsMap[assetCode.toUpperCase()] || allocatedAssetsMap[assetId];
+        if (allocatedInfo) {
+            alertify.log('Asset ' + assetCode + ' is already allocated to ' + allocatedInfo.empName + ' (' + allocatedInfo.docNo + '). An asset can only be allocated to one person.', 'error', 6000);
+            return;
         }
 
         var uniqueStagedId = 'id_' + new Date().getTime();
@@ -503,14 +639,14 @@
         });
 
         var formData = new FormData();
-        formData.append('iHeaderId', '0');
+        formData.append('iHeaderId', isEditMode ? editHeaderId.toString() : '0');
         formData.append('sDocNo', docNo);
         formData.append('dDocDate', ymdDate);
         formData.append('dPostDate', ymdPostDate);
         formData.append('iEmpId', parseInt(empVal) || (emp ? (emp.iMasterId || emp.id) : 36));
         formData.append('iCompanyId', '1');
         formData.append('iPayYearId', '1');
-        formData.append('sComments', $('#hdr-comments').val() || 'Test allocation');
+        formData.append('sComments', $('#hdr-comments').val() || 'Asset allocation');
         formData.append('sEmployeeCode', empCode);
         formData.append('sEmployeeName', empName);
         formData.append('sDepartmentName', empDeptName);
@@ -533,7 +669,8 @@
                 var isSuccess = res && (res.success === true || res.statusCode === 200);
                 if (isSuccess) {
                     var savedDoc = (res.data && typeof res.data === 'string') ? res.data : docNo;
-                    sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Asset Allocation saved successfully! (' + savedDoc + ')', type: 'success' }));
+                    var successMsg = isEditMode ? 'Asset Allocation (' + savedDoc + ') updated successfully!' : 'Asset Allocation saved successfully! (' + savedDoc + ')';
+                    sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: successMsg, type: 'success' }));
                     var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';
                     if (typeof loadPageContent === 'function') {
                         loadPageContent(targetUrl, true);
@@ -542,7 +679,7 @@
                     }
                 } else {
                     var errMsg = (res && res.message) ? res.message : 'Error saving Asset Allocation';
-                    alertify.log(errMsg, 'error', 5000);
+                    alertify.log(errMsg, 'error', 6000);
                 }
             },
             error: function(xhr, status, err) {

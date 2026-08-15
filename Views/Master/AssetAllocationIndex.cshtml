@@ -165,78 +165,6 @@
 
 </div>
 
-<!-- EDIT MODAL -->
-<div class="modal fade" id="edit-modal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white py-2">
-                <h6 class="modal-title font-weight-bold"><i class="fas fa-edit mr-2"></i>Edit Asset Allocation</h6>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit-header-id" />
-                <div class="row">
-                    <div class="col-md-6 form-group mb-2">
-                        <label class="form-label font-weight-bold text-gray-700">Doc No</label>
-                        <input type="text" class="form-control" id="edit-docno" readonly />
-                    </div>
-                    <div class="col-md-6 form-group mb-2">
-                        <label class="form-label font-weight-bold text-gray-700">Date</label>
-                        <input type="text" class="form-control" id="edit-date" placeholder="e.g. 18-Jul-2026" />
-                    </div>
-                    <div class="col-md-6 form-group mb-2">
-                        <label class="form-label font-weight-bold text-gray-700">Employee Name</label>
-                        <input type="text" class="form-control" id="edit-employee" />
-                    </div>
-                    <div class="col-md-6 form-group mb-2">
-                        <label class="form-label font-weight-bold text-gray-700">Department</label>
-                        <input type="text" class="form-control" id="edit-department" />
-                    </div>
-                    <div class="col-md-6 form-group mb-2">
-                        <label class="form-label font-weight-bold text-gray-700">Designation</label>
-                        <input type="text" class="form-control" id="edit-designation" />
-                    </div>
-                    <div class="col-md-6 form-group mb-2">
-                        <label class="form-label font-weight-bold text-gray-700">Status</label>
-                        <select class="form-control" id="edit-status">
-                            <option value="Allocated">Allocated</option>
-                            <option value="Active">Active</option>
-                            <option value="De-Allocated">De-Allocated</option>
-                        </select>
-                    </div>
-                    <div class="col-12 form-group mb-3">
-                        <label class="form-label font-weight-bold text-gray-700">Remarks / Comments</label>
-                        <input type="text" class="form-control" id="edit-remarks" />
-                    </div>
-                </div>
-
-                <h6 class="font-weight-bold text-gray-800 mb-2 border-bottom pb-1"><i class="fas fa-boxes mr-1"></i> Allocated Asset Items</h6>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm mb-0" id="edit-assets-table">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Category</th>
-                                <th>Asset Code</th>
-                                <th>Asset Name</th>
-                                <th>Tag Number</th>
-                                <th class="text-right">Qty</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer py-2">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary btn-sm" id="save-edit-btn">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -265,77 +193,18 @@
 
         loadGridData();
 
-        // Edit Button Click Handler
+        // Edit Button Click Handler -> Navigates to full form page for editing
         $('#data-grid tbody').on('click', '.edit-item-btn', function (e) {
             e.preventDefault();
-            var docNo = String($(this).data('docno'));
             var headerId = $(this).data('headerid');
-            
-            var item = currentParentAllocations.find(i => (i.sDocNo || i.docNo) === docNo || (headerId && (i.iHeaderId || i.id) == headerId));
+            var docNo = $(this).data('docno');
+            var editUrl = '@Url.Action("AssetAllocation", "Master")' + '?id=' + (headerId || 0);
 
-            if (item) {
-                $('#edit-header-id').val(item.iHeaderId || item.id || 0);
-                $('#edit-docno').val(item.sDocNo || item.docNo || docNo);
-                $('#edit-date').val(item.displayDate || window.formatDateDisplay(item.dDocDate || item.date));
-                $('#edit-employee').val(item.sEmployeeName || item.employeeName || '');
-                $('#edit-department').val(item.sDepartmentName || item.departmentName || '');
-                $('#edit-designation').val(item.sDesignationName || item.designationName || '');
-                $('#edit-remarks').val(item.sComments || item.comments || item.remarks || '');
-                $('#edit-status').val(item.iStatus === 1 ? 'Allocated' : (item.status || 'Active'));
-
-                var assetList = item.assets || item.Assets || [];
-                var tbody = $('#edit-assets-table tbody');
-                tbody.empty();
-
-                if (assetList.length === 0) {
-                    tbody.append('<tr><td colspan="7" class="text-center text-muted py-2">No asset items</td></tr>');
-                } else {
-                    assetList.forEach(function(ast, idx) {
-                        var masterAst = masterAssetsMap[ast.sAssetCode] || masterAssetsMap[ast.assetCode] || masterAssetsMap[ast.iAssetId] || {};
-                        var catName = ast.sCategoryName || ast.categoryName || masterAst.sCategoryName || masterAst.categoryName || '-';
-                        var aCode = ast.sAssetCode || ast.assetCode || masterAst.sCode || masterAst.code || '-';
-                        var aName = ast.sAssetName || ast.assetName || masterAst.sName || masterAst.name || '-';
-                        var aTag = ast.sTagNumber || ast.tagNumber || masterAst.sTagNumber || masterAst.tagNumber || '-';
-                        var aQty = ast.fQuantity || ast.qty || 1;
-                        var aRem = ast.sRemarks || ast.remarks || '-';
-
-                        tbody.append(`
-                            <tr>
-                                <td>${idx + 1}</td>
-                                <td>${catName}</td>
-                                <td><strong>${aCode}</strong></td>
-                                <td>${aName}</td>
-                                <td><span class="badge badge-light border">${aTag}</span></td>
-                                <td class="text-right font-weight-bold">${aQty}</td>
-                                <td>${aRem}</td>
-                            </tr>
-                        `);
-                    });
-                }
-
-                $('#edit-modal').modal('show');
+            if (typeof loadPageContent === 'function') {
+                loadPageContent(editUrl, true);
+            } else {
+                window.location.href = editUrl;
             }
-        });
-
-        // Save Edit Changes Handler
-        $('#save-edit-btn').click(function() {
-            var docNo = $('#edit-docno').val();
-            var headerId = $('#edit-header-id').val();
-            var match = currentParentAllocations.find(i => (i.sDocNo || i.docNo) === docNo || (headerId && (i.iHeaderId || i.id) == headerId));
-            
-            if (match) {
-                match.displayDate = $('#edit-date').val();
-                match.dDocDate = $('#edit-date').val();
-                match.sEmployeeName = $('#edit-employee').val();
-                match.sDepartmentName = $('#edit-department').val();
-                match.sDesignationName = $('#edit-designation').val();
-                match.sComments = $('#edit-remarks').val();
-                match.status = $('#edit-status').val();
-
-                renderParentRows(currentParentAllocations);
-            }
-            $('#edit-modal').modal('hide');
-            alertify.log('Asset Allocation updated successfully.', 'success', 5000);
         });
 
         // Delete Handler
@@ -373,6 +242,7 @@
 
         allocations.forEach(function(item) {
             var docNo = item.sDocNo || item.docNo || ('AST' + String(item.iHeaderId || item.id || 1).padStart(6, '0'));
+            var headerId = item.iHeaderId || item.id || 0;
             var formattedDate = item.displayDate || (item.dDocDate ? window.formatDateDisplay(item.dDocDate) : (item.date ? window.formatDateDisplay(item.date) : '-'));
             var empName = item.sEmployeeName || item.employeeName || '-';
             var empCode = item.sEmployeeCode || item.employeeCode || '';
@@ -409,11 +279,12 @@
                 attachBtn = `<a href="javascript:void(0)" onclick="window.openDocPreview('${attachName}', '${attachUrl}')" title="View Attachment (${attachName})"><i class="fas fa-paperclip fa-sm fa-fw"></i></a>`;
             }
 
+            var editUrl = '@Url.Action("AssetAllocation", "Master")' + '?id=' + headerId;
             var actionHtml = `
                 <div class="action-btns" style="text-align:center;">
                     ${attachBtn}
-                    <a href="#" class="edit-item-btn" data-docno="${docNo}" data-headerid="${item.iHeaderId || item.id || 0}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                    <a href="#" class="remove-item-btn" data-docno="${docNo}" data-headerid="${item.iHeaderId || item.id || 0}" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                    <a href="${editUrl}" class="edit-item-btn" data-docno="${docNo}" data-headerid="${headerId}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                    <a href="#" class="remove-item-btn" data-docno="${docNo}" data-headerid="${headerId}" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                 </div>
             `;
 
@@ -438,7 +309,6 @@
         table.clear().draw();
         var deletedList = JSON.parse(sessionStorage.getItem('deletedAssetAllocations') || '[]');
 
-        // Fetch Asset Masters and Asset Allocations in parallel
         $.when(
             $.getJSON('/Master/GetApiAssets'),
             $.getJSON('/Master/GetApiAssetAllocations')

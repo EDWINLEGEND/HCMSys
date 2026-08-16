@@ -436,30 +436,34 @@
         var catName = catOption.data('cat-name');
         
         var codeSelect = $('#dtl-assetcode');
-        codeSelect.empty().append('<option value="">Select Asset Code...</option>');
+        codeSelect.empty();
         
         $('#dtl-assetname').val('');
         $('#dtl-assettag').val('');
         
         if (!catCode) {
+            codeSelect.append('<option value="">Select Asset Code...</option>');
             codeSelect.prop('disabled', true).trigger('change');
             return;
         }
 
         var filteredCodes = assetCodeData.filter(function(c) {
-            var cCatCode = c.sCategoryCode || c.categoryCode;
-            var cCatId = c.iCategoryId || c.categoryId;
-            var cCatName = c.sCategoryName || c.categoryName;
+            var cCatCode = c.sCategoryCode || c.categoryCode || '';
+            var cCatId = c.iCategoryId || c.categoryId || '';
+            var cCatName = c.sCategoryName || c.categoryName || '';
             
-            return (cCatCode && cCatCode.toLowerCase() === catCode.toLowerCase()) ||
+            return (catCode && cCatCode && cCatCode.trim().toLowerCase() === catCode.trim().toLowerCase()) ||
                    (catId && cCatId && String(cCatId) === String(catId)) ||
-                   (catName && cCatName && cCatName.toLowerCase() === catName.toLowerCase());
+                   (catName && cCatName && cCatName.trim().toLowerCase() === catName.trim().toLowerCase());
         });
 
         if (!filteredCodes || filteredCodes.length === 0) {
-            filteredCodes = assetCodeData;
+            codeSelect.append('<option value="">No assets available in this category</option>');
+            codeSelect.prop('disabled', true).trigger('change');
+            return;
         }
 
+        codeSelect.append('<option value="">Select Asset Code...</option>');
         filteredCodes.forEach(function(codeItem) {
             var cId = codeItem.iMasterId || codeItem.id || 1;
             var cCode = codeItem.sCode || codeItem.code || '';

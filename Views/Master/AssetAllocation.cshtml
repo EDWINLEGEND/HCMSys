@@ -213,7 +213,6 @@
     var assetCategoryData = [];
     var assetCodeData = [];
     var stagedAssets = [];
-    var allocatedAssetsMap = {}; // Maps assetCode or assetId -> { empName, docNo, headerId }
     var editHeaderId = 0;
     var isEditMode = false;
 
@@ -248,7 +247,6 @@
             var allAllocs = allocsRes[0] || allocsRes;
             var allocsList = Array.isArray(allAllocs) ? allAllocs : (allAllocs && allAllocs.data ? allAllocs.data : []);
             
-            buildAllocatedAssetsMap(allocsList);
             populateDropdowns();
             $('select.form-control').select2({ width: '100%' });
 
@@ -270,33 +268,6 @@
             defaultDate: "today"
         });
     });
-
-    // Rule: 1 Asset can only be allocated to one person at a time
-    function buildAllocatedAssetsMap(allocations) {
-        allocatedAssetsMap = {};
-        if (!Array.isArray(allocations)) return;
-
-        allocations.forEach(function(alloc) {
-            var aHeaderId = alloc.iHeaderId || alloc.id || 0;
-            // Exclude the current document being edited so its assets are allowed
-            if (isEditMode && aHeaderId === editHeaderId) return;
-
-            var empName = alloc.sEmployeeName || alloc.employeeName || 'Unknown Employee';
-            var docNo = alloc.sDocNo || alloc.docNo || ('AST' + String(aHeaderId).padStart(6, '0'));
-            var status = alloc.iStatus !== undefined ? alloc.iStatus : 1;
-
-            if (status === 1 || alloc.status === 'Allocated') {
-                var assetList = alloc.assets || alloc.Assets || [];
-                assetList.forEach(function(ast) {
-                    var astCode = ast.sAssetCode || ast.assetCode;
-                    var astId = ast.iAssetId || ast.assetId;
-                    var info = { empName: empName, docNo: docNo, headerId: aHeaderId };
-                    if (astCode) allocatedAssetsMap[astCode.toUpperCase()] = info;
-                    if (astId) allocatedAssetsMap[astId] = info;
-                });
-            }
-        });
-    }
 
     function initHeader() {
         if (isEditMode) return;
@@ -470,13 +441,7 @@
             var cName = codeItem.sName || codeItem.name || '';
             var cTag = codeItem.sTagNumber || codeItem.tagNumber || '';
 
-            // Rule check: 1 asset can only be allocated to one person
-            var allocatedInfo = allocatedAssetsMap[cCode.toUpperCase()] || allocatedAssetsMap[cId];
-            if (allocatedInfo) {
-                codeSelect.append(`<option value="${cCode}" disabled style="color:#aaa;">${cCode} - ${cName} (Already Allocated to ${allocatedInfo.empName})</option>`);
-            } else {
-                codeSelect.append(`<option value="${cCode}" data-asset-id="${cId}" data-asset-name="${cName}" data-asset-tag="${cTag}">${cCode} - ${cName}</option>`);
-            }
+            codeSelect.append(`<option value="${cCode}" data-asset-id="${cId}" data-asset-name="${cName}" data-asset-tag="${cTag}">${cCode} - ${cName}</option>`);
         });
         
         codeSelect.prop('disabled', false).trigger('change');
@@ -553,7 +518,7 @@
             return;
         }
 
-        // Rule Check 1: Already added to this allocation list
+        // Rule: Prevent adding the same asset twice to this allocation document
         var isAlreadyInGrid = stagedAssets.some(sa => (sa.assetCode || '').toUpperCase() === assetCode.toUpperCase());
         if (isAlreadyInGrid) {
             alertify.log('Asset ' + assetCode + ' is already added to this allocation list.', 'error', 5000);
@@ -573,13 +538,6 @@
         if (!assetId || assetId <= 0) {
             var match = assetCodeData.find(a => (a.sCode || a.code) == assetCode);
             if (match) assetId = match.iMasterId || match.id || 1;
-        }
-
-        // Rule Check 2: 1 asset can only be allocated to one person
-        var allocatedInfo = allocatedAssetsMap[assetCode.toUpperCase()] || allocatedAssetsMap[assetId];
-        if (allocatedInfo) {
-            alertify.log('Asset ' + assetCode + ' is already allocated to ' + allocatedInfo.empName + ' (' + allocatedInfo.docNo + '). An asset can only be allocated to one person.', 'error', 6000);
-            return;
         }
 
         var uniqueStagedId = 'id_' + new Date().getTime();

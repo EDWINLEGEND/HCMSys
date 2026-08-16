@@ -161,35 +161,15 @@ namespace HCMSys.Controllers
 
             if (dto == null) return BadRequest(new { success = false, message = "Invalid request payload." });
 
-            // Rule: 1 asset code item can only be allocated to one person at a time
-            try
+            // Validate that no duplicate asset items are in the same submission
+            if (dto.Assets != null && dto.Assets.Count > 1)
             {
-                var existingAllocations = await _apiService.GetAssetAllocationsAsync(dto.ICompanyId, dto.IPayYearId);
-                if (existingAllocations != null && existingAllocations.Count > 0 && dto.Assets != null && dto.Assets.Count > 0)
+                var duplicate = dto.Assets.GroupBy(a => a.IAssetId > 0 ? a.IAssetId.ToString() : (a.SAssetCode ?? ""))
+                                          .FirstOrDefault(g => g.Count() > 1);
+                if (duplicate != null)
                 {
-                    foreach (var newItem in dto.Assets)
-                    {
-                        var conflictingAlloc = existingAllocations.FirstOrDefault(other =>
-                            (other.IHeaderId != dto.IHeaderId || dto.IHeaderId == 0) &&
-                            other.IStatus == 1 &&
-                            other.Assets != null &&
-                            other.Assets.Any(a => a.IAssetId == newItem.IAssetId || (!string.IsNullOrEmpty(a.SAssetCode) && !string.IsNullOrEmpty(newItem.SAssetCode) && a.SAssetCode.Equals(newItem.SAssetCode, StringComparison.OrdinalIgnoreCase)))
-                        );
-
-                        if (conflictingAlloc != null)
-                        {
-                            var conflictAst = conflictingAlloc.Assets?.FirstOrDefault(a => a.IAssetId == newItem.IAssetId || (!string.IsNullOrEmpty(a.SAssetCode) && !string.IsNullOrEmpty(newItem.SAssetCode) && a.SAssetCode.Equals(newItem.SAssetCode, StringComparison.OrdinalIgnoreCase)));
-                            var astCodeName = conflictAst != null ? $"{conflictAst.SAssetCode} ({conflictAst.SAssetName})" : $"Asset #{newItem.IAssetId}";
-                            var empName = conflictingAlloc.SEmployeeName ?? $"Employee #{conflictingAlloc.IEmpId}";
-                            var docNo = conflictingAlloc.SDocNo ?? $"Doc #{conflictingAlloc.IHeaderId}";
-                            return Json(new { success = false, message = $"Asset {astCodeName} is already allocated to {empName} in document {docNo}. An asset can only be allocated to one person at a time." });
-                        }
-                    }
+                    return Json(new { success = false, message = "Duplicate asset item found in allocation list. Each asset item can only be added once per document." });
                 }
-            }
-            catch (Exception)
-            {
-                // Non-blocking log if checking allocations encounters an issue
             }
 
             var result = await _apiService.SaveAssetAllocationAsync(dto, fileBytes, fileName, contentType);

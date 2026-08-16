@@ -2,7 +2,7 @@
     ViewData["Title"] = "Asset Allocation List";
 }
 
-<!-- DataTables -->
+<!-- DataTables & Alertify CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
 <link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
 <link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
@@ -165,9 +165,7 @@
 
 </div>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables & Alertify Scripts -->
 <script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
 <script src="~/alertify.js/alertify.min.js"></script>
 
@@ -176,7 +174,27 @@
     var currentParentAllocations = [];
     var masterAssetsMap = {};
 
+    function formatListDate(dVal) {
+        if (!dVal) return '-';
+        if (typeof window.formatDateDisplay === 'function') {
+            return window.formatDateDisplay(dVal);
+        }
+        var str = String(dVal);
+        if (str.includes('T')) str = str.split('T')[0];
+        var parts = str.split('-');
+        if (parts.length === 3 && parts[0].length === 4) {
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var mIdx = parseInt(parts[1], 10) - 1;
+            return (parts[2].padStart(2, '0')) + '-' + (months[mIdx] || parts[1]) + '-' + parts[0];
+        }
+        return str;
+    }
+
     $(document).ready(function () {
+        if ($.fn.DataTable.isDataTable('#data-grid')) {
+            $('#data-grid').DataTable().destroy();
+        }
+
         table = $('#data-grid').DataTable({
             "pageLength": 10,
             "order": [],
@@ -194,7 +212,7 @@
         loadGridData();
 
         // Edit Button Click Handler -> Navigates to full form page for editing
-        $('#data-grid tbody').on('click', '.edit-item-btn', function (e) {
+        $('#data-grid tbody').off('click', '.edit-item-btn').on('click', '.edit-item-btn', function (e) {
             e.preventDefault();
             var headerId = $(this).data('headerid');
             var docNo = $(this).data('docno');
@@ -208,7 +226,7 @@
         });
 
         // Delete Handler
-        $('#data-grid tbody').on('click', '.remove-item-btn', function (e) {
+        $('#data-grid tbody').off('click', '.remove-item-btn').on('click', '.remove-item-btn', function (e) {
             e.preventDefault();
             var docNo = String($(this).data('docno'));
             var headerId = $(this).data('headerid');
@@ -221,14 +239,8 @@
                         return !(iDoc === docNo || (headerId && iId == headerId));
                     });
 
-                    var deletedList = JSON.parse(sessionStorage.getItem('deletedAssetAllocations') || '[]');
-                    if (!deletedList.includes(docNo)) {
-                        deletedList.push(docNo);
-                        sessionStorage.setItem('deletedAssetAllocations', JSON.stringify(deletedList));
-                    }
-
                     renderParentRows(currentParentAllocations);
-                    alertify.log('Record deleted successfully.', 'success', 2500);
+                    alertify.log('Record removed from view successfully.', 'success', 2500);
                 }
             });
         });
@@ -243,7 +255,7 @@
         allocations.forEach(function(item) {
             var docNo = item.sDocNo || item.docNo || ('AST' + String(item.iHeaderId || item.id || 1).padStart(6, '0'));
             var headerId = item.iHeaderId || item.id || 0;
-            var formattedDate = item.displayDate || (item.dDocDate ? window.formatDateDisplay(item.dDocDate) : (item.date ? window.formatDateDisplay(item.date) : '-'));
+            var formattedDate = item.displayDate || formatListDate(item.dDocDate || item.date);
             var empName = item.sEmployeeName || item.employeeName || '-';
             var empCode = item.sEmployeeCode || item.employeeCode || '';
             var empDisplay = empCode ? `<strong>${empName}</strong> <br><small class="text-muted">${empCode}</small>` : `<strong>${empName}</strong>`;
@@ -307,7 +319,6 @@
 
     function loadGridData() {
         table.clear().draw();
-        var deletedList = JSON.parse(sessionStorage.getItem('deletedAssetAllocations') || '[]');
 
         $.when(
             $.getJSON('/Master/GetApiAssets'),
@@ -333,11 +344,7 @@
                 rawList = apiData.data.allocations;
             }
 
-            currentParentAllocations = rawList.filter(function(item) {
-                var dNo = item.sDocNo || item.docNo || '';
-                return !deletedList.includes(dNo);
-            });
-
+            currentParentAllocations = rawList;
             renderParentRows(currentParentAllocations);
         }).fail(function() {
             renderParentRows([]);

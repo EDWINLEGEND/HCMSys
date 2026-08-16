@@ -303,6 +303,14 @@
         function applyAllocationData(alloc) {
             if (!alloc) return;
 
+            var editedMap = JSON.parse(sessionStorage.getItem('editedAssetAllocations') || '{}');
+            var docKey = alloc.sDocNo || alloc.docNo || '';
+            if (editedMap[headerId] || (docKey && editedMap[docKey])) {
+                var overrideData = editedMap[headerId] || editedMap[docKey];
+                alloc = Object.assign({}, alloc, overrideData);
+            }
+
+            $('#hdr-header-id').val(alloc.iHeaderId || headerId);
             $('#hdr-docno').val(alloc.sDocNo || alloc.docNo || '');
             if (alloc.dDocDate) $('#hdr-date').val(window.formatDateDisplay(alloc.dDocDate));
             if (alloc.dPostDate) $('#hdr-postdate').val(window.formatDateDisplay(alloc.dPostDate));
@@ -311,10 +319,15 @@
             var empId = alloc.iEmpId || alloc.empId || '';
             if (empId) {
                 $('#hdr-employee').val(empId).trigger('change');
-            } else if (alloc.sEmployeeName) {
-                var matched = employeesData.find(e => (e.sName || e.name) === alloc.sEmployeeName);
+            }
+            if (alloc.sEmployeeName && !$('#hdr-employee').val()) {
+                var matched = employeesData.find(e => (e.sName || e.name) === alloc.sEmployeeName || (e.sCode || e.code) === alloc.sEmployeeCode || e.id == empId || e.iMasterId == empId);
                 if (matched) $('#hdr-employee').val(matched.iMasterId || matched.id).trigger('change');
             }
+
+            if (alloc.sDepartmentName && !$('#hdr-department').val()) $('#hdr-department').val(alloc.sDepartmentName);
+            if (alloc.sDesignationName && !$('#hdr-designation').val()) $('#hdr-designation').val(alloc.sDesignationName);
+            if (alloc.sReportingToName && !$('#hdr-manager').val()) $('#hdr-manager').val(alloc.sReportingToName);
 
             var fileObj = alloc.assetFile || alloc.Attachment || alloc.attachment;
             if (fileObj && fileObj.sAttachmentFilePath) {
@@ -325,19 +338,28 @@
             stagedAssets = [];
 
             assetList.forEach(function(ast) {
-                var masterAst = assetCodeData.find(a => (a.sCode || a.code) === (ast.sAssetCode || ast.assetCode) || (a.iMasterId || a.id) === (ast.iAssetId || ast.assetId)) || {};
+                var aId = ast.iAssetId || ast.assetId || 1;
+                var masterAst = assetCodeData.find(a => 
+                    (a.sCode && (a.sCode === ast.sAssetCode || a.sCode === ast.assetCode)) ||
+                    (a.code && (a.code === ast.sAssetCode || a.code === ast.assetCode)) ||
+                    (a.iMasterId && (a.iMasterId === aId)) ||
+                    (a.id && (a.id === aId))
+                ) || {};
+
                 var astCode = ast.sAssetCode || ast.assetCode || masterAst.sCode || masterAst.code || '';
                 var astName = ast.sAssetName || ast.assetName || masterAst.sName || masterAst.name || '';
                 var catCode = ast.sCategoryCode || ast.categoryCode || masterAst.sCategoryCode || masterAst.categoryCode || '';
                 var catName = ast.sCategoryName || ast.categoryName || masterAst.sCategoryName || masterAst.categoryName || '';
                 var tagNum = ast.sTagNumber || ast.tagNumber || masterAst.sTagNumber || masterAst.tagNumber || 'N/A';
-                var qty = ast.fQuantity || ast.qty || 1;
-                var remarks = ast.sRemarks || ast.remarks || '';
-                var assetId = ast.iAssetId || ast.assetId || masterAst.iMasterId || masterAst.id || 1;
+                var qty = ast.fQuantity || ast.qty || ast.FQuantity || 1;
+                var remarks = (ast.sRemarks !== undefined && ast.sRemarks !== null) ? ast.sRemarks : (ast.remarks || '');
+                var bodyId = ast.iBodyId || ast.bodyId || 0;
 
                 stagedAssets.push({
                     stagedId: 'id_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000),
-                    assetId: assetId,
+                    bodyId: bodyId,
+                    headerId: alloc.iHeaderId || headerId,
+                    assetId: aId,
                     categoryCode: catCode,
                     categoryName: catName,
                     assetCode: astCode,
@@ -351,11 +373,17 @@
             renderGrid();
         }
 
+        // Try loading via ID endpoint first, fallback to cached allocations list if endpoint errors
         $.getJSON('/Master/GetApiAssetAllocationById?id=' + headerId).done(function(res) {
             var alloc = (res && res.data) ? res.data : res;
-            applyAllocationData(alloc);
+            if (alloc && (alloc.iHeaderId || alloc.sDocNo)) {
+                applyAllocationData(alloc);
+            } else {
+                var match = (cachedList || []).find(a => (a.iHeaderId || a.id) == headerId || (a.sDocNo || a.docNo) == headerId);
+                applyAllocationData(match);
+            }
         }).fail(function() {
-            var match = cachedList.find(a => (a.iHeaderId || a.id) == headerId || (a.sDocNo || a.docNo) == headerId);
+            var match = (cachedList || []).find(a => (a.iHeaderId || a.id) == headerId || (a.sDocNo || a.docNo) == headerId);
             if (match) applyAllocationData(match);
         });
     }

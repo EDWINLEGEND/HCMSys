@@ -266,6 +266,70 @@ namespace HCMSys.Services
                 {
                     return JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
+                else if (jsonString.Contains("Document number already exists", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning("SaveAssetAllocation document number collided. Fetching next available document number and retrying...");
+                    
+                    try
+                    {
+                        var currentAllocs = await GetAssetAllocationsAsync(payload.ICompanyId, payload.IPayYearId);
+                        int maxNum = 0;
+                        foreach (var a in currentAllocs)
+                        {
+                            var docStr = a.SDocNo ?? "";
+                            var digits = new string(docStr.Where(char.IsDigit).ToArray());
+                            if (int.TryParse(digits, out int val) && val > maxNum) maxNum = val;
+                        }
+                        var nextDocNo = $"AST{(maxNum + 1).ToString().PadLeft(6, '0')}";
+
+                        // Retry once with next available doc number
+                        var retryRequest = new HttpRequestMessage(HttpMethod.Post, "api/asset/saveassetallocation");
+                        retryRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                        var retryFormData = new MultipartFormDataContent();
+                        retryFormData.Add(new StringContent(payload.IHeaderId.ToString()), "iHeaderId");
+                        retryFormData.Add(new StringContent(nextDocNo), "sDocNo");
+                        retryFormData.Add(new StringContent(docDateStr), "dDocDate");
+                        retryFormData.Add(new StringContent(postDateStr), "dPostDate");
+                        retryFormData.Add(new StringContent(payload.IEmpId.ToString()), "iEmpId");
+                        retryFormData.Add(new StringContent(payload.ICompanyId.ToString()), "iCompanyId");
+                        retryFormData.Add(new StringContent(payload.IPayYearId.ToString()), "iPayYearId");
+                        retryFormData.Add(new StringContent(string.IsNullOrWhiteSpace(payload.SComments) ? "Asset allocation" : payload.SComments), "sComments");
+                        retryFormData.Add(new StringContent(assetsJson), "Assets");
+
+                        var retryFileContent = new ByteArrayContent(attachmentBytes);
+                        retryFileContent.Headers.ContentType = new MediaTypeHeaderValue(uploadMimeType);
+                        retryFormData.Add(retryFileContent, "Attachment", uploadFileName);
+
+                        retryRequest.Content = retryFormData;
+
+                        var retryResponse = await _httpClient.SendAsync(retryRequest);
+                        var retryJsonString = await retryResponse.Content.ReadAsStringAsync();
+
+                        if (retryResponse.IsSuccessStatusCode)
+                        {
+                            return JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(retryJsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Retry SaveAssetAllocation failed with {StatusCode}: {Response}", retryResponse.StatusCode, retryJsonString);
+                            var retryErr = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(retryJsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (retryErr != null) return retryErr;
+                        }
+                    }
+                    catch (Exception retryEx)
+                    {
+                        _logger.LogError(retryEx, "Error during document number retry in SaveAssetAllocationAsync");
+                    }
+
+                    try
+                    {
+                        var errEnvelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (errEnvelope != null) return errEnvelope;
+                    }
+                    catch { }
+                    return new ApiResponseEnvelope<object> { Success = false, Message = $"API returned status {response.StatusCode}: {jsonString}" };
+                }
                 else
                 {
                     _logger.LogWarning("SaveAssetAllocation API returned status {StatusCode}: {Response}", response.StatusCode, jsonString);
@@ -281,6 +345,46 @@ namespace HCMSys.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calling SaveAssetAllocation API");
+                return new ApiResponseEnvelope<object> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<ApiResponseEnvelope<object>?> DeleteAssetAllocationAsync(int id)
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    return new ApiResponseEnvelope<object> { Success = false, Message = "Authentication failed (no token)." };
+                }
+
+                var request = new HttpRequestMessage(HttpMethod.Delete, $"api/asset/DeleteAssetAllocation/{id}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+                var jsonString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                           ?? new ApiResponseEnvelope<object> { Success = true, Message = "Asset allocation deleted successfully." };
+                }
+                else
+                {
+                    _logger.LogWarning("DeleteAssetAllocation API returned status {StatusCode}: {Response}", response.StatusCode, jsonString);
+                    try
+                    {
+                        var errEnvelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (errEnvelope != null) return errEnvelope;
+                    }
+                    catch { }
+                    return new ApiResponseEnvelope<object> { Success = false, Message = $"API returned status {response.StatusCode}: {jsonString}" };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling DeleteAssetAllocation API");
                 return new ApiResponseEnvelope<object> { Success = false, Message = ex.Message };
             }
         }

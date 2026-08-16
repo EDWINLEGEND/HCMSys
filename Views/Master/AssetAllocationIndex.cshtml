@@ -225,22 +225,49 @@
             }
         });
 
-        // Delete Handler
+        // Delete Handler calling DELETE /api/asset/DeleteAssetAllocation/{id} via /Master/DeleteApiAssetAllocation
         $('#data-grid tbody').off('click', '.remove-item-btn').on('click', '.remove-item-btn', function (e) {
             e.preventDefault();
             var docNo = String($(this).data('docno'));
-            var headerId = $(this).data('headerid');
+            var headerId = parseInt($(this).data('headerid')) || 0;
             
             alertify.confirm('Are you sure you want to delete allocation ' + docNo + '?', function (confirmed) {
                 if (confirmed) {
-                    currentParentAllocations = currentParentAllocations.filter(function(i) {
-                        var iDoc = i.sDocNo || i.docNo;
-                        var iId = i.iHeaderId || i.id;
-                        return !(iDoc === docNo || (headerId && iId == headerId));
-                    });
-
-                    renderParentRows(currentParentAllocations);
-                    alertify.log('Record removed from view successfully.', 'success', 2500);
+                    if (headerId > 0) {
+                        $.ajax({
+                            url: '/Master/DeleteApiAssetAllocation?id=' + headerId,
+                            type: 'POST',
+                            success: function(res) {
+                                var isSuccess = res && (res.success === true || res.statusCode === 200);
+                                if (isSuccess) {
+                                    currentParentAllocations = currentParentAllocations.filter(function(i) {
+                                        var iDoc = i.sDocNo || i.docNo;
+                                        var iId = i.iHeaderId || i.id;
+                                        return !(iDoc === docNo || (headerId && iId == headerId));
+                                    });
+                                    renderParentRows(currentParentAllocations);
+                                    alertify.log('Asset Allocation ' + docNo + ' deleted successfully.', 'success', 5000);
+                                } else {
+                                    var errMsg = (res && res.message) ? res.message : 'Error deleting allocation from API.';
+                                    if (res && res.isConstraintError) {
+                                        alertify.alert('Database Notice', errMsg);
+                                    } else {
+                                        alertify.log(errMsg, 'error', 8000);
+                                    }
+                                }
+                            },
+                            error: function(xhr, status, err) {
+                                alertify.log('Failed to delete allocation: ' + (xhr.responseText || err || 'Server error'), 'error', 6000);
+                            }
+                        });
+                    } else {
+                        currentParentAllocations = currentParentAllocations.filter(function(i) {
+                            var iDoc = i.sDocNo || i.docNo;
+                            return iDoc !== docNo;
+                        });
+                        renderParentRows(currentParentAllocations);
+                        alertify.log('Record removed from view.', 'success', 3000);
+                    }
                 }
             });
         });

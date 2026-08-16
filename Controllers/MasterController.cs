@@ -176,6 +176,31 @@ namespace HCMSys.Controllers
             return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Save API." });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteApiAssetAllocation(int id)
+        {
+            if (id <= 0) return BadRequest(new { success = false, message = "Invalid allocation ID." });
+            
+            var result = await _apiService.DeleteAssetAllocationAsync(id);
+            if (result != null && result.Success)
+            {
+                return Json(new { success = true, message = result.Message ?? "Asset allocation deleted successfully." });
+            }
+
+            // Handle remote database constraint errors gracefully
+            var rawMsg = result?.Message ?? "Delete API call failed.";
+            if (rawMsg.Contains("entity changes", StringComparison.OrdinalIgnoreCase) || rawMsg.Contains("inner exception", StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { 
+                    success = false, 
+                    isConstraintError = true,
+                    message = "The remote database cannot hard-delete this allocation because child asset line items are linked via database foreign key constraints. In ERP systems, assets should be returned via Asset De-Allocation." 
+                });
+            }
+
+            return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Delete API." });
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetApiAssetAllocations(int companyId = 1, int payYearId = 1)
         {

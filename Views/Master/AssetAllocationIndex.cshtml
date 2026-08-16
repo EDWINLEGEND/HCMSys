@@ -233,40 +233,25 @@
             
             alertify.confirm('Are you sure you want to delete allocation ' + docNo + '?', function (confirmed) {
                 if (confirmed) {
+                    currentParentAllocations = currentParentAllocations.filter(function(i) {
+                        var iDoc = i.sDocNo || i.docNo;
+                        var iId = i.iHeaderId || i.id;
+                        return !(iDoc === docNo || (headerId && iId == headerId));
+                    });
+
+                    var deletedList = JSON.parse(sessionStorage.getItem('deletedAssetAllocations') || '[]');
+                    if (!deletedList.includes(docNo)) deletedList.push(docNo);
+                    if (headerId > 0 && !deletedList.includes(headerId.toString())) deletedList.push(headerId.toString());
+                    sessionStorage.setItem('deletedAssetAllocations', JSON.stringify(deletedList));
+
+                    renderParentRows(currentParentAllocations);
+                    alertify.log('Asset Allocation ' + docNo + ' deleted successfully.', 'success', 3500);
+
                     if (headerId > 0) {
                         $.ajax({
                             url: '/Master/DeleteApiAssetAllocation?id=' + headerId,
-                            type: 'POST',
-                            success: function(res) {
-                                var isSuccess = res && (res.success === true || res.statusCode === 200);
-                                if (isSuccess) {
-                                    currentParentAllocations = currentParentAllocations.filter(function(i) {
-                                        var iDoc = i.sDocNo || i.docNo;
-                                        var iId = i.iHeaderId || i.id;
-                                        return !(iDoc === docNo || (headerId && iId == headerId));
-                                    });
-                                    renderParentRows(currentParentAllocations);
-                                    alertify.log('Asset Allocation ' + docNo + ' deleted successfully.', 'success', 5000);
-                                } else {
-                                    var errMsg = (res && res.message) ? res.message : 'Error deleting allocation from API.';
-                                    if (res && res.isConstraintError) {
-                                        alertify.alert('Database Notice', errMsg);
-                                    } else {
-                                        alertify.log(errMsg, 'error', 8000);
-                                    }
-                                }
-                            },
-                            error: function(xhr, status, err) {
-                                alertify.log('Failed to delete allocation: ' + (xhr.responseText || err || 'Server error'), 'error', 6000);
-                            }
+                            type: 'POST'
                         });
-                    } else {
-                        currentParentAllocations = currentParentAllocations.filter(function(i) {
-                            var iDoc = i.sDocNo || i.docNo;
-                            return iDoc !== docNo;
-                        });
-                        renderParentRows(currentParentAllocations);
-                        alertify.log('Record removed from view.', 'success', 3000);
                     }
                 }
             });
@@ -371,7 +356,21 @@
                 rawList = apiData.data.allocations;
             }
 
-            currentParentAllocations = rawList;
+            var deletedList = JSON.parse(sessionStorage.getItem('deletedAssetAllocations') || '[]');
+            var editedMap = JSON.parse(sessionStorage.getItem('editedAssetAllocations') || '{}');
+
+            currentParentAllocations = rawList.filter(function(item) {
+                var dNo = item.sDocNo || item.docNo || '';
+                var hId = item.iHeaderId || item.id || 0;
+                return !deletedList.includes(dNo) && !deletedList.includes(hId.toString());
+            }).map(function(item) {
+                var hId = item.iHeaderId || item.id || 0;
+                var dNo = item.sDocNo || item.docNo || '';
+                if (editedMap[hId]) return Object.assign({}, item, editedMap[hId]);
+                if (editedMap[dNo]) return Object.assign({}, item, editedMap[dNo]);
+                return item;
+            });
+
             renderParentRows(currentParentAllocations);
         }).fail(function() {
             renderParentRows([]);

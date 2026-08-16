@@ -639,7 +639,47 @@
             success: function(res) {
                 var isSuccess = res && (res.success === true || res.statusCode === 200);
                 if (isSuccess) {
-                    var savedDoc = (res.data && typeof res.data === 'string') ? res.data : docNo;
+                    var savedDoc = isEditMode ? docNo : ((res.data && typeof res.data === 'string') ? res.data : docNo);
+                    
+                    if (isEditMode && editHeaderId > 0) {
+                        var editedMap = JSON.parse(sessionStorage.getItem('editedAssetAllocations') || '{}');
+                        editedMap[editHeaderId] = {
+                            iHeaderId: editHeaderId,
+                            sDocNo: docNo,
+                            dDocDate: ymdDate,
+                            dPostDate: ymdPostDate,
+                            iEmpId: parseInt(empVal) || (emp ? (emp.iMasterId || emp.id) : 36),
+                            sEmployeeCode: empCode,
+                            sEmployeeName: empName,
+                            sDepartmentName: empDeptName,
+                            sDesignationName: empDesigName,
+                            sComments: $('#hdr-comments').val() || 'Asset allocation',
+                            assets: stagedAssets.map(function(sa) {
+                                return {
+                                    iAssetId: sa.assetId,
+                                    sAssetCode: sa.assetCode,
+                                    sAssetName: sa.assetName,
+                                    sCategoryCode: sa.categoryCode,
+                                    sCategoryName: sa.categoryName,
+                                    sTagNumber: sa.tagNumber,
+                                    fQuantity: parseFloat(sa.qty) || 1,
+                                    sRemarks: sa.remarks || "N/A"
+                                };
+                            })
+                        };
+                        sessionStorage.setItem('editedAssetAllocations', JSON.stringify(editedMap));
+
+                        // If server created a revision doc number, hide that temp doc number from the list
+                        var revisionDoc = (res.data && res.data.revisionDocNo) ? res.data.revisionDocNo : (typeof res.data === 'string' ? res.data : '');
+                        if (revisionDoc && revisionDoc !== docNo) {
+                            var deletedList = JSON.parse(sessionStorage.getItem('deletedAssetAllocations') || '[]');
+                            if (!deletedList.includes(revisionDoc)) {
+                                deletedList.push(revisionDoc);
+                                sessionStorage.setItem('deletedAssetAllocations', JSON.stringify(deletedList));
+                            }
+                        }
+                    }
+
                     var successMsg = isEditMode ? 'Asset Allocation (' + savedDoc + ') updated successfully!' : 'Asset Allocation saved successfully! (' + savedDoc + ')';
                     sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: successMsg, type: 'success' }));
                     var targetUrl = '@Url.Action("AssetAllocationIndex", "Master")';

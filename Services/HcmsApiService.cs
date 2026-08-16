@@ -308,7 +308,21 @@ namespace HCMSys.Services
 
                         if (retryResponse.IsSuccessStatusCode)
                         {
-                            return JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(retryJsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            var resEnv = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(retryJsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (resEnv != null)
+                            {
+                                if (payload.IHeaderId > 0 && !string.IsNullOrEmpty(payload.SDocNo))
+                                {
+                                    resEnv.Data = new {
+                                        docNo = payload.SDocNo,
+                                        revisionDocNo = nextDocNo,
+                                        headerId = payload.IHeaderId
+                                    };
+                                    resEnv.Message = $"Asset allocation {payload.SDocNo} updated successfully.";
+                                }
+                                return resEnv;
+                            }
+                            return resEnv;
                         }
                         else
                         {

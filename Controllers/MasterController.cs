@@ -217,17 +217,100 @@ namespace HCMSys.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetApiLeaveBalances()
+        public async Task<IActionResult> GetApiLeaveTransactions(int companyId = 1, int payYearId = 1)
         {
-            var balances = await _apiService.GetLeaveBalancesAsync();
-            return Json(balances);
+            var transactions = await _apiService.GetLeaveTransactionsAsync(companyId, payYearId);
+            return Json(transactions);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetApiLeaveTypes()
+        public async Task<IActionResult> GetApiLeaveTransactionById(int id)
         {
-            var types = await _apiService.GetLeaveTypesAsync();
+            var transaction = await _apiService.GetLeaveTransactionByIdAsync(id);
+            if (transaction == null) return NotFound(new { success = false, message = "Leave transaction not found." });
+            return Json(transaction);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiEmployeeLeaves(int id)
+        {
+            var leaves = await _apiService.GetEmployeeLeavesAsync(id);
+            return Json(leaves);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiLeaveTypes(int? employeeId = null)
+        {
+            var types = await _apiService.GetLeaveTypesAsync(employeeId);
             return Json(types);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveApiLeaveTransaction()
+        {
+            SaveLeaveTransactionDto? dto = null;
+            byte[]? fileBytes = null;
+            string? fileName = null;
+            string? contentType = null;
+
+            if (Request.HasFormContentType)
+            {
+                var form = await Request.ReadFormAsync();
+                dto = new SaveLeaveTransactionDto
+                {
+                    IHeaderId = int.TryParse(form["iHeaderId"], out var hId) ? hId : 0,
+                    SDocNo = form["sDocNo"].ToString() ?? "",
+                    DDocDate = form["dDocDate"].ToString() ?? "",
+                    DPostDate = form["dPostDate"].ToString() ?? "",
+                    ICompanyId = int.TryParse(form["iCompanyId"], out var compId) ? compId : 1,
+                    IPayYearId = int.TryParse(form["iPayYearId"], out var pyId) ? pyId : 1,
+                    ITransTypeId = int.TryParse(form["iTransTypeId"], out var tId) ? tId : 0,
+                    SComments = form["sComments"].ToString()
+                };
+
+                var leavesStr = form["Leaves"].ToString();
+                if (!string.IsNullOrEmpty(leavesStr))
+                {
+                    try
+                    {
+                        var parsedLeaves = System.Text.Json.JsonSerializer.Deserialize<List<LeaveTransactionBodyDto>>(leavesStr, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (parsedLeaves != null) dto.Leaves = parsedLeaves;
+                    }
+                    catch { }
+                }
+
+                if (form.Files.Count > 0)
+                {
+                    var formFile = form.Files[0];
+                    using var ms = new System.IO.MemoryStream();
+                    await formFile.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
+                    fileName = formFile.FileName;
+                    contentType = formFile.ContentType;
+                }
+            }
+            else
+            {
+                using var reader = new System.IO.StreamReader(Request.Body);
+                var body = await reader.ReadToEndAsync();
+                if (!string.IsNullOrEmpty(body))
+                {
+                    dto = System.Text.Json.JsonSerializer.Deserialize<SaveLeaveTransactionDto>(body, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+            }
+
+            if (dto == null) return BadRequest(new { success = false, message = "Invalid request payload." });
+
+            var result = await _apiService.SaveLeaveTransactionAsync(dto, fileBytes, fileName, contentType);
+            return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Save Leave Transaction API." });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteApiLeaveTransaction(int id)
+        {
+            if (id <= 0) return BadRequest(new { success = false, message = "Invalid leave transaction ID." });
+            var result = await _apiService.DeleteLeaveTransactionAsync(id);
+            return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Delete Leave Transaction API." });
         }
 
         /// <summary>
@@ -244,8 +327,9 @@ namespace HCMSys.Controllers
             return View();
         }
 
-        public ActionResult CreateLeaveApplication()
+        public ActionResult CreateLeaveApplication(int? id)
         {
+            ViewBag.EditId = id ?? 0;
             return View();
         }
 

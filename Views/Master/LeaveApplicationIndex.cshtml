@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Leave Application</title>
+    <title>Leave Applications</title>
 
-    <!-- Bootstrap 4 -->
+    <!-- Bootstrap 4 & DataTables -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
-    <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
@@ -17,38 +15,6 @@
 
     <style>
         html { font-size: 14px; }
-
-        /* ── Loading Overlay ── */
-        #loading {
-            display: none;
-            position: fixed;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.08);
-            z-index: 9999;
-        }
-        #loadingcontent {
-            display: table;
-            position: fixed;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-        }
-        #loadingspinner {
-            display: table-cell;
-            vertical-align: middle;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        #loadingspinner::after {
-            content: '';
-            display: inline-block;
-            width: 48px; height: 48px;
-            border: 5px solid #e3e6f0;
-            border-top-color: #4e73df;
-            border-radius: 50%;
-            animation: spin 0.75s linear infinite;
-        }
-        @@keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── Page Title Bar ── */
         .page-title-bar {
@@ -98,61 +64,12 @@
         .action-btns .fa-edit      { color: #4e73df; }
         .action-btns .fa-trash-alt { color: #e74a3b; }
 
-        /* ── Modal Header ── */
-        .modal-header-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            border-bottom: none;
-            padding: 14px 20px;
-        }
-        .modal-header-primary .modal-title {
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: #fff;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-        .modal-header-primary .close-modal-btn {
-            color: rgba(255,255,255,0.8);
-            font-size: 1rem;
-            font-weight: 700;
-            text-decoration: none;
-            line-height: 1;
-            transition: color 0.15s;
-        }
-        .modal-header-primary .close-modal-btn:hover { color: #fff; }
-        .modal-footer-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            padding: 8px 20px;
-            border-top: none;
-        }
-
-        /* ── Form Labels ── */
-        .form-label {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #5a5c69;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 4px;
-        }
-        .form-control {
-            font-size: 0.85rem;
-            border-color: #d1d3e2;
-            color: #6e707e;
-            border-radius: 0.35rem;
-        }
-        .form-control:focus {
-            border-color: #bac8f3;
-            box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2);
-        }
-
         /* ── Stat Cards ── */
         .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
         .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
-        .border-left-info    { border-left: 0.25rem solid #36b9cc !important; }
         .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+        .border-left-info    { border-left: 0.25rem solid #36b9cc !important; }
 
-        /* ── Badge fix ── */
         .badge-primary { background-color: #4e73df; }
         .badge-success { background-color: #1cc88a; color: white; }
         .badge-warning { background-color: #f6c23e; color: white; }
@@ -175,9 +92,6 @@
                     Leave Application
                 </div>
                 <div class="btn-group-actions">
-                    <a href="#" class="btn btn-primary btn-sm shadow-sm">
-                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
-                    </a>
                     <a href="@Url.Action("CreateLeaveApplication", "Master")"
                        class="btn btn-success btn-sm shadow-sm">
                         <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> New Application
@@ -198,7 +112,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Leaves</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">--</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">0</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -214,7 +128,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-active">--</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-active">0</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-check-circle fa-2x text-gray-300"></i>
@@ -230,7 +144,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800" id="stat-modified">--</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-modified">0</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clock fa-2x text-gray-300"></i>
@@ -246,10 +160,10 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Module</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">Leave</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Leave</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-sitemap fa-2x text-gray-300"></i>
+                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -275,22 +189,15 @@
                     <thead>
                         <tr>
                             <th style="width: 80px; text-align:center;">Action</th>
-                            <th>ID</th>
                             <th>Doc No</th>
+                            <th>Date</th>
+                            <th>Post Date</th>
                             <th>Employee Name</th>
                             <th>Leave Type</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Lvs Used No</th>
+                            <th class="text-right">Duration (Days)</th>
                             <th>Document</th>
-                            <th>Eligible</th>
-                            <th>Approved</th>
-                            <th>UnApproved</th>
-                            <th>Available</th>
-                            <th>Used Now</th>
-                            <th>Balance</th>
+                            <th>Comments</th>
                             <th style="text-align:center;">Status</th>
-                            <th style="display:none;">Reason</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -300,218 +207,27 @@
         </div>
     </div>
 
-    <!-- ════════════════════════════
-         ADD / UPDATE MODAL
-    ════════════════════════════ -->
-    <div class="modal fade"
-         id="Leave-modal"
-         aria-labelledby="Leave-modal-label"
-         aria-hidden="true"
-         role="dialog">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-
-                <div class="modal-header modal-header-primary d-flex align-items-center justify-content-between">
-                    <h6 class="modal-title" id="Leave-modal-label">
-                        <i class="fas fa-calendar-plus mr-2"></i>Add Leave Application
-                    </h6>
-                    <a href="#"
-                       class="close-modal-btn"
-                       data-dismiss="modal"
-                       aria-label="Close"
-                       onclick="clearFieldsWithModal()">
-                        <i class="fas fa-times"></i>
-                    </a>
-                </div>
-
-                <div class="modal-body px-4 py-3">
-                    <form autocomplete="off">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="code-field">Code</label>
-                            <input type="text"
-                                   class="form-control"
-                                   placeholder="Auto-generated code"
-                                   id="code-field"
-                                   readonly />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="name-field">Employee Name</label>
-                            <input type="text"
-                                   class="form-control"
-                                   placeholder="Enter employee name"
-                                   id="name-field"
-                                   required />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="type-field">Leave Type</label>
-                            <select class="form-control" id="type-field" required>
-                                <option value="">Select leave type</option>
-                                <option value="Annual Leave">Annual Leave</option>
-                                <option value="Sick Leave">Sick Leave</option>
-                                <option value="Casual Leave">Casual Leave</option>
-                                <option value="Maternity Leave">Maternity Leave</option>
-                                <option value="Unpaid Leave">Unpaid Leave</option>
-                            </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label class="form-label" for="start-field">Start Date</label>
-                                    <input type="date"
-                                           class="form-control"
-                                           id="start-field"
-                                           required />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label class="form-label" for="end-field">End Date</label>
-                                    <input type="date"
-                                           class="form-control"
-                                           id="end-field"
-                                           required />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="reason-field">Reason</label>
-                            <textarea class="form-control" id="reason-field" rows="2" placeholder="Brief description..."></textarea>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="status-field">Status</label>
-                            <select class="form-control" id="status-field">
-                                <option value="Pending">Pending</option>
-                                <option value="Approved">Approved</option>
-                                <option value="Rejected">Rejected</option>
-                            </select>
-                        </div>
-
-                        <!-- Hidden Fields -->
-                        <input type="hidden" id="id-field" value="0" />
-
-                        <hr class="my-3" />
-                        <div class="d-flex justify-content-end" style="gap:8px;">
-                            <button type="button" class="btn btn-success btn-sm px-4" id="add-btn">
-                                <i class="fas fa-plus mr-1"></i> Add
-                            </button>
-                            <button type="button"
-                                    class="btn btn-danger btn-sm px-4"
-                                    data-dismiss="modal"
-                                    onclick="clearFieldsWithModal()">
-                                <i class="fas fa-times mr-1"></i> Close
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="modal-footer modal-footer-primary py-2"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ════════════════════════════
-         DOCUMENT PREVIEW MODAL
-    ════════════════════════════ -->
-    <div class="modal fade" id="DocPreviewModal" tabindex="-1" role="dialog" aria-labelledby="DocPreviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header modal-header-primary d-flex align-items-center justify-content-between">
-                    <h6 class="modal-title" id="DocPreviewModalLabel">
-                        <i class="fas fa-file-alt mr-2"></i>Document Preview
-                    </h6>
-                    <a href="#" class="close-modal-btn" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </a>
-                </div>
-                <div class="modal-body text-center p-4" id="docPreviewContainer">
-                </div>
-                <div class="modal-footer bg-light d-flex justify-content-between">
-                    <a id="btnOpenNewTab" href="#" target="_blank" class="btn btn-primary btn-sm">
-                        <i class="fas fa-external-link-alt mr-1"></i> Open in New Tab
-                    </a>
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ════════════════════════════
-         LOADING OVERLAY
-    ════════════════════════════ -->
-    <div id="loading">
-        <div id="loadingcontent">
-            <p id="loadingspinner"></p>
-        </div>
-    </div>
-
 </div><!-- /container-fluid -->
 
-<!-- ════════════════════════════
-     SCRIPTS
-════════════════════════════ -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script defer src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
 <script src="~/alertify.js/alertify.min.js"></script>
 <script>
-    function openDocPreview(docName, docUrl) {
-        var $container = $('#docPreviewContainer');
-        $container.empty();
-        var $newTabBtn = $('#btnOpenNewTab');
-        var blobUrl = window.getDocBlobUrl(docName, docUrl);
-
-        if (!docUrl || docUrl === '#' || docUrl === 'undefined' || docUrl === '') {
-            $container.html(`
-                <div class="p-4 border rounded bg-light">
-                    <i class="fas fa-file-pdf text-danger fa-4x mb-3"></i>
-                    <h5 class="font-weight-bold text-gray-800">${docName || 'Document'}</h5>
-                    <p class="text-muted small">Uploaded document attached to this record.</p>
-                </div>
-            `);
-        } else if (docUrl.startsWith('data:image/') || docUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-            $container.html(`<img src="${blobUrl}" class="img-fluid rounded shadow-sm" style="max-height: 500px; object-fit: contain;" alt="Document Preview"/>`);
-        } else if (docUrl.startsWith('data:application/pdf') || docUrl.endsWith('.pdf')) {
-            $container.html(`<iframe src="${blobUrl}" style="width:100%; height:500px; border:none;" class="rounded shadow-sm"></iframe>`);
-        } else {
-            $container.html(`
-                <div class="p-4 border rounded bg-light">
-                    <i class="fas fa-file-alt text-primary fa-4x mb-3"></i>
-                    <h5 class="font-weight-bold text-gray-800">${docName || 'Document'}</h5>
-                    <p class="text-muted small">Click "Open in New Tab" to view or download this document.</p>
-                </div>
-            `);
-        }
-
-        $newTabBtn.off('click').on('click', function (e) {
-            e.preventDefault();
-            window.openDocPreview(docName, docUrl);
-            return false;
-        }).show();
-
-        $('#DocPreviewModal').modal('show');
-    }
-
-    // ── Dummy auto-code counter (simulates server getCode) ──
-    var dummyCodeCounter = 1;
-    function generateCode() {
-        return 'LVA-' + String(dummyCodeCounter).padStart(4, '0');
-    }
-
-    function parseDateToHTMLFormat(dateStr) {
-        if (!dateStr) return '';
-        var parts = dateStr.split('/');
-        if(parts.length !== 3) return dateStr;
-        return parts[2] + '-' + parts[1] + '-' + parts[0];
-    }
-
-    function formatDateToDisplay(dateStr) {
-        return window.formatDateDisplay(dateStr);
-    }
+    var leaveDataTable = null;
+    var rawLeaveTransactions = [];
 
     $(document).ready(function () {
-        // ── Init DataTable ──
-        var table = $('#tblLeave').DataTable({
-            order: [[1, 'desc']],
+        initDataTable();
+        loadLeaveTransactions();
+    });
+
+    function initDataTable() {
+        if ($.fn.DataTable.isDataTable('#tblLeave')) {
+            $('#tblLeave').DataTable().destroy();
+        }
+
+        leaveDataTable = $('#tblLeave').DataTable({
+            order: [[0, 'desc']],
             pageLength: 15,
             language: {
                 search: "",
@@ -522,310 +238,128 @@
             },
             columnDefs: [
                 { className: "action-btns text-center", targets: 0 },
-                { className: "text-right", targets: [7, 8, 9, 10, 11, 12, 13] }
+                { className: "text-right", targets: 6 },
+                { className: "text-center", targets: 9 }
             ]
         });
+    }
 
-        // ── Load from localStorage ──
-        var storedLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-        storedLeaves.forEach(function(l) {
-            var safeUrl = (l.attachmentUrl || '').replace(/'/g, "\\'");
-            var safeName = (l.attachmentName || ('Doc_' + l.code + '.pdf')).replace(/'/g, "\\'");
-            var docBtn = '<a href="#" onclick="openDocPreview(\'' + safeName + '\', \'' + safeUrl + '\'); return false;" class="badge badge-info shadow-sm"><i class="fas fa-file-alt mr-1"></i> ' + (l.attachmentName ? l.attachmentName : 'View / Preview') + '</a>';
-
-            table.row.add([
-                '<a href="#" class="edit-item-btn" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a> ' +
-                '<a href="#" class="remove-item-btn" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>',
-                l.id,
-                l.code,
-                l.name,
-                l.type,
-                l.start,
-                l.end,
-                l.duration || 0,
-                docBtn,
-                l.eligible || 0,
-                l.approved || 0,
-                l.unapproved || 0,
-                l.available || 0,
-                l.usedNow || 0,
-                l.balance || 0,
-                '<div style="text-align:center;">' + getStatusBadge(l.status) + '</div>',
-                l.reason
-            ]).draw(false);
-        });
-
-        // ── Update stat cards ──
-        updateStats();
-
-        // ── Generate first code on load ──
-        var maxId = 0;
-        storedLeaves.forEach(function(l) { if(parseInt(l.id) > maxId) maxId = parseInt(l.id); });
-        dummyCodeCounter = maxId + 1;
-        getNo();
-    });
-
-    function updateStats() {
-        var table = $('#tblLeave').DataTable();
-        var totalRows = table.rows().count();
-        $('#stat-total').text(totalRows);
-        $('#record-count-badge').text(totalRows + ' Records');
-        
-        var approvedCount = 0;
-        var pendingCount = 0;
-        table.rows().every(function() {
-            var node = this.node();
-            if (node) {
-                var statusCellHtml = node.cells && node.cells.length > 15 ? node.cells[15].innerHTML : $(node).html();
-                if (statusCellHtml.includes('Approved')) approvedCount++;
-                else if (statusCellHtml.includes('Pending')) pendingCount++;
+    function loadLeaveTransactions() {
+        $.getJSON('/Master/GetApiLeaveTransactions').done(function(res) {
+            rawLeaveTransactions = Array.isArray(res) ? res : ((res && res.data) ? res.data : []);
+            renderTableData();
+        }).fail(function() {
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to load leave transactions from server.', 'error', 5000);
             }
         });
-        
+    }
+
+    function renderTableData() {
+        if (!leaveDataTable) return;
+        leaveDataTable.clear();
+
+        var approvedCount = 0;
+        var pendingCount = 0;
+
+        rawLeaveTransactions.forEach(function(tx) {
+            var headerId = tx.iHeaderId || tx.id || 0;
+            var docNo = tx.sDocNo || tx.docNo || ('LVS' + String(headerId).padStart(6, '0'));
+            var docDate = window.formatDateDisplay(tx.dDocDate || tx.docDate);
+            var postDate = window.formatDateDisplay(tx.dPostDate || tx.postDate);
+            var comments = tx.sComments || tx.comments || '-';
+            
+            var leavesList = tx.leaves || tx.Leaves || [];
+            var empNames = [];
+            var leaveTypes = [];
+            var totalDuration = 0;
+
+            leavesList.forEach(function(l) {
+                var emp = l.sEmployeeName || l.employeeName;
+                if (emp && !empNames.includes(emp)) empNames.push(emp);
+                var lt = l.sLeaveTypeName || l.leaveTypeName || l.sRemarks || 'Leave';
+                if (lt && !leaveTypes.includes(lt)) leaveTypes.push(lt);
+                var dur = parseFloat(l.fDuration || l.duration || 0);
+                totalDuration += dur;
+            });
+
+            var displayEmpName = empNames.length > 0 ? empNames.join(', ') : 'Employee #' + (leavesList[0]?.iEmployeeId || '-');
+            var displayLeaveType = leaveTypes.length > 0 ? leaveTypes.join(', ') : 'Leave Application';
+
+            // Document Attachment
+            var fileObj = tx.leaveFile || tx.LeaveFile || tx.attachment || tx.Attachment;
+            var docBtn = '<span class="badge badge-secondary shadow-sm"><i class="fas fa-file mr-1"></i> No File</span>';
+            if (fileObj && fileObj.sAttachmentFilePath) {
+                var safeUrl = (fileObj.sAttachmentFilePath || '').replace(/'/g, "\\'");
+                var safeName = (fileObj.sAttachmentFileName || 'LeaveAttachment.pdf').replace(/'/g, "\\'");
+                docBtn = '<a href="javascript:void(0)" onclick="window.openDocPreview(\'' + safeName + '\', \'' + safeUrl + '\')" class="badge badge-info shadow-sm"><i class="fas fa-paperclip mr-1"></i> ' + (fileObj.sAttachmentFileName || 'View File') + '</a>';
+            }
+
+            var isApproved = (tx.iAuthStatus === 1 || tx.authStatus === 1 || tx.iStatus === 1);
+            var statusBadge = isApproved 
+                ? '<span class="badge badge-success">Approved</span>' 
+                : '<span class="badge badge-warning">Pending</span>';
+
+            if (isApproved) approvedCount++;
+            else pendingCount++;
+
+            var actionBtns = `
+                <a href="javascript:void(0)" class="edit-item-btn" title="Edit Application" onclick="editLeaveApplication(${headerId})"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                <a href="javascript:void(0)" class="remove-item-btn" title="Delete Application" onclick="deleteLeaveApplication(${headerId}, '${docNo}')"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+            `;
+
+            leaveDataTable.row.add([
+                actionBtns,
+                `<strong>${docNo}</strong>`,
+                docDate,
+                postDate,
+                displayEmpName,
+                displayLeaveType,
+                totalDuration.toFixed(1),
+                docBtn,
+                comments,
+                statusBadge
+            ]);
+        });
+
+        leaveDataTable.draw(false);
+
+        // Update Stat Cards
+        var totalRows = rawLeaveTransactions.length;
+        $('#stat-total').text(totalRows);
         $('#stat-active').text(approvedCount);
         $('#stat-modified').text(pendingCount);
+        $('#record-count-badge').text(totalRows + ' Records');
     }
 
-    /* ── Generate dummy code ── */
-    function getNo() {
-        $('#loading').fadeIn();
-        setTimeout(function () {
-            $('#code-field').val(generateCode());
-            $('#loading').fadeOut();
-        }, 300);
-    }
-
-    /* ── Clear form fields ── */
-    function clearFields() {
-        $('#code-field').val('');
-        $('#name-field').val('');
-        $('#type-field').val('');
-        $('#start-field').val('');
-        $('#end-field').val('');
-        $('#reason-field').val('');
-        $('#status-field').val('Pending');
-        $('#id-field').val(0);
-        $('#add-btn').html('<i class="fas fa-plus mr-1"></i> Add');
-        $('#Leave-modal-label').html('<i class="fas fa-calendar-plus mr-2"></i>Add Leave Application');
-        $('#code-field').prop('disabled', false);
-    }
-
-    function clearFieldsWithModal() {
-        clearFields();
-        getNo();
-    }
-
-    /* ── Edit row: Navigate to CreateLeaveApplication form ── */
-    $(document).off('click', '#tblLeave a.edit-item-btn').on('click', '#tblLeave a.edit-item-btn', function (e) {
-        e.preventDefault();
-        var row = $(this).closest('tr');
-
-        var id     = row.find('td').eq(1).text().trim();
-        var code   = row.find('td').eq(2).text().trim();
-        var name   = row.find('td').eq(3).text().trim();
-        var type   = row.find('td').eq(4).text().trim();
-        var start  = row.find('td').eq(5).text().trim();
-        var end    = row.find('td').eq(6).text().trim();
-        var duration = row.find('td').eq(7).text().trim();
-        var eligible = row.find('td').eq(9).text().trim();
-        var approved = row.find('td').eq(10).text().trim();
-        var unapproved = row.find('td').eq(11).text().trim();
-        var available = row.find('td').eq(12).text().trim();
-        var usedNow = row.find('td').eq(13).text().trim();
-        var balance = row.find('td').eq(14).text().trim();
-        var status = row.find('td').eq(15).text().trim();
-        var reason = row.find('td').eq(16).text().trim();
-
-        // Retrieve saved object from localStorage if present
-        var storedLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-        var match = storedLeaves.find(function(l) { return l.code === code || String(l.id) === String(id); });
-
-        var editObj = match || {
-            id: id,
-            code: code,
-            name: name,
-            type: type,
-            start: start,
-            end: end,
-            duration: duration,
-            eligible: eligible,
-            approved: approved,
-            unapproved: unapproved,
-            available: available,
-            usedNow: usedNow,
-            balance: balance,
-            status: status,
-            reason: reason
-        };
-
-        sessionStorage.setItem('editLeaveApp', JSON.stringify(editObj));
-
-        var createUrl = '@Url.Action("CreateLeaveApplication", "Master")';
+    function editLeaveApplication(headerId) {
+        var createUrl = '@Url.Action("CreateLeaveApplication", "Master")' + '?id=' + headerId;
         if (typeof loadPageContent === 'function') {
             loadPageContent(createUrl, true);
         } else {
             window.location.href = createUrl;
         }
-
-        return false;
-    });
-
-    function getStatusBadge(status) {
-        if (status === 'Approved') return '<span class="badge badge-success">Approved</span>';
-        if (status === 'Rejected') return '<span class="badge badge-danger">Rejected</span>';
-        return '<span class="badge badge-warning">Pending</span>';
     }
 
-    /* ── Add / Update ── */
-    $('#add-btn').click(function () {
-        var code   = $('#code-field').val();
-        var name   = $('#name-field').val().trim();
-        var type   = $('#type-field').val();
-        var start  = $('#start-field').val();
-        var end    = $('#end-field').val();
-        var status = $('#status-field').val();
-        var reason = $('#reason-field').val().trim();
-        var id     = $('#id-field').val();
-        var btnTxt = $(this).text().trim();
+    function deleteLeaveApplication(headerId, docNo) {
+        if (!headerId || headerId <= 0) return;
 
-        if (!code) { showAlert('Code cannot be blank.', 'danger'); return false; }
-        if (!name) { showAlert('Employee Name cannot be blank.', 'danger'); return false; }
-        if (!type) { showAlert('Leave Type cannot be blank.', 'danger'); return false; }
-        if (!start) { showAlert('Start Date cannot be blank.', 'danger'); return false; }
-        if (!end) { showAlert('End Date cannot be blank.', 'danger'); return false; }
-        if (start > end) { showAlert('Start Date cannot be after End Date.', 'danger'); return false; }
-
-        $('#loading').fadeIn();
-
-        setTimeout(function () {
-            var table = $('#tblLeave').DataTable();
-            var dispStart = formatDateToDisplay(start);
-            var dispEnd = formatDateToDisplay(end);
-
-            if (btnTxt === 'Update') {
-                // ── Update existing row ──
-                table.rows().every(function () {
-                    var rowNode = this.node();
-                    if ($(rowNode).find('td').eq(1).text().trim() == id) {
-                        $(rowNode).find('td').eq(3).text(name);
-                        $(rowNode).find('td').eq(4).text(type);
-                        $(rowNode).find('td').eq(5).text(dispStart);
-                        $(rowNode).find('td').eq(6).text(dispEnd);
-                        $(rowNode).find('td').eq(7).html('<div style="text-align:center;">' + getStatusBadge(status) + '</div>');
-                        $(rowNode).find('td').eq(8).text(reason);
-                    }
-                });
-                
-                // ── Update in localStorage ──
-                var storedLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-                for(var i=0; i<storedLeaves.length; i++) {
-                    if (storedLeaves[i].id == id) {
-                        storedLeaves[i].name = name;
-                        storedLeaves[i].type = type;
-                        storedLeaves[i].start = dispStart;
-                        storedLeaves[i].end = dispEnd;
-                        storedLeaves[i].status = status;
-                        storedLeaves[i].reason = reason;
-                    }
-                }
-                localStorage.setItem('leaveApps', JSON.stringify(storedLeaves));
-
-                table.draw();
-                showAlert(code + ' - Leave Application Updated', 'success');
-            } else {
-                // ── Add new row ──
-                table.row.add([
-                    '<td class="action-btns" style="text-align:center;">' +
-                        '<a href="#" class="edit-item-btn" data-toggle="modal" data-target="#Leave-modal" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a> ' +
-                        '<a href="#" class="remove-item-btn" title="Delete"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>' +
-                    '</td>',
-                    dummyCodeCounter,
-                    code,
-                    name,
-                    type,
-                    dispStart,
-                    dispEnd,
-                    0, 0, 0, 0, 0, 0, 0, // Mock dummy values since creation via modal doesn't do calculations
-                    '<div style="text-align:center;">' + getStatusBadge(status) + '</div>',
-                    reason
-                ]).draw();
-
-                // ── Add to localStorage ──
-                var storedLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-                storedLeaves.push({
-                    id: dummyCodeCounter,
-                    code: code,
-                    name: name,
-                    type: type,
-                    start: dispStart,
-                    end: dispEnd,
-                    status: status,
-                    reason: reason
-                });
-                localStorage.setItem('leaveApps', JSON.stringify(storedLeaves));
-
-                dummyCodeCounter++;
-                showAlert(code + ' - Leave Application Created', 'success');
-            }
-            
-            updateStats();
-            $('#Leave-modal').modal('hide');
-            clearFields();
-            getNo();
-            $('#loading').fadeOut();
-        }, 400);
-
-        return false;
-    });
-
-    /* ── Delete row ── */
-    $(document).off('click', '#tblLeave a.remove-item-btn').on('click', '#tblLeave a.remove-item-btn', function (e) {
-        e.preventDefault();
-        var row  = $(this).closest('tr');
-        var code = row.find('td').eq(2).text().trim();
-
-        alertify.confirm('Are you sure you want to delete application: ' + code + '?', function (e) {
+        alertify.confirm('Are you sure you want to delete Leave Application: ' + docNo + '?', function (e) {
             if (e) {
-                $('#loading').fadeIn();
-                setTimeout(function () {
-                    var table = $('#tblLeave').DataTable();
-                    table.row(row).remove().draw();
-                    
-                    // ── Remove from localStorage ──
-                    var storedLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-                    var updatedLeaves = storedLeaves.filter(function(l) { return l.code !== code; });
-                    localStorage.setItem('leaveApps', JSON.stringify(updatedLeaves));
-                    
-                    updateStats();
-                    $('.alertify-log, .alertify-logs > *').remove();
-                    alertify.log(code + ' - Leave Application Deleted', 'success', 2500);
-                    $('#loading').fadeOut();
-                }, 300);
+                $.post('/Master/DeleteApiLeaveTransaction', { id: headerId }, function(res) {
+                    if (res && res.success) {
+                        alertify.log('Leave Application ' + docNo + ' deleted successfully.', 'success', 3000);
+                        loadLeaveTransactions();
+                    } else {
+                        var msg = (res && res.message) ? res.message : 'Failed to delete leave application.';
+                        alertify.log(msg, 'error', 5000);
+                    }
+                }).fail(function(xhr) {
+                    alertify.log('Error communicating with server: ' + (xhr.responseText || 'Server error'), 'error', 5000);
+                });
             }
         });
-
-        return false;
-    });
-
-    /* ── Helpers ── */
-    function showAlert(msg, type) {
-        var colour = type === 'success' ? '#1cc88a' : '#e74a3b';
-        var div = $('<div>')
-            .css({
-                position: 'fixed', bottom: '20px', right: '20px',
-                background: colour, color: '#fff',
-                padding: '10px 18px', borderRadius: '6px',
-                fontWeight: '700', fontSize: '0.82rem',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                zIndex: 9999, opacity: 0
-            })
-            .text(msg)
-            .appendTo('body')
-            .animate({ opacity: 1 }, 200)
-            .delay(2200)
     }
-
-
 </script>
 </body>
 </html>

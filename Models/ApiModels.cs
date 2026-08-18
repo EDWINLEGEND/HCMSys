@@ -333,41 +333,232 @@ namespace HCMSys.Models
         public string? SContentType { get; set; }
     }
 
-    // --- Leave DTOs ---
-    public class LeaveBalanceDto
+    // --- Leave DTOs (Docs/API.pdf Sections 10-15) ---
+    public class EmployeeLeaveItemDto
     {
-        [JsonPropertyName("employeeId")]
-        public int EmployeeId { get; set; }
+        [JsonPropertyName("iLeaveTypeId")]
+        public int ILeaveTypeId { get; set; }
 
-        [JsonPropertyName("eligible")]
-        public decimal Eligible { get; set; }
+        [JsonPropertyName("sLeaveName")]
+        public string SLeaveName { get; set; } = string.Empty;
 
-        [JsonPropertyName("approved")]
-        public decimal Approved { get; set; }
+        [JsonPropertyName("openingLeaves")]
+        public decimal OpeningLeaves { get; set; }
 
-        [JsonPropertyName("unapproved")]
-        public decimal Unapproved { get; set; }
+        [JsonPropertyName("leavesApproved")]
+        public decimal LeavesApproved { get; set; }
+
+        [JsonPropertyName("leavesPending")]
+        public decimal LeavesPending { get; set; }
+
+        [JsonPropertyName("leaveBalance")]
+        public decimal LeaveBalance { get; set; }
     }
 
-    public class LeaveTypeItemDto
+    public class EmployeeLeavesDataDto
     {
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
+        [JsonPropertyName("iEmployeeId")]
+        public int IEmployeeId { get; set; }
 
-        [JsonPropertyName("code")]
-        public string Code { get; set; } = string.Empty;
+        [JsonPropertyName("sEmployeeCode")]
+        public string SEmployeeCode { get; set; } = string.Empty;
 
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("sEmployeeName")]
+        public string SEmployeeName { get; set; } = string.Empty;
 
-        [JsonPropertyName("eligible")]
-        public decimal Eligible { get; set; }
+        [JsonPropertyName("sCategoryName")]
+        public string? SCategoryName { get; set; }
 
-        [JsonPropertyName("approved")]
-        public decimal Approved { get; set; }
+        [JsonPropertyName("sDepartmentName")]
+        public string? SDepartmentName { get; set; }
 
-        [JsonPropertyName("unapproved")]
-        public decimal Unapproved { get; set; }
+        [JsonPropertyName("sDesignationName")]
+        public string? SDesignationName { get; set; }
+
+        [JsonPropertyName("sReportingToName")]
+        public string? SReportingToName { get; set; }
+
+        [JsonPropertyName("iRevision")]
+        public int IRevision { get; set; }
+
+        [JsonPropertyName("iCompanyId")]
+        public int ICompanyId { get; set; } = 1;
+
+        [JsonPropertyName("iPayYearId")]
+        public int IPayYearId { get; set; } = 1;
+
+        [JsonPropertyName("leaves")]
+        public List<EmployeeLeaveItemDto> Leaves { get; set; } = new List<EmployeeLeaveItemDto>();
+    }
+
+    public class EmployeeLeavesResultDto
+    {
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
+
+        [JsonPropertyName("statusCode")]
+        public int StatusCode { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        [JsonPropertyName("data")]
+        public EmployeeLeavesDataDto? Data { get; set; }
+    }
+
+    public class EmployeeLeavesEmployeesWrapperDto
+    {
+        [JsonPropertyName("result")]
+        public EmployeeLeavesResultDto? Result { get; set; }
+    }
+
+    public class EmployeeLeavesEnvelope
+    {
+        [JsonPropertyName("employees")]
+        public EmployeeLeavesEmployeesWrapperDto? Employees { get; set; }
+    }
+
+    public class SaveLeaveTransactionDto
+    {
+        [JsonPropertyName("iHeaderId")]
+        public int IHeaderId { get; set; } = 0;
+
+        [JsonPropertyName("sDocNo")]
+        public string SDocNo { get; set; } = string.Empty;
+
+        [JsonPropertyName("dDocDate")]
+        public string DDocDate { get; set; } = string.Empty;
+
+        [JsonPropertyName("dPostDate")]
+        public string DPostDate { get; set; } = string.Empty;
+
+        [JsonPropertyName("iTransTypeId")]
+        public int ITransTypeId { get; set; } = 0; // 0 = Opening Leaves, 1 = Leave Eligibility, 2 = Leave Adjustments / Leave Application
+
+        [JsonPropertyName("sComments")]
+        public string? SComments { get; set; }
+
+        [JsonPropertyName("iCompanyId")]
+        public int ICompanyId { get; set; } = 1;
+
+        [JsonPropertyName("iPayYearId")]
+        public int IPayYearId { get; set; } = 1;
+
+        [JsonPropertyName("iStatus")]
+        public int IStatus { get; set; } = 1;
+
+        [JsonPropertyName("iAuthStatus")]
+        public int IAuthStatus { get; set; } = 1;
+
+        [JsonPropertyName("iCreatedBy")]
+        public int ICreatedBy { get; set; } = 1;
+
+        [JsonPropertyName("iModifiedBy")]
+        public int IModifiedBy { get; set; } = 1;
+
+        [JsonPropertyName("iApprovedBy")]
+        public int IApprovedBy { get; set; } = 1;
+
+        [JsonPropertyName("leaves")]
+        public List<LeaveTransactionBodyDto> Leaves { get; set; } = new List<LeaveTransactionBodyDto>();
+
+        [JsonPropertyName("leaveFile")]
+        public LeaveTransactionFileDto? LeaveFile { get; set; }
+
+        [JsonPropertyName("attachment")]
+        public LeaveTransactionFileDto? Attachment { get; set; }
+
+        public LeaveTransactionFileDto? GetEffectiveAttachment()
+        {
+            return LeaveFile ?? Attachment;
+        }
+    }
+
+    public class LeaveTransactionSaveItemDto
+    {
+        [JsonPropertyName("iEmployeeId")]
+        public int IEmployeeId { get; set; }
+
+        [JsonPropertyName("iLeaveTypeId")]
+        public int ILeaveTypeId { get; set; }
+
+        [JsonPropertyName("iAdjType")]
+        public int IAdjType { get; set; } = 1;
+
+        [JsonPropertyName("fDuration")]
+        public decimal FDuration { get; set; }
+
+        [JsonPropertyName("sRemarks")]
+        public string SRemarks { get; set; } = string.Empty;
+    }
+
+    public class LeaveTransactionBodyDto
+    {
+        [JsonPropertyName("iBodyId")]
+        public int IBodyId { get; set; } = 0;
+
+        [JsonPropertyName("iHeaderId")]
+        public int IHeaderId { get; set; } = 0;
+
+        [JsonPropertyName("sDocNo")]
+        public string SDocNo { get; set; } = string.Empty;
+
+        [JsonPropertyName("iTransTypeId")]
+        public int ITransTypeId { get; set; } = 0;
+
+        [JsonPropertyName("iEmployeeId")]
+        public int IEmployeeId { get; set; }
+
+        [JsonPropertyName("sEmployeeCode")]
+        public string SEmployeeCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("sEmployeeName")]
+        public string SEmployeeName { get; set; } = string.Empty;
+
+        [JsonPropertyName("sDepartmentName")]
+        public string? SDepartmentName { get; set; }
+
+        [JsonPropertyName("sDesignationName")]
+        public string? SDesignationName { get; set; }
+
+        [JsonPropertyName("sReportingToName")]
+        public string? SReportingToName { get; set; }
+
+        [JsonPropertyName("iRevisionId")]
+        public int IRevisionId { get; set; } = 0;
+
+        [JsonPropertyName("iLeaveTypeId")]
+        public int ILeaveTypeId { get; set; }
+
+        [JsonPropertyName("sLeaveTypeName")]
+        public string SLeaveTypeName { get; set; } = string.Empty;
+
+        [JsonPropertyName("iAdjType")]
+        public int IAdjType { get; set; } = 1;
+
+        [JsonPropertyName("fDuration")]
+        public decimal FDuration { get; set; }
+
+        [JsonPropertyName("sRemarks")]
+        public string? SRemarks { get; set; }
+    }
+
+    public class LeaveTransactionFileDto
+    {
+        [JsonPropertyName("iHeaderId")]
+        public int IHeaderId { get; set; } = 0;
+
+        [JsonPropertyName("iFileId")]
+        public int IFileId { get; set; } = 0;
+
+        [JsonPropertyName("sAttachmentFilePath")]
+        public string? SAttachmentFilePath { get; set; }
+
+        [JsonPropertyName("sAttachmentFileName")]
+        public string? SAttachmentFileName { get; set; }
+
+        [JsonPropertyName("sContentType")]
+        public string? SContentType { get; set; }
     }
 
     public class PaymentTypeDto
@@ -391,7 +582,7 @@ namespace HCMSys.Models
     public class LeaveTypeOptionsDto
     {
         [JsonPropertyName("leaveTypes")]
-        public List<LeaveTypeItemDto> LeaveTypes { get; set; } = new List<LeaveTypeItemDto>();
+        public List<EmployeeLeaveItemDto> LeaveTypes { get; set; } = new List<EmployeeLeaveItemDto>();
 
         [JsonPropertyName("paymentTypes")]
         public List<PaymentTypeDto> PaymentTypes { get; set; } = new List<PaymentTypeDto>();

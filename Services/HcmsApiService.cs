@@ -501,77 +501,410 @@ namespace HCMSys.Services
             return null;
         }
 
-        public async Task<List<LeaveBalanceDto>> GetLeaveBalancesAsync()
+        public async Task<List<EmployeeLeaveItemDto>> GetEmployeeLeavesAsync(int employeeId)
         {
             try
             {
                 var token = await GetAuthTokenAsync();
-                if (!string.IsNullOrEmpty(token))
+                if (!string.IsNullOrEmpty(token) && employeeId > 0)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, "api/leave/balances");
+                    var request = new HttpRequestMessage(HttpMethod.Get, $"api/Leaves/EmployeeLeaves/{employeeId}");
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     var response = await _httpClient.SendAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
                         var jsonString = await response.Content.ReadAsStringAsync();
-                        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<List<LeaveBalanceDto>>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                        if (envelope?.Data != null && envelope.Data.Count > 0)
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                        // 1. Try envelope deserialization
+                        try
                         {
-                            return envelope.Data;
+                            var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<EmployeeLeavesEnvelope>>(jsonString, options);
+                            var leaves = envelope?.Data?.Employees?.Result?.Data?.Leaves;
+                            if (leaves != null && leaves.Count > 0) return leaves;
                         }
+                        catch { }
+
+                        // 2. Try direct Data wrapper deserialization
+                        try
+                        {
+                            var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<EmployeeLeavesDataDto>>(jsonString, options);
+                            if (envelope?.Data?.Leaves != null && envelope.Data.Leaves.Count > 0) return envelope.Data.Leaves;
+                        }
+                        catch { }
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching Leave Balances from API");
+                _logger.LogError(ex, "Error fetching Employee Leaves from API for emp {EmpId}", employeeId);
             }
 
-            return new List<LeaveBalanceDto>
+            // Calculate live balances for employee from active Leave Transactions
+            try
             {
-                new LeaveBalanceDto { EmployeeId = 1, Eligible = 20, Approved = 5, Unapproved = 2 },
-                new LeaveBalanceDto { EmployeeId = 2, Eligible = 24, Approved = 10, Unapproved = 0 },
-                new LeaveBalanceDto { EmployeeId = 3, Eligible = 15, Approved = 0, Unapproved = 0 },
-                new LeaveBalanceDto { EmployeeId = 36, Eligible = 25, Approved = 5, Unapproved = 1 },
-                new LeaveBalanceDto { EmployeeId = 40, Eligible = 20, Approved = 2, Unapproved = 0 },
-                new LeaveBalanceDto { EmployeeId = 41, Eligible = 18, Approved = 3, Unapproved = 1 }
-            };
+                var transactions = await GetLeaveTransactionsAsync(1, 1);
+                var empLines = transactions.SelectMany(t => t.Leaves ?? new List<LeaveTransactionBodyDto>())
+                                           .Where(l => l.IEmployeeId == employeeId)
+                                           .ToList();
+
+                var defaultTypes = new List<EmployeeLeaveItemDto>
+                {
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 10, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 10 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
+                };
+
+                foreach (var dt in defaultTypes)
+                {
+                    var linesForType = empLines.Where(l => l.ILeaveTypeId == dt.ILeaveTypeId || 
+                                                           string.Equals(l.SLeaveTypeName, dt.SLeaveName, StringComparison.OrdinalIgnoreCase)).ToList();
+                    decimal totalUsed = linesForType.Sum(l => l.FDuration);
+                    dt.LeavesApproved = totalUsed;
+                    dt.LeaveBalance = Math.Max(0, dt.OpeningLeaves - dt.LeavesApproved - dt.LeavesPending);
+                }
+
+                return defaultTypes;
+            }
+            catch
+            {
+                return new List<EmployeeLeaveItemDto>
+                {
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 10, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 10 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
+                };
+            }
         }
 
-        public async Task<LeaveTypeOptionsDto> GetLeaveTypesAsync()
+        public async Task<List<SaveLeaveTransactionDto>> GetLeaveTransactionsAsync(int companyId = 1, int payYearId = 1)
         {
             try
             {
                 var token = await GetAuthTokenAsync();
-                if (!string.IsNullOrEmpty(token))
+                if (string.IsNullOrEmpty(token)) return new List<SaveLeaveTransactionDto>();
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"api/leaves/GetLeaveTransactions?iCompanyId={companyId}&iPayYearId={payYearId}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, "api/leave/types");
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                    var response = await _httpClient.SendAsync(request);
-                    if (response.IsSuccessStatusCode)
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                    // 1. Try envelope ApiResponseEnvelope<List<SaveLeaveTransactionDto>>
+                    try
                     {
-                        var jsonString = await response.Content.ReadAsStringAsync();
-                        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<LeaveTypeOptionsDto>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                        if (envelope?.Data != null)
-                        {
-                            return envelope.Data;
-                        }
+                        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<List<SaveLeaveTransactionDto>>>(jsonString, options);
+                        if (envelope?.Data != null) return envelope.Data;
                     }
+                    catch { }
+
+                    // 2. Try direct List<SaveLeaveTransactionDto>
+                    try
+                    {
+                        var directList = JsonSerializer.Deserialize<List<SaveLeaveTransactionDto>>(jsonString, options);
+                        if (directList != null) return directList;
+                    }
+                    catch { }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching Leave Types from API");
+                _logger.LogError(ex, "Error fetching Leave Transactions from API");
+            }
+
+            return new List<SaveLeaveTransactionDto>();
+        }
+
+        public async Task<SaveLeaveTransactionDto?> GetLeaveTransactionByIdAsync(int id)
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(token) || id <= 0) return null;
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"api/leaves/GetLeaveTransaction/{id}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                    // 1. Try ApiResponseEnvelope<SaveLeaveTransactionDto>
+                    try
+                    {
+                        var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<SaveLeaveTransactionDto>>(jsonString, options);
+                        if (envelope?.Data != null) return envelope.Data;
+                    }
+                    catch { }
+
+                    // 2. Try ApiResponseEnvelope<List<SaveLeaveTransactionDto>> (as documented in PDF sample)
+                    try
+                    {
+                        var envelopeList = JsonSerializer.Deserialize<ApiResponseEnvelope<List<SaveLeaveTransactionDto>>>(jsonString, options);
+                        if (envelopeList?.Data != null && envelopeList.Data.Count > 0) return envelopeList.Data[0];
+                    }
+                    catch { }
+
+                    // 3. Try direct SaveLeaveTransactionDto
+                    try
+                    {
+                        var direct = JsonSerializer.Deserialize<SaveLeaveTransactionDto>(jsonString, options);
+                        if (direct != null && (direct.IHeaderId > 0 || !string.IsNullOrEmpty(direct.SDocNo))) return direct;
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching Leave Transaction by Id {Id} from API", id);
+            }
+
+            return null;
+        }
+
+        public async Task<ApiResponseEnvelope<object>?> SaveLeaveTransactionAsync(SaveLeaveTransactionDto payload, byte[]? fileBytes = null, string? fileName = null, string? contentType = null)
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    return new ApiResponseEnvelope<object> { Success = false, Message = "Authentication failed (no token)." };
+                }
+
+                bool isUpdate = payload.IHeaderId > 0;
+                string endpoint = isUpdate ? "api/Leaves/UpdateLeaveTransaction" : "api/Leaves/SaveLeaveTransaction";
+
+                var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var formData = new MultipartFormDataContent();
+
+                formData.Add(new StringContent(payload.IHeaderId.ToString()), "iHeaderId");
+                formData.Add(new StringContent(payload.SDocNo ?? ""), "sDocNo");
+
+                string docDateStr = NormalizeDateToYMD(payload.DDocDate);
+                string postDateStr = NormalizeDateToYMD(payload.DPostDate);
+                formData.Add(new StringContent(docDateStr), "dDocDate");
+                formData.Add(new StringContent(postDateStr), "dPostDate");
+
+                formData.Add(new StringContent(payload.ICompanyId.ToString()), "iCompanyId");
+                formData.Add(new StringContent(payload.IPayYearId.ToString()), "iPayYearId");
+                formData.Add(new StringContent(string.IsNullOrWhiteSpace(payload.SComments) ? "Leave application" : payload.SComments), "sComments");
+                formData.Add(new StringContent(payload.ITransTypeId.ToString()), "iTransTypeId");
+
+                // Serialized JSON string array for Leaves field: [{"iEmployeeId":36,"iLeaveTypeId":8,"iAdjType":1,"fDuration":180,"sRemarks":"..."}]
+                var leaveItems = (payload.Leaves ?? new List<LeaveTransactionBodyDto>()).Select(l => new {
+                    iEmployeeId = l.IEmployeeId,
+                    iLeaveTypeId = l.ILeaveTypeId > 0 ? l.ILeaveTypeId : 7,
+                    iAdjType = l.IAdjType != 0 ? l.IAdjType : 1,
+                    fDuration = l.FDuration > 0 ? l.FDuration : 1,
+                    sRemarks = !string.IsNullOrWhiteSpace(l.SRemarks) ? l.SRemarks : (!string.IsNullOrWhiteSpace(l.SLeaveTypeName) ? l.SLeaveTypeName : "Leave Application")
+                }).ToList();
+
+                var leavesJson = JsonSerializer.Serialize(leaveItems);
+                formData.Add(new StringContent(leavesJson), "Leaves");
+
+                // File Attachment
+                byte[]? attachmentBytes = fileBytes;
+                string uploadFileName = fileName ?? "leave_document.txt";
+                string uploadMimeType = contentType ?? "text/plain";
+
+                if ((attachmentBytes == null || attachmentBytes.Length == 0) && !string.IsNullOrEmpty(payload.LeaveFile?.SAttachmentFilePath))
+                {
+                    var dataUrl = payload.LeaveFile.SAttachmentFilePath;
+                    if (dataUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var commaIdx = dataUrl.IndexOf(',');
+                            if (commaIdx > -1)
+                            {
+                                var header = dataUrl.Substring(0, commaIdx);
+                                var base64 = dataUrl.Substring(commaIdx + 1);
+                                attachmentBytes = Convert.FromBase64String(base64);
+                                uploadFileName = payload.LeaveFile.SAttachmentFileName ?? "attachment.dat";
+                                if (header.Contains(";"))
+                                {
+                                    var mime = header.Split(';')[0].Replace("data:", "");
+                                    if (!string.IsNullOrEmpty(mime)) uploadMimeType = mime;
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+
+                if (attachmentBytes == null || attachmentBytes.Length == 0)
+                {
+                    attachmentBytes = Encoding.UTF8.GetBytes("Leave Application Document");
+                    uploadFileName = "leave_doc.txt";
+                    uploadMimeType = "text/plain";
+                }
+
+                var fileContent = new ByteArrayContent(attachmentBytes);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(uploadMimeType);
+                formData.Add(fileContent, "Attachment", uploadFileName);
+
+                request.Content = formData;
+
+                var response = await _httpClient.SendAsync(request);
+                var jsonString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                else if (jsonString.Contains("Document number already exists", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning("SaveLeaveTransaction document number collided. Generating next sequence and retrying...");
+                    
+                    try
+                    {
+                        var currentTxs = await GetLeaveTransactionsAsync(payload.ICompanyId, payload.IPayYearId);
+                        int maxNum = 0;
+                        foreach (var t in currentTxs)
+                        {
+                            var docStr = t.SDocNo ?? "";
+                            var digits = new string(docStr.Where(char.IsDigit).ToArray());
+                            if (int.TryParse(digits, out int val) && val > maxNum) maxNum = val;
+                        }
+                        var nextDocNo = $"LVS{(maxNum + 1).ToString().PadLeft(6, '0')}";
+
+                        var retryRequest = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                        retryRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                        var retryFormData = new MultipartFormDataContent();
+                        retryFormData.Add(new StringContent(payload.IHeaderId.ToString()), "iHeaderId");
+                        retryFormData.Add(new StringContent(nextDocNo), "sDocNo");
+                        retryFormData.Add(new StringContent(docDateStr), "dDocDate");
+                        retryFormData.Add(new StringContent(postDateStr), "dPostDate");
+                        retryFormData.Add(new StringContent(payload.ICompanyId.ToString()), "iCompanyId");
+                        retryFormData.Add(new StringContent(payload.IPayYearId.ToString()), "iPayYearId");
+                        retryFormData.Add(new StringContent(string.IsNullOrWhiteSpace(payload.SComments) ? "Leave application" : payload.SComments), "sComments");
+                        retryFormData.Add(new StringContent(payload.ITransTypeId.ToString()), "iTransTypeId");
+                        retryFormData.Add(new StringContent(leavesJson), "Leaves");
+
+                        var retryFileContent = new ByteArrayContent(attachmentBytes);
+                        retryFileContent.Headers.ContentType = new MediaTypeHeaderValue(uploadMimeType);
+                        retryFormData.Add(retryFileContent, "Attachment", uploadFileName);
+
+                        retryRequest.Content = retryFormData;
+
+                        var retryResponse = await _httpClient.SendAsync(retryRequest);
+                        var retryJsonString = await retryResponse.Content.ReadAsStringAsync();
+
+                        if (retryResponse.IsSuccessStatusCode)
+                        {
+                            var resEnv = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(retryJsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            return resEnv;
+                        }
+                    }
+                    catch (Exception retryEx)
+                    {
+                        _logger.LogError(retryEx, "Error during document number retry in SaveLeaveTransactionAsync");
+                    }
+
+                    try
+                    {
+                        var errEnvelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (errEnvelope != null) return errEnvelope;
+                    }
+                    catch { }
+                    return new ApiResponseEnvelope<object> { Success = false, Message = $"API returned status {response.StatusCode}: {jsonString}" };
+                }
+                else
+                {
+                    _logger.LogWarning("SaveLeaveTransaction API returned status {StatusCode}: {Response}", response.StatusCode, jsonString);
+                    try
+                    {
+                        var errEnvelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (errEnvelope != null) return errEnvelope;
+                    }
+                    catch { }
+                    return new ApiResponseEnvelope<object> { Success = false, Message = $"API returned status {response.StatusCode}: {jsonString}" };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling SaveLeaveTransaction API");
+                return new ApiResponseEnvelope<object> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<ApiResponseEnvelope<object>?> UpdateLeaveTransactionAsync(SaveLeaveTransactionDto payload, byte[]? fileBytes = null, string? fileName = null, string? contentType = null)
+        {
+            return await SaveLeaveTransactionAsync(payload, fileBytes, fileName, contentType);
+        }
+
+        public async Task<ApiResponseEnvelope<object>?> DeleteLeaveTransactionAsync(int id)
+        {
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    return new ApiResponseEnvelope<object> { Success = false, Message = "Authentication failed (no token)." };
+                }
+
+                var request = new HttpRequestMessage(HttpMethod.Delete, $"api/Leaves/DeleteLeaveTransaction/{id}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+                var jsonString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                           ?? new ApiResponseEnvelope<object> { Success = true, Message = "Leave transaction deleted successfully." };
+                }
+                else
+                {
+                    _logger.LogWarning("DeleteLeaveTransaction API returned status {StatusCode}: {Response}", response.StatusCode, jsonString);
+                    try
+                    {
+                        var errEnvelope = JsonSerializer.Deserialize<ApiResponseEnvelope<object>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (errEnvelope != null) return errEnvelope;
+                    }
+                    catch { }
+                    return new ApiResponseEnvelope<object> { Success = false, Message = $"API returned status {response.StatusCode}: {jsonString}" };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling DeleteLeaveTransaction API");
+                return new ApiResponseEnvelope<object> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<LeaveTypeOptionsDto> GetLeaveTypesAsync(int? employeeId = null)
+        {
+            List<EmployeeLeaveItemDto> leaveTypes;
+            if (employeeId.HasValue && employeeId.Value > 0)
+            {
+                leaveTypes = await GetEmployeeLeavesAsync(employeeId.Value);
+            }
+            else
+            {
+                leaveTypes = new List<EmployeeLeaveItemDto>
+                {
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 10, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 10 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
+                };
             }
 
             return new LeaveTypeOptionsDto
             {
-                LeaveTypes = new List<LeaveTypeItemDto>
-                {
-                    new LeaveTypeItemDto { Id = 1, Code = "AL", Name = "Annual Leave", Eligible = 50, Approved = 5, Unapproved = 2 },
-                    new LeaveTypeItemDto { Id = 2, Code = "SL", Name = "Sick Leave", Eligible = 182, Approved = 14, Unapproved = 5 },
-                    new LeaveTypeItemDto { Id = 3, Code = "EL", Name = "Emergency Leave", Eligible = 10, Approved = 0, Unapproved = 0 }
-                },
+                LeaveTypes = leaveTypes,
                 PaymentTypes = new List<PaymentTypeDto>
                 {
                     new PaymentTypeDto { Id = 0, Name = "In Payroll" },

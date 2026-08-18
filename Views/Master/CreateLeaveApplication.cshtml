@@ -1,108 +1,109 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <style>
-        html { font-size: 14px; }
-        .select2-container .select2-selection--single {
-            height: calc(1.5em + .75rem + 2px);
-            border: 1px solid #d1d3e2;
-            border-radius: 0.35rem;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: calc(1.5em + .75rem);
-            color: #6e707e;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: calc(1.5em + .75rem);
-        }
-        .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
-        .action-btns a:hover { opacity: 0.7; }
-        .action-btns .fa-trash-alt { color: #e74a3b; }
-        .page-title-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .page-title-text {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #5a5c69;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-        }
-        .form-label {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #5a5c69;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 4px;
-        }
-        .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
-        .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
-        
-        .card-header-custom {
-            background-color: #4e73df;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            padding: 10px 15px;
-        }
-        
-        .summary-panel {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            color: white;
-            border-radius: 0.35rem;
-            padding: 10px 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .summary-label {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            opacity: 0.9;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .summary-val {
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-        
-        .number-align {
-            text-align: right;
-        }
-        input[type="text"], select, textarea {
-            text-align: left;
-        }
-        .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
-            background-color: #e9ecef !important; 
-            opacity: 1; 
-        }
-        .flatpickr-input[readonly], .datepicker[readonly] {
-            background-color: #ffffff !important;
-            opacity: 1 !important;
-        }
-        .table th, .table td { vertical-align: middle; }
-        .table td.num-col { text-align: right; }
-    </style>
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    
+    .summary-panel {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border-radius: 0.35rem;
+        padding: 12px 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .summary-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.9;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .summary-val {
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+    
+    .number-align {
+        text-align: right;
+    }
+    input[type="text"], select, textarea {
+        text-align: left;
+    }
+    .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+        background-color: #e9ecef !important; 
+        opacity: 1; 
+    }
+    .flatpickr-input[readonly], .datepicker[readonly] {
+        background-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+    .table th, .table td { vertical-align: middle; }
+    .table td.num-col { text-align: right; }
+</style>
+
 <div class="container-fluid py-3">
 
     <!-- PAGE HEADER -->
     <div class="card shadow mb-3">
         <div class="card-header py-3">
             <div class="page-title-bar">
-                <div class="page-title-text">
+                <div class="page-title-text" id="page-header-title">
                     <i class="fas fa-file-signature fa-sm text-primary mr-2"></i> Create Leave Application
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
-                    <a href="@Url.Action("LeaveApplicationIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                    <a href="@Url.Action("LeaveApplicationIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm mr-2">
                         <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
                     </a>
-                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveApplication()">
+                    <button type="button" class="btn btn-success btn-sm shadow-sm" id="btn-save-leave" onclick="saveLeaveApplication()">
                         <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
                     </button>
                 </div>
@@ -111,9 +112,11 @@
     </div>
 
     <form id="leaveForm" autocomplete="off">
+        <input type="hidden" id="hdr-header-id" value="0" />
+
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General</div>
+            <div class="card-header card-header-custom">General Information</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
@@ -122,11 +125,11 @@
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Date</label>
-                        <input type="text" class="form-control" id="hdr-date" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Post Date</label>
-                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
@@ -146,10 +149,15 @@
                         <label class="form-label">Reporting Manager</label>
                         <input type="text" class="form-control" id="hdr-manager" readonly />
                     </div>
-                    <div class="col-md-12 mb-3">
+                    <div class="col-md-8 mb-3">
                         <label class="form-label">Comments</label>
-                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter reason or comments for leave application..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
                         <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                        <small class="text-muted" id="attachment-note">Upload medical certificate or request document.</small>
                     </div>
                 </div>
             </div>
@@ -157,25 +165,27 @@
 
         <!-- LEAVE APPLICATION DETAILS CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom bg-info">Leave Selection</div>
+            <div class="card-header card-header-custom bg-info">Leave Details</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Leave Type <span class="text-danger">*</span></label>
                         <select class="form-control calc-trigger" id="dtl-leavetype" required>
-                            <option value="">Select...</option>
+                            <option value="">Select Leave Type...</option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Payment Type <span class="text-danger">*</span></label>
                         <select class="form-control" id="dtl-paymenttype" required>
-                            <option value="">Select...</option>
+                            <option value="0">In Payroll</option>
+                            <option value="1">Settlement</option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Half Day <span class="text-danger">*</span></label>
                         <select class="form-control calc-trigger" id="dtl-halfday" required>
-                            <option value="">Select...</option>
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
                         </select>
                     </div>
 
@@ -188,39 +198,36 @@
                         <input type="text" class="form-control calc-trigger datepicker" id="dtl-todate" required />
                     </div>
                     <div class="col-4 col-md-2 mb-3">
-                        <label class="form-label" style="font-size: 0.7rem;">Lvs Used No</label>
+                        <label class="form-label">Total Days</label>
                         <input type="number" class="form-control number-align" id="dtl-duration" readonly />
                     </div>
                     <div class="col-4 col-md-2 mb-3">
-                        <label class="form-label" style="font-size: 0.7rem;">Weekly Off</label>
+                        <label class="form-label">Weekly Off</label>
                         <input type="number" class="form-control calc-trigger number-align" id="dtl-weeklyoff" value="0" min="0" />
                     </div>
                     <div class="col-4 col-md-2 mb-3">
-                        <label class="form-label" style="font-size: 0.7rem;">Holiday</label>
+                        <label class="form-label">Holiday</label>
                         <input type="number" class="form-control calc-trigger number-align" id="dtl-publicholiday" value="0" min="0" />
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">No of Leaves (Used Now)</label>
+                        <label class="form-label">Days to Apply (Used Now)</label>
                         <input type="number" class="form-control font-weight-bold number-align" id="dtl-noofleaves" readonly />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Contact No</label>
-                        <input type="text" class="form-control" id="dtl-contact" />
+                        <input type="text" class="form-control" id="dtl-contact" placeholder="Phone during leave period" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Substitute Employee</label>
                         <select class="form-control" id="dtl-substitute">
-                            <option value="">Select...</option>
+                            <option value="">Select Substitute...</option>
                         </select>
                     </div>
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">Attachment (Max 25MB)</label>
-                        <input type="file" class="form-control p-1" id="dtl-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
-                    </div>
+
                     <div class="col-md-12 text-right mt-2">
                         <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addToGrid()">
-                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Leave to Grid
                         </button>
                     </div>
                 </div>
@@ -239,12 +246,12 @@
                     <div class="summary-val" id="sum-approved">0.0</div>
                 </div>
                 <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
-                    <div class="summary-label">Lvs UnApproved</div>
+                    <div class="summary-label">Lvs Pending</div>
                     <div class="summary-val" id="sum-unapproved">0.0</div>
                 </div>
                 <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
                     <div class="summary-label">Lvs Available</div>
-                    <div class="summary-val" id="sum-available">0.0</div>
+                    <div class="summary-val text-warning" id="sum-available">0.0</div>
                 </div>
                 <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
                     <div class="summary-label">Lvs Used Now</div>
@@ -252,107 +259,119 @@
                 </div>
                 <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
                     <div class="summary-label">Lvs Balance</div>
-                    <div class="summary-val" id="sum-balance">0.0</div>
+                    <div class="summary-val text-success" id="sum-balance">0.0</div>
                 </div>
             </div>
         </div>
     </form>
 
-<div class="card shadow mb-4">
-    <div class="card-header card-header-custom bg-secondary">Leaves Detailed (User Grid)</div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover mb-0" id="user-grid-table">
-                <thead class="thead-light">
-                    <tr>
-                        <th style="width: 60px; text-align:center;">Action</th>
-                        <th>Leave Type</th>
-                        <th>From Date</th>
-                        <th>To Date</th>
-                        <th class="text-right">Lvs Used No</th>
-                        <th>Contact No</th>
-                        <th>Substitute Employee</th>
-                        <th>Document</th>
-                        <th class="text-right">Lvs Eligible</th>
-                        <th class="text-right">Lvs Approved</th>
-                        <th class="text-right">Lvs UnApproved</th>
-                        <th class="text-right">Lvs Available</th>
-                        <th class="text-right">Lvs Used Now</th>
-                        <th class="text-right">Lvs Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+    <!-- DETAILED USER GRID -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary">Leaves Detailed</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="user-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 60px; text-align:center;">Action</th>
+                            <th>Leave Type</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th class="num-col">Duration (Days)</th>
+                            <th>Contact No</th>
+                            <th>Substitute Employee</th>
+                            <th class="num-col">Eligible</th>
+                            <th class="num-col">Approved</th>
+                            <th class="num-col">Pending</th>
+                            <th class="num-col">Available</th>
+                            <th class="num-col">Used Now</th>
+                            <th class="num-col">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="empty-row"><td colspan="13" class="text-center text-muted py-3">No leaves added yet. Select options above and click "Add Leave to Grid".</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="card shadow mb-4">
-    <div class="card-header card-header-custom bg-dark">System Grid (Monthly Breakdown)</div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover mb-0" id="system-grid-table">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Leave Type</th>
-                        <th>Month</th>
-                        <th>From Date</th>
-                        <th>To Date</th>
-                        <th class="text-right">Lvs Used No</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+    <!-- SYSTEM GRID (MONTHLY BREAKDOWN) -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-dark">Monthly Breakdown (System Grid)</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="system-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Leave Type</th>
+                            <th>Month</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th class="num-col">Days in Month</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="empty-sys-row"><td colspan="5" class="text-center text-muted py-3">No breakdown available.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
 </div>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="~/alertify.js/alertify.min.js"></script>
-
 <script>
     var employeesData = [];
-    var leaveBalancesData = [];
-    var leaveOptionsData = {};
-
+    var currentEmployeeLeaves = [];
     var stagedLeaves = [];
     var stagedSystemLeaves = [];
-    var editingStagedId = null;
-    var isAddingToGrid = false;
+    var editHeaderId = 0;
+    var isEditMode = false;
 
     $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var paramId = urlParams.get('id') || '@ViewBag.EditId';
+        editHeaderId = parseInt(paramId) || 0;
+        isEditMode = editHeaderId > 0;
+
+        if (isEditMode) {
+            $('#page-header-title').html('<i class="fas fa-edit fa-sm text-primary mr-2"></i> Edit Leave Application <span class="badge badge-primary font-weight-bold ml-2">Edit Mode</span>');
+            $('#btn-save-leave').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Leave Application');
+            $('#hdr-header-id').val(editHeaderId);
+        }
+
         initHeader();
 
-        // Fetch API data
+        // Load Employees master and existing transactions in parallel
         $.when(
             $.getJSON('/Master/GetApiEmployees'),
-            $.getJSON('/Master/GetApiLeaveBalances'),
-            $.getJSON('/Master/GetApiLeaveTypes')
-        ).done(function(empRes, balRes, optRes) {
-            employeesData = empRes[0] || empRes;
-            leaveBalancesData = balRes[0] || balRes;
-            leaveOptionsData = optRes[0] || optRes;
+            $.getJSON('/Master/GetApiLeaveTransactions')
+        ).done(function(empRes, txRes) {
+            var empArr = empRes[0] || empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
             
-            populateDropdowns();
+            var allTxs = txRes[0] || txRes;
+            var txList = Array.isArray(allTxs) ? allTxs : (allTxs && allTxs.data ? allTxs.data : []);
+
+            populateEmployeeDropdown();
             $('select.form-control').select2({ width: '100%' });
-            checkEditMode();
+
+            if (isEditMode) {
+                loadLeaveTransactionForEdit(editHeaderId, txList);
+            }
         }).fail(function() {
-            alertify.log('Failed to load leave application data', 'error', 5000);
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to load employee masters.', 'error', 5000);
+            }
         });
 
-        // Event Listeners
+        // Event listeners
         $('#hdr-employee').change(onEmployeeChange);
         $('#dtl-leavetype').change(onLeaveTypeChange);
         $('.calc-trigger').on('change input', calculateLeaves);
 
-        // Initialize Datepickers (Format: 18-Jul-2026)
         flatpickr(".datepicker", {
             dateFormat: "d-M-Y",
             defaultDate: "today",
@@ -363,150 +382,110 @@
     });
 
     function initHeader() {
+        if (isEditMode) return;
+
         var d = new Date();
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         var mmm = months[d.getMonth()];
-        var mm = String(d.getMonth() + 1).padStart(2, '0');
         var dd = String(d.getDate()).padStart(2, '0');
-        var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
+        var todayStr = dd + '-' + mmm + '-' + yyyy;
 
-        var todayFormatted = dd + '-' + mmm + '-' + yyyy;
-        $('#hdr-date').val(todayFormatted);
-        $('#hdr-postdate').val(todayFormatted);
-        
-        if (!isEditingMode) {
-            var saved = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-            var maxSeq = 0;
-            saved.forEach(function(item) {
-                if (item.code) {
-                    var parts = item.code.split('-');
-                    if (parts.length >= 4) {
-                        var num = parseInt(parts[parts.length - 1]);
-                        if (!isNaN(num) && num > maxSeq) maxSeq = num;
-                    }
+        $('#hdr-date').val(todayStr);
+        $('#hdr-postdate').val(todayStr);
+        $('#dtl-fromdate').val(todayStr);
+        $('#dtl-todate').val(todayStr);
+
+        $.getJSON('/Master/GetApiLeaveTransactions').done(function(txs) {
+            var rawList = Array.isArray(txs) ? txs : (txs && txs.data ? txs.data : []);
+            var maxNum = 0;
+            rawList.forEach(function(item) {
+                var dNo = item.sDocNo || item.docNo || '';
+                var match = dNo.match(/\d+/);
+                if (match) {
+                    var n = parseInt(match[0], 10);
+                    if (!isNaN(n) && n > maxNum) maxNum = n;
                 }
             });
-            var seq = String(maxSeq + 1).padStart(5, '0');
-            $('#hdr-docno').val('WCO-' + mm + '-' + yy + '-' + seq);
-        }
+            var nextNum = Math.max(maxNum, rawList.length) + 1;
+            $('#hdr-docno').val('LVS' + String(nextNum).padStart(6, '0'));
+        }).fail(function() {
+            $('#hdr-docno').val('LVS000001');
+        });
     }
 
-    function populateDropdowns() {
+    function populateEmployeeDropdown() {
         var empSelect = $('#hdr-employee');
         var subSelect = $('#dtl-substitute');
         empSelect.empty().append('<option value="">Select Employee...</option>');
         subSelect.empty().append('<option value="">Select Substitute...</option>');
-        
+
         if (Array.isArray(employeesData)) {
             employeesData.forEach(function(emp) {
-                var empId = emp.id || emp.iMasterId || '';
-                var empCode = emp.code || emp.sCode || '';
-                var empName = emp.name || emp.sName || '';
-                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
-                subSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
+                empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
+                subSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
-        }
-
-        var ltSelect = $('#dtl-leavetype');
-        ltSelect.empty().append('<option value="">Select Leave Type...</option>');
-        if (leaveOptionsData && Array.isArray(leaveOptionsData.leaveTypes)) {
-            leaveOptionsData.leaveTypes.forEach(function(lt) {
-                ltSelect.append(`<option value="${lt.code}">${lt.name}</option>`);
-            });
-        }
-
-        var ptSelect = $('#dtl-paymenttype');
-        leaveOptionsData.paymentTypes.forEach(function(pt) {
-            ptSelect.append(`<option value="${pt.id}">${pt.name}</option>`);
-        });
-        ptSelect.find('option').filter(function(){ return $(this).text() === 'In Payroll'; }).prop('selected', true);
-
-        var hdSelect = $('#dtl-halfday');
-        leaveOptionsData.halfDay.forEach(function(hd) {
-            hdSelect.append(`<option value="${hd.name}">${hd.name}</option>`);
-        });
-        hdSelect.find('option').filter(function(){ return $(this).text() === 'No'; }).prop('selected', true);
-    }
-
-    function updateSubstituteDropdown(selectedEmpVal) {
-        var subSelect = $('#dtl-substitute');
-        var currentVal = subSelect.val();
-        subSelect.empty().append('<option value="">Select Substitute...</option>');
-        
-        if (Array.isArray(employeesData)) {
-            employeesData.forEach(function(emp) {
-                var empId = emp.id || emp.iMasterId || '';
-                var empCode = emp.code || emp.sCode || '';
-                var empName = emp.name || emp.sName || '';
-                if (selectedEmpVal && (empId == selectedEmpVal || empCode == selectedEmpVal)) {
-                    return; // Exclude the applying employee
-                }
-                subSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
-            });
-        }
-        if (currentVal && currentVal != selectedEmpVal) {
-            subSelect.val(currentVal);
-        }
-        if (subSelect.data('select2')) {
-            subSelect.trigger('change.select2');
         }
     }
-
-    var isEditingMode = false;
 
     function onEmployeeChange() {
         var empVal = $(this).val();
-        updateSubstituteDropdown(empVal);
-
         if (!empVal) {
-            clearEmployeeFields();
+            $('#hdr-designation, #hdr-department, #hdr-manager, #dtl-contact').val('');
+            $('#dtl-leavetype').empty().append('<option value="">Select Leave Type...</option>');
+            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
+            currentEmployeeLeaves = [];
             return;
-        }
-
-        if (!isEditingMode) {
-            stagedLeaves = [];
-            stagedSystemLeaves = [];
-            renderGrids();
         }
 
         var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
         if (emp) {
-            var desig = emp.designation || emp.designationName || emp.sDesignationName || '';
-            var dept = emp.department || emp.departmentName || emp.sDepartmentName || '';
-            var mgr = emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '';
-            var contact = emp.contact || emp.contactNo || emp.mobile || emp.sMobileNo || '+1-234-567-8900';
+            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
+            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
+            $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || '');
+        }
 
-            $('#hdr-designation').val(desig);
-            $('#hdr-department').val(dept);
-            $('#hdr-manager').val(mgr);
-            if (!isEditingMode) {
-                $('#dtl-contact').val(contact);
+        // Fetch employee's real leave balances from live API
+        $.getJSON('/Master/GetApiEmployeeLeaves?id=' + empVal).done(function(leaves) {
+            currentEmployeeLeaves = Array.isArray(leaves) ? leaves : [];
+            var ltSelect = $('#dtl-leavetype');
+            ltSelect.empty().append('<option value="">Select Leave Type...</option>');
+
+            currentEmployeeLeaves.forEach(function(lt) {
+                var ltId = lt.iLeaveTypeId;
+                var ltName = lt.sLeaveName;
+                ltSelect.append(`<option value="${ltId}" data-name="${ltName}">${ltName}</option>`);
+            });
+
+            if (ltSelect.find('option').length > 1) {
+                ltSelect.val(ltSelect.find('option:eq(1)').val()).trigger('change');
             }
-        }
-
-        if (!isEditingMode) {
-            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
-            $('#dtl-leavetype').val('').trigger('change');
-            calculateLeaves(); 
-        }
+        }).fail(function() {
+            alertify.log('Failed to fetch leave balances for employee.', 'error', 4000);
+        });
     }
 
     function onLeaveTypeChange() {
-        var ltCode = $(this).val();
-        if (!ltCode) {
+        var ltId = parseInt($(this).val()) || 0;
+        if (!ltId || currentEmployeeLeaves.length === 0) {
             $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
             calculateLeaves();
             return;
         }
 
-        var bal = leaveOptionsData.leaveTypes.find(lt => lt.code === ltCode);
+        var bal = currentEmployeeLeaves.find(l => l.iLeaveTypeId === ltId);
         if (bal) {
-            $('#sum-eligible').text((bal.eligible || 0).toFixed(1));
-            $('#sum-approved').text((bal.approved || 0).toFixed(1));
-            $('#sum-unapproved').text((bal.unapproved || 0).toFixed(1));
-            
-            var available = (bal.eligible || 0) - (bal.approved || 0) - (bal.unapproved || 0);
+            var eligible = parseFloat(bal.openingLeaves || 0);
+            var approved = parseFloat(bal.leavesApproved || 0);
+            var pending = parseFloat(bal.leavesPending || 0);
+            var available = parseFloat(bal.leaveBalance !== undefined ? bal.leaveBalance : (eligible - approved - pending));
+
+            $('#sum-eligible').text(eligible.toFixed(1));
+            $('#sum-approved').text(approved.toFixed(1));
+            $('#sum-unapproved').text(pending.toFixed(1));
             $('#sum-available').text(available.toFixed(1));
         } else {
             $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
@@ -515,178 +494,45 @@
         calculateLeaves();
     }
 
-    function renderGrids() {
-        var uTbody = $('#user-grid-table tbody');
-        uTbody.empty();
-        stagedLeaves.forEach(function(app) {
-            var docBtn = '';
-            var safeUrl = (app.attachmentUrl || '').replace(/'/g, "\\'");
-            var safeName = (app.attachmentName || 'Attachment.pdf').replace(/'/g, "\\'");
-            if (app.attachmentUrl || app.attachmentName) {
-                docBtn = `<a href="#" onclick="openDocPreview('${safeName}', '${safeUrl}'); return false;" class="badge badge-info shadow-sm" title="Open document in new tab"><i class="fas fa-paperclip mr-1"></i> ${app.attachmentName || 'View Document'}</a>`;
-            } else {
-                docBtn = `<span class="badge badge-secondary shadow-sm"><i class="fas fa-file-pdf mr-1"></i> No Document</span>`;
-            }
-
-            var tr = `<tr>
-                <td class="action-btns" style="text-align:center;">
-                    <a href="#" class="remove-item-btn" title="Delete" onclick="deleteStagedLeave('${app.stagedId}'); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                </td>
-                <td>${app.type || '-'}</td>
-                <td>${window.formatDateDisplay(app.start)}</td>
-                <td>${window.formatDateDisplay(app.end)}</td>
-                <td class="num-col">${app.duration}</td>
-                <td>${app.contactNo || '-'}</td>
-                <td>${app.substituteEmployee || '-'}</td>
-                <td>${docBtn}</td>
-                <td class="num-col">${(app.eligible || 0).toFixed(1)}</td>
-                <td class="num-col">${(app.approved || 0).toFixed(1)}</td>
-                <td class="num-col">${(app.unapproved || 0).toFixed(1)}</td>
-                <td class="num-col">${(app.available || 0).toFixed(1)}</td>
-                <td class="num-col">${(app.usedNow || 0).toFixed(1)}</td>
-                <td class="num-col">${(app.balance || 0).toFixed(1)}</td>
-            </tr>`;
-            uTbody.append(tr);
-        });
-
-        var sTbody = $('#system-grid-table tbody');
-        sTbody.empty();
-        stagedSystemLeaves.forEach(function(app) {
-            var tr = `<tr>
-                <td>${app.type || '-'}</td>
-                <td>${app.monthName}</td>
-                <td>${app.start}</td>
-                <td>${app.end}</td>
-                <td class="num-col">${app.duration}</td>
-            </tr>`;
-            sTbody.append(tr);
-        });
-    }
-
-    var uploadedBase64Url = '';
-    var uploadedFileName = '';
-
-    function checkFileSize(input) {
-        if (input.files && input.files[0]) {
-            var file = input.files[0];
-            if (file.size > 25 * 1024 * 1024) {
-                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
-                input.value = '';
-                uploadedBase64Url = '';
-                uploadedFileName = '';
-                return;
-            }
-            uploadedFileName = file.name;
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                uploadedBase64Url = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        } else {
-            uploadedBase64Url = '';
-            uploadedFileName = '';
-        }
-    }
-
-    function deleteStagedLeave(stagedId) {
-        alertify.confirm('Are you sure you want to remove this leave from the grid?', function (e) {
-            if (e) {
-                if (editingStagedId && String(editingStagedId) === String(stagedId)) {
-                    editingStagedId = null;
-                }
-                stagedLeaves = stagedLeaves.filter(function(app) { return String(app.stagedId) !== String(stagedId) && String(app.id) !== String(stagedId); });
-                stagedSystemLeaves = stagedSystemLeaves.filter(function(app) { return String(app.stagedId) !== String(stagedId) && String(app.id) !== String(stagedId); });
-                calculateLeaves();
-                renderGrids();
-            }
-        });
-    }
-
-    function clearEmployeeFields() {
-        $('#hdr-designation, #hdr-department, #hdr-manager, #dtl-contact').val('');
-        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
-        stagedLeaves = [];
-        stagedSystemLeaves = [];
-        editingStagedId = null;
-        renderGrids();
-    }
-
     function parseDateObj(dStr) {
         if (!dStr) return new Date();
-        if (dStr instanceof Date) return new Date(dStr.getTime());
+        if (dStr instanceof Date) return dStr;
         dStr = String(dStr).trim();
-        if (dStr.includes('T')) {
-            dStr = dStr.split('T')[0];
-        }
+        if (dStr.includes('T')) dStr = dStr.split('T')[0];
 
         var months = {
             'jan':0,'feb':1,'mar':2,'apr':3,'may':4,'jun':5,'jul':6,'aug':7,'sep':8,'oct':9,'nov':10,'dec':11,
-            '01':0,'02':1,'03':2,'04':3,'05':4,'06':5,'07':6,'08':7,'09':8,'10':9,'11':10,'12':11,
-            '1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8
+            '01':0,'02':1,'03':2,'04':3,'05':4,'06':5,'07':6,'08':7,'09':8,'10':9,'11':10,'12':11
         };
 
         if (dStr.includes('-')) {
             var p = dStr.split('-');
             if (p.length === 3) {
                 if (p[0].length === 4) {
-                    var y = parseInt(p[0]);
+                    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+                } else if (p[2].length === 4) {
                     var mKey = p[1].toLowerCase();
                     var m = months[mKey] !== undefined ? months[mKey] : (parseInt(p[1]) - 1);
-                    var d = parseInt(p[2]);
-                    return new Date(y, m, d);
-                } else if (p[2].length === 4) {
-                    var y = parseInt(p[2]);
-                    var mKey = p[1].toLowerCase();
-                    var m = months[mKey] !== undefined ? months[mKey] : (parseInt(p[1]) - 1);
-                    var d = parseInt(p[0]);
-                    return new Date(y, m, d);
-                }
-            }
-        } else if (dStr.includes('/')) {
-            var p = dStr.split('/');
-            if (p.length === 3) {
-                if (p[0].length === 4) {
-                    var y = parseInt(p[0]);
-                    var m = parseInt(p[1]) - 1;
-                    var d = parseInt(p[2]);
-                    return new Date(y, m, d);
-                } else if (p[2].length === 4) {
-                    var y = parseInt(p[2]);
-                    var m = parseInt(p[1]) - 1;
-                    var d = parseInt(p[0]);
-                    return new Date(y, m, d);
+                    return new Date(parseInt(p[2]), m, parseInt(p[0]));
                 }
             }
         }
-
         var parsed = new Date(dStr);
         return isNaN(parsed.getTime()) ? new Date() : parsed;
-    }
-
-    function formatDateDisplay(d) {
-        if (!d) return '';
-        if (typeof d === 'string') {
-            d = parseDateObj(d);
-        }
-        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        var dd = String(d.getDate()).padStart(2, '0');
-        var mmm = months[d.getMonth()];
-        var yyyy = d.getFullYear();
-        return dd + '-' + mmm + '-' + yyyy;
     }
 
     function calculateLeaves() {
         var fromStr = $('#dtl-fromdate').val();
         var toStr = $('#dtl-todate').val();
-        
         var duration = 0;
+
         if (fromStr && toStr) {
             var f = parseDateObj(fromStr);
             var t = parseDateObj(toStr);
 
             if (t >= f) {
                 var diffTime = Math.abs(t - f);
-                var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 duration = diffDays + 1;
             }
         }
@@ -694,151 +540,104 @@
 
         var weeklyOff = parseFloat($('#dtl-weeklyoff').val()) || 0;
         var publicHoliday = parseFloat($('#dtl-publicholiday').val()) || 0;
-        
         var noOfLeaves = duration - weeklyOff - publicHoliday;
-        
+
         if ($('#dtl-halfday').val() === 'Yes') {
             noOfLeaves -= 0.5;
         }
         if (noOfLeaves < 0) noOfLeaves = 0;
-        
+
         $('#dtl-noofleaves').val(noOfLeaves);
-        
-        var eligible = parseFloat($('#sum-eligible').text()) || 0;
-        var approved = parseFloat($('#sum-approved').text()) || 0;
-        var unapproved = parseFloat($('#sum-unapproved').text()) || 0;
-        
-        var available = eligible - approved - unapproved;
+
+        var available = parseFloat($('#sum-available').text()) || 0;
         var finalBalance = available - noOfLeaves;
 
         $('#sum-usednow').text(noOfLeaves.toFixed(1));
         $('#sum-balance').text(finalBalance.toFixed(1));
     }
 
-    function addToGrid() {
-        if (isAddingToGrid) return;
-        isAddingToGrid = true;
-
-        function failGridAdd(msg) {
-            isAddingToGrid = false;
-            if (msg) {
-                alertify.log(msg, 'error', 5000);
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            var file = input.files[0];
+            if (file.size > 25 * 1024 * 1024) {
+                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
+                input.value = '';
             }
         }
+    }
 
-        calculateLeaves();
-
-        var empId = $('#hdr-employee').val();
+    function addToGrid() {
+        var empVal = $('#hdr-employee').val();
+        var leaveTypeId = parseInt($('#dtl-leavetype').val()) || 0;
         var fromDate = $('#dtl-fromdate').val();
         var toDate = $('#dtl-todate').val();
-        var leaveTypeVal = $('#dtl-leavetype').val();
-        var leaveType = $('#dtl-leavetype option:selected').text();
-        
-        if (!empId || !fromDate || !toDate || !leaveTypeVal) {
-            failGridAdd('Please fill all required fields (Employee, Leave Type, Dates).');
-            return;
-        }
-
-        var selText = $('#hdr-employee option:selected').text().trim();
-        var empName = selText.includes(' - ') ? selText.split(' - ').slice(1).join(' - ') : selText;
-        var code = $('#hdr-docno').val();
-        var reason = $('#hdr-comments').val();
-
-        var attInput = document.getElementById('dtl-attachment');
-        var attachmentName = uploadedFileName || ((attInput && attInput.files && attInput.files[0]) ? attInput.files[0].name : '');
-        var attachmentUrl = uploadedBase64Url || ((attInput && attInput.files && attInput.files[0]) ? URL.createObjectURL(attInput.files[0]) : '');
-
-        var duration = parseFloat($('#dtl-duration').val()) || 0;
-        var eligible = parseFloat($('#sum-eligible').text()) || 0;
-        var approved = parseFloat($('#sum-approved').text()) || 0;
-        var unapproved = parseFloat($('#sum-unapproved').text()) || 0;
-        var available = eligible - approved - unapproved;
-
         var usedNow = parseFloat($('#dtl-noofleaves').val()) || 0;
-        var balance = available - usedNow;
 
-        if (usedNow <= 0) {
-            failGridAdd('No of leaves (used now) must be greater than 0. Please select valid dates.');
+        if (!empVal) {
+            alertify.log('Please select an employee.', 'error', 5000);
             return;
         }
-
-        if (available > 0 && usedNow > available) {
-            failGridAdd('Requested leave duration (' + usedNow + ' days) exceeds available leave balance (' + available + ' days).');
+        if (!leaveTypeId) {
+            alertify.log('Please select a leave type.', 'error', 5000);
+            return;
+        }
+        if (!fromDate || !toDate || usedNow <= 0) {
+            alertify.log('Please specify valid leave dates.', 'error', 5000);
             return;
         }
 
         var f = parseDateObj(fromDate);
         var t = parseDateObj(toDate);
-
         if (f > t) {
-            failGridAdd('To Date cannot be earlier than From Date.');
+            alertify.log('To Date cannot be earlier than From Date.', 'error', 5000);
             return;
         }
 
+        // Prevent overlapping dates in grid
         var hasOverlap = stagedLeaves.some(function(item) {
-            if (editingStagedId && (String(item.stagedId) === String(editingStagedId) || String(item.id) === String(editingStagedId))) {
-                return false;
-            }
-            var sF = parseDateObj(item.start);
-            var sT = parseDateObj(item.end);
+            var sF = parseDateObj(item.fromDate);
+            var sT = parseDateObj(item.toDate);
             return (f <= sT && t >= sF);
         });
 
         if (hasOverlap) {
-            failGridAdd('Selected date range overlaps with an already staged leave application.');
+            alertify.log('Selected date range overlaps with an already added leave.', 'error', 5000);
             return;
         }
 
-        var subVal = $('#dtl-substitute').val();
-        if (subVal && (subVal == empId || String(subVal) === String(empId))) {
-            failGridAdd('An employee cannot be selected as their own substitute.');
-            return;
-        }
-
-        var targetStagedId = editingStagedId || ('id_' + new Date().getTime());
-        var dispFrom = formatDateDisplay(f);
-        var dispTo = formatDateDisplay(t);
+        var ltOpt = $('#dtl-leavetype option:selected');
+        var leaveTypeName = ltOpt.data('name') || ltOpt.text();
         var contactNo = $('#dtl-contact').val() || '';
-        var subName = (subVal && subVal !== '') ? $('#dtl-substitute option:selected').text() : '-';
+        var subOpt = $('#dtl-substitute option:selected');
+        var subName = subOpt.val() ? subOpt.text() : '-';
 
-        var newApp = {
-            stagedId: targetStagedId,
-            id: targetStagedId,
-            code: code,
-            name: empName,
-            type: leaveType,
-            start: dispFrom,
-            end: dispTo,
+        var eligible = parseFloat($('#sum-eligible').text()) || 0;
+        var approved = parseFloat($('#sum-approved').text()) || 0;
+        var pending = parseFloat($('#sum-unapproved').text()) || 0;
+        var available = parseFloat($('#sum-available').text()) || 0;
+        var balance = parseFloat($('#sum-balance').text()) || 0;
+
+        var newItem = {
+            stagedId: 'id_' + new Date().getTime(),
+            leaveTypeId: leaveTypeId,
+            leaveTypeName: leaveTypeName,
+            fromDate: fromDate,
+            toDate: toDate,
             duration: usedNow,
             contactNo: contactNo,
-            substituteEmployee: subName,
-            substituteEmployeeId: subVal,
+            substitute: subName,
             eligible: eligible,
             approved: approved,
-            unapproved: unapproved,
+            pending: pending,
             available: available,
             usedNow: usedNow,
             balance: balance,
-            status: 'Pending',
-            reason: reason,
-            attachmentName: attachmentName,
-            attachmentUrl: attachmentUrl
+            remarks: $('#hdr-comments').val() || leaveTypeName
         };
 
-        if (editingStagedId) {
-            var exIdx = stagedLeaves.findIndex(function(l) { return String(l.stagedId) === String(editingStagedId) || String(l.id) === String(editingStagedId); });
-            if (exIdx !== -1) {
-                stagedLeaves[exIdx] = newApp;
-            } else {
-                stagedLeaves.push(newApp);
-            }
-            stagedSystemLeaves = stagedSystemLeaves.filter(function(s) { return String(s.stagedId) !== String(editingStagedId); });
-            editingStagedId = null;
-        } else {
-            stagedLeaves.push(newApp);
-        }
+        stagedLeaves.push(newItem);
 
-        // System Grid (Monthly Breakdown)
+        // Compute Monthly breakdown for System Grid
         var cur = new Date(f);
         var monthsNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -846,262 +645,234 @@
             var mIndex = cur.getMonth();
             var yNum = cur.getFullYear();
             var monthLabel = monthsNames[mIndex] + ' ' + yNum;
-            
             var lastDayOfMonth = new Date(yNum, mIndex + 1, 0);
             var endChunk = (t < lastDayOfMonth) ? new Date(t) : lastDayOfMonth;
             var chunkDiff = Math.ceil(Math.abs(endChunk - cur) / (1000 * 60 * 60 * 24)) + 1;
-            
+
             stagedSystemLeaves.push({
-                stagedId: targetStagedId,
-                type: leaveType,
+                stagedId: newItem.stagedId,
+                leaveTypeName: leaveTypeName,
                 monthName: monthLabel,
-                start: formatDateDisplay(cur),
-                end: formatDateDisplay(endChunk),
-                duration: chunkDiff,
-                attachmentName: attachmentName,
-                attachmentUrl: attachmentUrl
+                fromDate: window.formatDateDisplay(cur),
+                toDate: window.formatDateDisplay(endChunk),
+                duration: chunkDiff
             });
 
             cur = new Date(yNum, mIndex + 1, 1);
         }
 
         renderGrids();
-        resetLeaveDetailsForm();
-        alertify.log('Leave details added to grid.', 'success', 3000);
-        setTimeout(function() { isAddingToGrid = false; }, 300);
+        alertify.log('Leave added to list.', 'success', 3000);
     }
 
-    function resetLeaveDetailsForm() {
-        $('#dtl-leavetype').val('').trigger('change');
-        if ($('#dtl-paymenttype option').length > 0) {
-            $('#dtl-paymenttype').val($('#dtl-paymenttype option:first').val()).trigger('change');
-        }
-        $('#dtl-halfday').val('No').trigger('change');
-        
-        var d = new Date();
-        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        var mmm = months[d.getMonth()];
-        var dd = String(d.getDate()).padStart(2, '0');
-        var yyyy = d.getFullYear();
-        var todayStr = dd + '-' + mmm + '-' + yyyy;
-        
-        $('#dtl-fromdate').val(todayStr);
-        $('#dtl-todate').val(todayStr);
-        
-        $('#dtl-duration').val(0);
-        $('#dtl-weeklyoff').val(0);
-        $('#dtl-publicholiday').val(0);
-        $('#dtl-noofleaves').val(0);
-        
-        $('#dtl-contact').val('');
-        $('#dtl-substitute').val('').trigger('change');
-        $('#dtl-attachment').val('');
-        uploadedBase64Url = '';
-        uploadedFileName = '';
-        
-        $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
+    function deleteStagedLeave(stagedId) {
+        stagedLeaves = stagedLeaves.filter(function(l) { return l.stagedId !== stagedId; });
+        stagedSystemLeaves = stagedSystemLeaves.filter(function(s) { return s.stagedId !== stagedId; });
+        renderGrids();
     }
 
-    function checkEditMode() {
-        var editDataStr = sessionStorage.getItem('editLeaveApp');
-        if (!editDataStr) return;
-        
-        try {
-            var editData = JSON.parse(editDataStr);
-            sessionStorage.removeItem('editLeaveApp');
-            isEditingMode = true;
+    function renderGrids() {
+        var uTbody = $('#user-grid-table tbody');
+        uTbody.empty();
 
-            if (editData.code) {
-                $('#hdr-docno').val(editData.code);
-            }
-            if (editData.comments || editData.reason) {
-                $('#hdr-comments').val(editData.comments || editData.reason);
-            }
-
-            var targetName = editData.name || editData.employeeName || '';
-            if (targetName && Array.isArray(employeesData)) {
-                var emp = employeesData.find(e => {
-                    var nameMatch = (e.name && e.name.toLowerCase().includes(targetName.toLowerCase())) ||
-                                    (e.sName && e.sName.toLowerCase().includes(targetName.toLowerCase()));
-                    return nameMatch || e.id == editData.empId || e.iMasterId == editData.empId;
-                });
-                if (emp) {
-                    var empId = emp.id || emp.iMasterId;
-                    $('#hdr-employee').val(empId).trigger('change');
-                }
-            }
-
-            // Populate detail inputs above grid
-            if (editData.type) {
-                var ltOpt = $('#dtl-leavetype option').filter(function() {
-                    var txt = $(this).text().trim().toLowerCase();
-                    var val = $(this).val().trim().toLowerCase();
-                    var target = editData.type.trim().toLowerCase();
-                    return txt === target || val === target;
-                });
-                if (ltOpt.length > 0) {
-                    $('#dtl-leavetype').val(ltOpt.val()).trigger('change');
-                }
-            }
-
-            var rawStart = editData.start || editData.fromDate;
-            var rawEnd = editData.end || editData.toDate;
-            if (rawStart) $('#dtl-fromdate').val(formatDateDisplay(parseDateObj(rawStart)));
-            if (rawEnd) $('#dtl-todate').val(formatDateDisplay(parseDateObj(rawEnd)));
-            if (editData.duration || editData.usedNow) $('#dtl-duration').val(editData.duration || editData.usedNow);
-            if (editData.duration || editData.usedNow) $('#dtl-noofleaves').val(editData.duration || editData.usedNow);
-            if (editData.contactNo) $('#dtl-contact').val(editData.contactNo);
-
-            if (editData.substituteEmployeeId) {
-                $('#dtl-substitute').val(editData.substituteEmployeeId).trigger('change');
-            } else if (editData.substituteEmployee && editData.substituteEmployee !== '-') {
-                var subOpt = $('#dtl-substitute option').filter(function() {
-                    return $(this).text().toLowerCase().includes(editData.substituteEmployee.toLowerCase());
-                });
-                if (subOpt.length > 0) {
-                    $('#dtl-substitute').val(subOpt.val()).trigger('change');
-                }
-            }
-
-            if (editData.eligible !== undefined) $('#sum-eligible').text(parseFloat(editData.eligible || 0).toFixed(1));
-            if (editData.approved !== undefined) $('#sum-approved').text(parseFloat(editData.approved || 0).toFixed(1));
-            if (editData.unapproved !== undefined) $('#sum-unapproved').text(parseFloat(editData.unapproved || 0).toFixed(1));
-            if (editData.available !== undefined) $('#sum-available').text(parseFloat(editData.available || 0).toFixed(1));
-            if (editData.usedNow !== undefined || editData.duration !== undefined) $('#sum-usednow').text(parseFloat(editData.usedNow || editData.duration || 0).toFixed(1));
-            if (editData.balance !== undefined) $('#sum-balance').text(parseFloat(editData.balance || 0).toFixed(1));
-
-            if (editData.attachmentName) {
-                uploadedFileName = editData.attachmentName;
-                uploadedBase64Url = editData.attachmentUrl || '';
-            }
-
-            if (editData.type || editData.start) {
-                var uniqueStagedId = 'id_' + new Date().getTime();
-                var formattedStart = formatDateDisplay(parseDateObj(editData.start || editData.fromDate || $('#dtl-fromdate').val()));
-                var formattedEnd = formatDateDisplay(parseDateObj(editData.end || editData.toDate || $('#dtl-todate').val()));
-                var appObj = {
-                    stagedId: editData.stagedId || uniqueStagedId,
-                    id: editData.id || uniqueStagedId,
-                    code: editData.code || $('#hdr-docno').val(),
-                    name: editData.name || editData.employeeName || $('#hdr-employee option:selected').text(),
-                    type: editData.type || editData.leaveTypeName || 'Annual Leave',
-                    start: formattedStart,
-                    end: formattedEnd,
-                    fromDate: formattedStart,
-                    toDate: formattedEnd,
-                    duration: parseFloat(editData.duration || editData.usedNow || 1),
-                    contactNo: editData.contactNo || $('#dtl-contact').val() || '',
-                    substituteEmployee: editData.substituteEmployee || $('#dtl-substitute option:selected').text() || '-',
-                    substituteEmployeeId: editData.substituteEmployeeId || $('#dtl-substitute').val() || '',
-                    eligible: parseFloat(editData.eligible || 0),
-                    approved: parseFloat(editData.approved || 0),
-                    unapproved: parseFloat(editData.unapproved || 0),
-                    available: parseFloat(editData.available || 0),
-                    usedNow: parseFloat(editData.usedNow || editData.duration || 1),
-                    balance: parseFloat(editData.balance || 0),
-                    status: editData.status || 'Pending',
-                    reason: editData.reason || editData.comments || $('#hdr-comments').val() || '',
-                    attachmentName: editData.attachmentName || uploadedFileName || '',
-                    attachmentUrl: editData.attachmentUrl || uploadedBase64Url || ''
-                };
-
-                stagedLeaves = [appObj];
-                editingStagedId = appObj.stagedId;
-
-                stagedSystemLeaves = [];
-                if (appObj.start && appObj.end) {
-                    var f = parseDateObj(appObj.start);
-                    var t = parseDateObj(appObj.end);
-                    var cur = new Date(f);
-                    var monthsNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-                    while (cur <= t) {
-                        var mIndex = cur.getMonth();
-                        var yNum = cur.getFullYear();
-                        var monthLabel = monthsNames[mIndex] + ' ' + yNum;
-                        
-                        var lastDayOfMonth = new Date(yNum, mIndex + 1, 0);
-                        var endChunk = (t < lastDayOfMonth) ? new Date(t) : lastDayOfMonth;
-                        var chunkDiff = Math.ceil(Math.abs(endChunk - cur) / (1000 * 60 * 60 * 24)) + 1;
-                        
-                        stagedSystemLeaves.push({
-                            stagedId: appObj.stagedId,
-                            type: appObj.type,
-                            monthName: monthLabel,
-                            start: formatDateDisplay(cur),
-                            end: formatDateDisplay(endChunk),
-                            duration: chunkDiff,
-                            attachmentName: appObj.attachmentName,
-                            attachmentUrl: appObj.attachmentUrl
-                        });
-
-                        cur = new Date(yNum, mIndex + 1, 1);
-                    }
-                }
-
-                renderGrids();
-            }
-
-            $('.page-title-bar .page-title-text').html('<i class="fas fa-edit fa-sm mr-2 text-primary"></i> Edit Leave Application');
-            alertify.log('Editing Leave Application: ' + (editData.code || ''), 'info', 3000);
-        } catch(e) {
-            console.error('Error loading edit leave application data:', e);
-        } finally {
-            isEditingMode = false;
-        }
-    }
-
-    function saveApplication() {
         if (stagedLeaves.length === 0) {
-            alertify.log('No leave entries added to the grid.', 'error', 5000);
+            uTbody.append('<tr id="empty-row"><td colspan="13" class="text-center text-muted py-3">No leaves added yet. Select options above and click "Add Leave to Grid".</td></tr>');
+        } else {
+            stagedLeaves.forEach(function(l) {
+                var tr = `<tr>
+                    <td class="action-btns" style="text-align:center;">
+                        <a href="javascript:void(0)" class="remove-item-btn" title="Delete" onclick="deleteStagedLeave('${l.stagedId}')"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                    </td>
+                    <td><strong>${l.leaveTypeName}</strong></td>
+                    <td>${l.fromDate}</td>
+                    <td>${l.toDate}</td>
+                    <td class="num-col font-weight-bold text-primary">${l.duration}</td>
+                    <td>${l.contactNo || '-'}</td>
+                    <td>${l.substitute || '-'}</td>
+                    <td class="num-col">${l.eligible.toFixed(1)}</td>
+                    <td class="num-col">${l.approved.toFixed(1)}</td>
+                    <td class="num-col">${l.pending.toFixed(1)}</td>
+                    <td class="num-col text-warning font-weight-bold">${l.available.toFixed(1)}</td>
+                    <td class="num-col">${l.usedNow.toFixed(1)}</td>
+                    <td class="num-col text-success font-weight-bold">${l.balance.toFixed(1)}</td>
+                </tr>`;
+                uTbody.append(tr);
+            });
+        }
+
+        var sTbody = $('#system-grid-table tbody');
+        sTbody.empty();
+
+        if (stagedSystemLeaves.length === 0) {
+            sTbody.append('<tr id="empty-sys-row"><td colspan="5" class="text-center text-muted py-3">No breakdown available.</td></tr>');
+        } else {
+            stagedSystemLeaves.forEach(function(s) {
+                var tr = `<tr>
+                    <td><strong>${s.leaveTypeName}</strong></td>
+                    <td>${s.monthName}</td>
+                    <td>${s.fromDate}</td>
+                    <td>${s.toDate}</td>
+                    <td class="num-col font-weight-bold">${s.duration}</td>
+                </tr>`;
+                sTbody.append(tr);
+            });
+        }
+    }
+
+    function loadLeaveTransactionForEdit(headerId, cachedList) {
+        function applyData(tx) {
+            if (!tx) return;
+            $('#hdr-header-id').val(tx.iHeaderId || headerId);
+            $('#hdr-docno').val(tx.sDocNo || tx.docNo || '');
+            if (tx.dDocDate) $('#hdr-date').val(window.formatDateDisplay(tx.dDocDate));
+            if (tx.dPostDate) $('#hdr-postdate').val(window.formatDateDisplay(tx.dPostDate));
+            if (tx.sComments) $('#hdr-comments').val(tx.sComments);
+
+            var leavesList = tx.leaves || tx.Leaves || [];
+            var firstEmpId = leavesList[0]?.iEmployeeId || leavesList[0]?.employeeId || 0;
+
+            if (firstEmpId > 0) {
+                $('#hdr-employee').val(firstEmpId).trigger('change');
+            }
+
+            var fileObj = tx.leaveFile || tx.LeaveFile || tx.attachment || tx.Attachment;
+            if (fileObj && fileObj.sAttachmentFilePath) {
+                $('#attachment-note').html(`Current Attachment: <a href="javascript:void(0)" class="text-primary font-weight-bold" onclick="window.openDocPreview('${fileObj.sAttachmentFileName || 'Attachment'}', '${fileObj.sAttachmentFilePath}')"><i class="fas fa-paperclip mr-1"></i>${fileObj.sAttachmentFileName || 'View Attached File'}</a> (Upload new file to replace)`);
+            }
+
+            stagedLeaves = [];
+            stagedSystemLeaves = [];
+
+            leavesList.forEach(function(l) {
+                var lTypeId = l.iLeaveTypeId || 7;
+                var lTypeName = l.sLeaveTypeName || l.leaveTypeName || 'Leave Application';
+                var fDur = parseFloat(l.fDuration || 1);
+                var fDate = window.formatDateDisplay(tx.dDocDate);
+                var tDate = window.formatDateDisplay(tx.dPostDate || tx.dDocDate);
+
+                stagedLeaves.push({
+                    stagedId: 'id_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000),
+                    leaveTypeId: lTypeId,
+                    leaveTypeName: lTypeName,
+                    fromDate: fDate,
+                    toDate: tDate,
+                    duration: fDur,
+                    contactNo: '-',
+                    substitute: '-',
+                    eligible: 30,
+                    approved: fDur,
+                    pending: 0,
+                    available: 30 - fDur,
+                    usedNow: fDur,
+                    balance: 30 - fDur,
+                    remarks: l.sRemarks || tx.sComments || lTypeName
+                });
+            });
+
+            renderGrids();
+        }
+
+        $.getJSON('/Master/GetApiLeaveTransactionById?id=' + headerId).done(function(res) {
+            var tx = (res && res.data) ? res.data : res;
+            if (tx && (tx.iHeaderId || tx.sDocNo)) {
+                applyData(tx);
+            } else {
+                var match = (cachedList || []).find(t => (t.iHeaderId || t.id) == headerId || (t.sDocNo || t.docNo) == headerId);
+                applyData(match);
+            }
+        }).fail(function() {
+            var match = (cachedList || []).find(t => (t.iHeaderId || t.id) == headerId || (t.sDocNo || t.docNo) == headerId);
+            if (match) applyData(match);
+        });
+    }
+
+    function saveLeaveApplication() {
+        if (stagedLeaves.length === 0) {
+            alertify.log('Please add at least one leave to the grid before saving.', 'error', 5000);
             return;
         }
 
-        var existingLeaves = JSON.parse(localStorage.getItem('leaveApps') || '[]');
-
-        var maxId = 0;
-        existingLeaves.forEach(function(l) {
-            var nid = parseInt(l.id);
-            if (!isNaN(nid) && nid > maxId) maxId = nid;
-        });
-        
-        stagedLeaves.forEach(function(staged) {
-            var normStart = formatDateDisplay(staged.start || staged.fromDate);
-            var normEnd = formatDateDisplay(staged.end || staged.toDate);
-            staged.start = normStart;
-            staged.end = normEnd;
-            staged.fromDate = normStart;
-            staged.toDate = normEnd;
-
-            if (!staged.code) {
-                staged.code = $('#hdr-docno').val();
-            }
-
-            var idx = -1;
-            if (staged.id && !String(staged.id).startsWith('id_')) {
-                idx = existingLeaves.findIndex(function(l) { 
-                    return String(l.id) === String(staged.id); 
-                });
-            }
-
-            if (idx !== -1) {
-                staged.id = existingLeaves[idx].id;
-                existingLeaves[idx] = staged;
-            } else {
-                maxId++;
-                staged.id = maxId;
-                existingLeaves.push(staged);
-            }
-        });
-
-        localStorage.setItem('leaveApps', JSON.stringify(existingLeaves));
-
-        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Leave Application saved successfully!', type: 'success' }));
-        var targetUrl = '@Url.Action("LeaveApplicationIndex", "Master")';
-        if (typeof loadPageContent === 'function') {
-            loadPageContent(targetUrl, true);
-        } else {
-            window.location.href = targetUrl;
+        var empVal = $('#hdr-employee').val();
+        if (!empVal) {
+            alertify.log('Please select an employee.', 'error', 5000);
+            return;
         }
+
+        var docNo = $('#hdr-docno').val();
+        var dateStr = $('#hdr-date').val();
+        var postDateStr = $('#hdr-postdate').val() || dateStr;
+
+        function parseToYMD(dStr) {
+            if(!dStr) return new Date().toISOString().split('T')[0];
+            var parts = dStr.split('-');
+            if(parts.length === 3) {
+                var months = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'};
+                var m = months[parts[1]] || '01';
+                var d = String(parts[0]).padStart(2, '0');
+                var y = parts[2];
+                return y + '-' + m + '-' + d;
+            }
+            return new Date().toISOString().split('T')[0];
+        }
+
+        var ymdDate = parseToYMD(dateStr);
+        var ymdPostDate = parseToYMD(postDateStr);
+
+        var leavesPayload = stagedLeaves.map(function(sl) {
+            return {
+                iEmployeeId: parseInt(empVal),
+                iLeaveTypeId: sl.leaveTypeId,
+                iAdjType: 1,
+                fDuration: sl.duration,
+                sRemarks: sl.remarks || sl.leaveTypeName
+            };
+        });
+
+        var formData = new FormData();
+        formData.append('iHeaderId', isEditMode ? editHeaderId.toString() : '0');
+        formData.append('sDocNo', docNo);
+        formData.append('dDocDate', ymdDate);
+        formData.append('dPostDate', ymdPostDate);
+        formData.append('iCompanyId', '1');
+        formData.append('iPayYearId', '1');
+        formData.append('iTransTypeId', '2'); // TransTypeId 2 for Leave Applications
+        formData.append('sComments', $('#hdr-comments').val() || 'Leave application');
+        formData.append('Leaves', JSON.stringify(leavesPayload));
+
+        var fileInput = document.getElementById('hdr-attachment');
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            formData.append('Attachment', fileInput.files[0]);
+        }
+
+        $.ajax({
+            url: '/Master/SaveApiLeaveTransaction',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                var isSuccess = res && (res.success === true || res.statusCode === 200);
+                if (isSuccess) {
+                    var savedDoc = (res.data && typeof res.data === 'string') ? res.data : docNo;
+                    var successMsg = isEditMode 
+                        ? 'Leave Application (' + savedDoc + ') updated successfully!' 
+                        : 'Leave Application (' + savedDoc + ') saved successfully!';
+
+                    sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: successMsg, type: 'success' }));
+                    var targetUrl = '@Url.Action("LeaveApplicationIndex", "Master")';
+                    if (typeof loadPageContent === 'function') {
+                        loadPageContent(targetUrl, true);
+                    } else {
+                        window.location.href = targetUrl;
+                    }
+                } else {
+                    var errMsg = (res && res.message) ? res.message : 'Error saving Leave Application.';
+                    alertify.log(errMsg, 'error', 6000);
+                }
+            },
+            error: function(xhr, status, err) {
+                alertify.log('Failed to save Leave Application: ' + (xhr.responseText || err || 'Server error'), 'error', 5000);
+            }
+        });
     }
 </script>

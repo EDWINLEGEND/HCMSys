@@ -13,9 +13,10 @@
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: calc(1.5em + .75rem);
     }
-    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
     .action-btns a:hover { opacity: 0.7; }
     .action-btns .fa-trash-alt { color: #e74a3b; }
+    .action-btns .fa-edit { color: #4e73df; }
     .page-title-bar {
         display: flex;
         align-items: center;
@@ -29,7 +30,11 @@
         color: #5a5c69;
         text-transform: uppercase;
         letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
+    .page-title-text i { color: #4e73df; }
     .form-label {
         font-size: 0.78rem;
         font-weight: 700;
@@ -68,7 +73,7 @@
         text-overflow: ellipsis;
     }
     .summary-val {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: 800;
     }
     
@@ -88,6 +93,18 @@
     }
     .table th, .table td { vertical-align: middle; }
     .table td.num-col { text-align: right; }
+
+    .leave-badge {
+        display: inline-block;
+        background-color: #eef2fd;
+        color: #2e59d9;
+        border: 1px solid #c2d4f8;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="container-fluid py-3">
@@ -97,7 +114,7 @@
         <div class="card-header py-3">
             <div class="page-title-bar">
                 <div class="page-title-text" id="page-header-title">
-                    <i class="fas fa-file-signature fa-sm text-primary mr-2"></i> Create Leave Application
+                    <i class="fas fa-file-signature fa-sm"></i> Create Leave Application
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
                     <a href="@Url.Action("LeaveApplicationIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm mr-2">
@@ -116,12 +133,14 @@
 
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General Information</div>
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Doc No</label>
-                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Date</label>
@@ -150,7 +169,7 @@
                         <input type="text" class="form-control" id="hdr-manager" readonly />
                     </div>
                     <div class="col-md-8 mb-3">
-                        <label class="form-label">Comments</label>
+                        <label class="form-label">Comments / Reason</label>
                         <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter reason or comments for leave application..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
                         <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
                     </div>
@@ -165,7 +184,9 @@
 
         <!-- LEAVE APPLICATION DETAILS CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom bg-info">Leave Details</div>
+            <div class="card-header card-header-custom bg-info">
+                <i class="fas fa-calendar-check mr-2"></i>Leave Selection & Details
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -211,8 +232,8 @@
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Days to Apply (Used Now)</label>
-                        <input type="number" class="form-control font-weight-bold number-align" id="dtl-noofleaves" readonly />
+                        <label class="form-label">Days to Apply (Used Now) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control font-weight-bold text-primary number-align" id="dtl-noofleaves" readonly />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Contact No</label>
@@ -251,7 +272,7 @@
                 </div>
                 <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
                     <div class="summary-label">Lvs Available</div>
-                    <div class="summary-val text-warning" id="sum-available">0.0</div>
+                    <div class="summary-val text-warning font-weight-bold" id="sum-available">0.0</div>
                 </div>
                 <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
                     <div class="summary-label">Lvs Used Now</div>
@@ -259,7 +280,7 @@
                 </div>
                 <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
                     <div class="summary-label">Lvs Balance</div>
-                    <div class="summary-val text-success" id="sum-balance">0.0</div>
+                    <div class="summary-val text-success font-weight-bold" id="sum-balance">0.0</div>
                 </div>
             </div>
         </div>
@@ -267,7 +288,9 @@
 
     <!-- DETAILED USER GRID -->
     <div class="card shadow mb-4">
-        <div class="card-header card-header-custom bg-secondary">Leaves Detailed</div>
+        <div class="card-header card-header-custom bg-secondary">
+            <i class="fas fa-list mr-2"></i>Leaves Detailed
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0" id="user-grid-table">
@@ -277,7 +300,7 @@
                             <th>Leave Type</th>
                             <th>From Date</th>
                             <th>To Date</th>
-                            <th class="num-col">Duration (Days)</th>
+                            <th class="num-col" style="width:100px;">Duration</th>
                             <th>Contact No</th>
                             <th>Substitute Employee</th>
                             <th class="num-col">Eligible</th>
@@ -298,7 +321,9 @@
 
     <!-- SYSTEM GRID (MONTHLY BREAKDOWN) -->
     <div class="card shadow mb-4">
-        <div class="card-header card-header-custom bg-dark">Monthly Breakdown (System Grid)</div>
+        <div class="card-header card-header-custom bg-dark">
+            <i class="fas fa-calendar-week mr-2"></i>Monthly Breakdown (System Grid)
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0" id="system-grid-table">
@@ -308,7 +333,7 @@
                             <th>Month</th>
                             <th>From Date</th>
                             <th>To Date</th>
-                            <th class="num-col">Days in Month</th>
+                            <th class="num-col" style="width:120px;">Days in Month</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -416,9 +441,7 @@
 
     function populateEmployeeDropdown() {
         var empSelect = $('#hdr-employee');
-        var subSelect = $('#dtl-substitute');
         empSelect.empty().append('<option value="">Select Employee...</option>');
-        subSelect.empty().append('<option value="">Select Substitute...</option>');
 
         if (Array.isArray(employeesData)) {
             employeesData.forEach(function(emp) {
@@ -426,13 +449,37 @@
                 var empCode = emp.sCode || emp.code || '';
                 var empName = emp.sName || emp.name || '';
                 empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
+            });
+        }
+        updateSubstituteDropdown('');
+    }
+
+    function updateSubstituteDropdown(selectedEmpVal) {
+        var subSelect = $('#dtl-substitute');
+        var currentSubVal = subSelect.val();
+        subSelect.empty().append('<option value="">Select Substitute...</option>');
+
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
+                // Rule: Prevent selecting applying employee as their own substitute
+                if (selectedEmpVal && String(empId) === String(selectedEmpVal)) {
+                    return;
+                }
                 subSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
+        }
+        if (currentSubVal && String(currentSubVal) !== String(selectedEmpVal)) {
+            subSelect.val(currentSubVal);
         }
     }
 
     function onEmployeeChange() {
         var empVal = $(this).val();
+        updateSubstituteDropdown(empVal);
+
         if (!empVal) {
             $('#hdr-designation, #hdr-department, #hdr-manager, #dtl-contact').val('');
             $('#dtl-leavetype').empty().append('<option value="">Select Leave Type...</option>');
@@ -481,7 +528,12 @@
             var eligible = parseFloat(bal.openingLeaves || 0);
             var approved = parseFloat(bal.leavesApproved || 0);
             var pending = parseFloat(bal.leavesPending || 0);
-            var available = parseFloat(bal.leaveBalance !== undefined ? bal.leaveBalance : (eligible - approved - pending));
+            
+            // Rule: Available leaves cannot be negative
+            var rawAvailable = (bal.leaveBalance !== undefined && bal.leaveBalance !== null) 
+                ? parseFloat(bal.leaveBalance) 
+                : (eligible - approved - pending);
+            var available = Math.max(0, rawAvailable);
 
             $('#sum-eligible').text(eligible.toFixed(1));
             $('#sum-approved').text(approved.toFixed(1));
@@ -553,7 +605,15 @@
         var finalBalance = available - noOfLeaves;
 
         $('#sum-usednow').text(noOfLeaves.toFixed(1));
-        $('#sum-balance').text(finalBalance.toFixed(1));
+        
+        // Update balance visual styling
+        var $balEl = $('#sum-balance');
+        $balEl.text(finalBalance.toFixed(1));
+        if (finalBalance < 0) {
+            $balEl.removeClass('text-success').addClass('text-danger');
+        } else {
+            $balEl.removeClass('text-danger').addClass('text-success');
+        }
     }
 
     function checkFileSize(input) {
@@ -572,6 +632,7 @@
         var fromDate = $('#dtl-fromdate').val();
         var toDate = $('#dtl-todate').val();
         var usedNow = parseFloat($('#dtl-noofleaves').val()) || 0;
+        var available = parseFloat($('#sum-available').text()) || 0;
 
         if (!empVal) {
             alertify.log('Please select an employee.', 'error', 5000);
@@ -581,8 +642,14 @@
             alertify.log('Please select a leave type.', 'error', 5000);
             return;
         }
-        if (!fromDate || !toDate || usedNow <= 0) {
-            alertify.log('Please specify valid leave dates.', 'error', 5000);
+        if (!fromDate || !toDate) {
+            alertify.log('Please select valid From Date and To Date.', 'error', 5000);
+            return;
+        }
+
+        // Rule: Used now / duration must be > 0
+        if (usedNow <= 0) {
+            alertify.log('Days to apply (Used Now) must be greater than 0. Please check dates and off days.', 'error', 5000);
             return;
         }
 
@@ -590,6 +657,24 @@
         var t = parseDateObj(toDate);
         if (f > t) {
             alertify.log('To Date cannot be earlier than From Date.', 'error', 5000);
+            return;
+        }
+
+        // Rule: Negative leaves available cannot come & cannot exceed available balance
+        if (available <= 0) {
+            alertify.log('No leaves available for the selected leave type (Available: 0.0). Application cannot be added.', 'error', 5000);
+            return;
+        }
+
+        if (usedNow > available) {
+            alertify.log('Requested leave duration (' + usedNow.toFixed(1) + ' days) exceeds available leave balance (' + available.toFixed(1) + ' days).', 'error', 5000);
+            return;
+        }
+
+        // Rule: Substitute employee cannot be the applicant
+        var subVal = $('#dtl-substitute').val();
+        if (subVal && String(subVal) === String(empVal)) {
+            alertify.log('An employee cannot be selected as their own substitute.', 'error', 5000);
             return;
         }
 
@@ -614,8 +699,7 @@
         var eligible = parseFloat($('#sum-eligible').text()) || 0;
         var approved = parseFloat($('#sum-approved').text()) || 0;
         var pending = parseFloat($('#sum-unapproved').text()) || 0;
-        var available = parseFloat($('#sum-available').text()) || 0;
-        var balance = parseFloat($('#sum-balance').text()) || 0;
+        var balance = available - usedNow;
 
         var newItem = {
             stagedId: 'id_' + new Date().getTime(),
@@ -683,17 +767,17 @@
                     <td class="action-btns" style="text-align:center;">
                         <a href="javascript:void(0)" class="remove-item-btn" title="Delete" onclick="deleteStagedLeave('${l.stagedId}')"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                     </td>
-                    <td><strong>${l.leaveTypeName}</strong></td>
+                    <td><span class="leave-badge"><i class="fas fa-tag mr-1"></i>${l.leaveTypeName}</span></td>
                     <td>${l.fromDate}</td>
                     <td>${l.toDate}</td>
-                    <td class="num-col font-weight-bold text-primary">${l.duration}</td>
+                    <td class="num-col font-weight-bold text-primary">${l.duration.toFixed(1)}</td>
                     <td>${l.contactNo || '-'}</td>
                     <td>${l.substitute || '-'}</td>
                     <td class="num-col">${l.eligible.toFixed(1)}</td>
                     <td class="num-col">${l.approved.toFixed(1)}</td>
                     <td class="num-col">${l.pending.toFixed(1)}</td>
                     <td class="num-col text-warning font-weight-bold">${l.available.toFixed(1)}</td>
-                    <td class="num-col">${l.usedNow.toFixed(1)}</td>
+                    <td class="num-col font-weight-bold">${l.usedNow.toFixed(1)}</td>
                     <td class="num-col text-success font-weight-bold">${l.balance.toFixed(1)}</td>
                 </tr>`;
                 uTbody.append(tr);
@@ -708,11 +792,11 @@
         } else {
             stagedSystemLeaves.forEach(function(s) {
                 var tr = `<tr>
-                    <td><strong>${s.leaveTypeName}</strong></td>
-                    <td>${s.monthName}</td>
+                    <td><span class="leave-badge">${s.leaveTypeName}</span></td>
+                    <td><strong>${s.monthName}</strong></td>
                     <td>${s.fromDate}</td>
                     <td>${s.toDate}</td>
-                    <td class="num-col font-weight-bold">${s.duration}</td>
+                    <td class="num-col font-weight-bold text-dark">${s.duration}</td>
                 </tr>`;
                 sTbody.append(tr);
             });
@@ -762,9 +846,9 @@
                     eligible: 30,
                     approved: fDur,
                     pending: 0,
-                    available: 30 - fDur,
+                    available: Math.max(0, 30 - fDur),
                     usedNow: fDur,
-                    balance: 30 - fDur,
+                    balance: Math.max(0, 30 - fDur),
                     remarks: l.sRemarks || tx.sComments || lTypeName
                 });
             });

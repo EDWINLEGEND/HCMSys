@@ -1,118 +1,111 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Leave Applications</title>
+@{
+    ViewData["Title"] = "Leave Application List";
+}
 
-    <!-- Bootstrap 4 & DataTables -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
-    <link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+<!-- DataTables & Alertify CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
 
-    <style>
-        html { font-size: 14px; }
+<style>
+    html { font-size: 14px; }
 
-        /* ── Page Title Bar ── */
-        .page-title-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .page-title-bar .page-title-text {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #5a5c69;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .page-title-bar .page-title-text i { color: #4e73df; }
-        .page-title-bar .btn-group-actions {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
 
-        /* ── Table Enhancements ── */
-        #tblLeave thead th {
-            background-color: #4e73df;
-            color: #fff;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            border-color: #3d5cbe;
-            vertical-align: middle;
-        }
-        #tblLeave tbody tr:hover { background-color: #f0f3ff; }
-        #tblLeave td {
-            font-size: 0.82rem;
-            color: #5a5c69;
-            vertical-align: middle;
-        }
-        .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
-        .action-btns a:hover { opacity: 0.7; }
-        .action-btns .fa-edit      { color: #4e73df; }
-        .action-btns .fa-trash-alt { color: #e74a3b; }
+    #tblLeave thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+    }
+    #tblLeave tbody tr:hover { background-color: #f0f3ff; }
+    #tblLeave td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .action-btns .fa-paperclip { color: #1cc88a; }
 
-        /* ── Stat Cards ── */
-        .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
-        .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
-        .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
-        .border-left-info    { border-left: 0.25rem solid #36b9cc !important; }
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
 
-        .badge-primary { background-color: #4e73df; }
-        .badge-success { background-color: #1cc88a; color: white; }
-        .badge-warning { background-color: #f6c23e; color: white; }
-        .badge-danger { background-color: #e74a3b; color: white; }
-        .text-gray-800 { color: #5a5c69 !important; }
-        .text-gray-300 { color: #dddfeb !important; }
-    </style>
-</head>
-<body style="background:#f8f9fc;">
+    .leave-badge {
+        display: inline-block;
+        background-color: #eef2fd;
+        color: #2e59d9;
+        border: 1px solid #c2d4f8;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        margin: 2px 3px 2px 0;
+        white-space: nowrap;
+    }
+</style>
+
 <div class="container-fluid py-3">
 
-    <!-- ════════════════════════════
-         PAGE HEADER CARD
-    ════════════════════════════ -->
+    <!-- PAGE HEADER CARD -->
     <div class="card shadow mb-3">
         <div class="card-header py-3">
             <div class="page-title-bar">
                 <div class="page-title-text">
                     <i class="fas fa-calendar-alt fa-sm"></i>
-                    Leave Application
+                    Leave Application List
                 </div>
                 <div class="btn-group-actions">
-                    <a href="@Url.Action("CreateLeaveApplication", "Master")"
-                       class="btn btn-success btn-sm shadow-sm">
-                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> New Application
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateLeaveApplication", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Create New
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ════════════════════════════
-         STAT CARDS
-    ════════════════════════════ -->
+    <!-- STAT CARDS -->
     <div class="row mb-3">
-        <!-- Total -->
-        <div class="col-xl-3 col-md-6 mb-3">
+        <div class="col-xl-4 col-md-6 mb-3">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body py-2">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Leaves</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">0</div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Applications</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-leaves">0</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -121,46 +114,13 @@
                 </div>
             </div>
         </div>
-        <!-- Approved -->
-        <div class="col-xl-3 col-md-6 mb-3">
+        <div class="col-xl-4 col-md-6 mb-3">
             <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body py-2">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-active">0</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Pending -->
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body py-2">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-modified">0</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Module -->
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body py-2">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Module</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">Leave</div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Days Applied</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-days">0</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
@@ -169,33 +129,46 @@
                 </div>
             </div>
         </div>
+        <div class="col-xl-4 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Review</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-pending-leaves">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ════════════════════════════
-         DATA TABLE CARD
-    ════════════════════════════ -->
+    <!-- DATA TABLE CARD -->
     <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex align-items-center justify-content-between">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">
-                <i class="fas fa-table mr-2"></i>Leave Applications
+                <i class="fas fa-table mr-2"></i>Applications
             </h6>
-            <span class="badge badge-primary" id="record-count-badge">0 Records</span>
+            <button class="btn btn-sm btn-outline-primary shadow-sm" onclick="loadLeaveTransactions()">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table id="tblLeave"
-                       class="table table-bordered table-striped table-hover"
-                       style="width:100%;">
+                <table id="tblLeave" class="table table-bordered table-striped table-hover" style="width:100%;">
                     <thead>
                         <tr>
                             <th style="width: 80px; text-align:center;">Action</th>
                             <th>Doc No</th>
                             <th>Date</th>
                             <th>Post Date</th>
-                            <th>Employee Name</th>
+                            <th>Employee</th>
                             <th>Leave Type</th>
                             <th class="text-right">Duration (Days)</th>
-                            <th>Document</th>
+                            <th style="text-align:center;">Document</th>
                             <th>Comments</th>
                             <th style="text-align:center;">Status</th>
                         </tr>
@@ -207,11 +180,10 @@
         </div>
     </div>
 
-</div><!-- /container-fluid -->
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script defer src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
 <script src="~/alertify.js/alertify.min.js"></script>
+<script defer src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
 <script>
     var leaveDataTable = null;
     var rawLeaveTransactions = [];
@@ -238,8 +210,8 @@
             },
             columnDefs: [
                 { className: "action-btns text-center", targets: 0 },
-                { className: "text-right", targets: 6 },
-                { className: "text-center", targets: 9 }
+                { className: "text-right font-weight-bold", targets: 6 },
+                { className: "text-center", targets: [7, 9] }
             ]
         });
     }
@@ -259,7 +231,7 @@
         if (!leaveDataTable) return;
         leaveDataTable.clear();
 
-        var approvedCount = 0;
+        var totalDays = 0;
         var pendingCount = 0;
 
         rawLeaveTransactions.forEach(function(tx) {
@@ -271,37 +243,42 @@
             
             var leavesList = tx.leaves || tx.Leaves || [];
             var empNames = [];
-            var leaveTypes = [];
-            var totalDuration = 0;
+            var leaveBadges = [];
+            var rowDuration = 0;
 
             leavesList.forEach(function(l) {
                 var emp = l.sEmployeeName || l.employeeName;
                 if (emp && !empNames.includes(emp)) empNames.push(emp);
                 var lt = l.sLeaveTypeName || l.leaveTypeName || l.sRemarks || 'Leave';
-                if (lt && !leaveTypes.includes(lt)) leaveTypes.push(lt);
+                if (lt && !leaveBadges.includes(lt)) {
+                    leaveBadges.push(lt);
+                }
                 var dur = parseFloat(l.fDuration || l.duration || 0);
-                totalDuration += dur;
+                rowDuration += dur;
             });
 
+            totalDays += rowDuration;
+
             var displayEmpName = empNames.length > 0 ? empNames.join(', ') : 'Employee #' + (leavesList[0]?.iEmployeeId || '-');
-            var displayLeaveType = leaveTypes.length > 0 ? leaveTypes.join(', ') : 'Leave Application';
+            var displayBadgesHtml = leaveBadges.map(function(b) {
+                return '<span class="leave-badge"><i class="fas fa-tag mr-1"></i>' + b + '</span>';
+            }).join('');
 
             // Document Attachment
             var fileObj = tx.leaveFile || tx.LeaveFile || tx.attachment || tx.Attachment;
-            var docBtn = '<span class="badge badge-secondary shadow-sm"><i class="fas fa-file mr-1"></i> No File</span>';
+            var docBtn = '<span class="badge badge-light text-muted"><i class="fas fa-file mr-1"></i> None</span>';
             if (fileObj && fileObj.sAttachmentFilePath) {
                 var safeUrl = (fileObj.sAttachmentFilePath || '').replace(/'/g, "\\'");
-                var safeName = (fileObj.sAttachmentFileName || 'LeaveAttachment.pdf').replace(/'/g, "\\'");
+                var safeName = (fileObj.sAttachmentFileName || 'Attachment.pdf').replace(/'/g, "\\'");
                 docBtn = '<a href="javascript:void(0)" onclick="window.openDocPreview(\'' + safeName + '\', \'' + safeUrl + '\')" class="badge badge-info shadow-sm"><i class="fas fa-paperclip mr-1"></i> ' + (fileObj.sAttachmentFileName || 'View File') + '</a>';
             }
 
             var isApproved = (tx.iAuthStatus === 1 || tx.authStatus === 1 || tx.iStatus === 1);
             var statusBadge = isApproved 
-                ? '<span class="badge badge-success">Approved</span>' 
-                : '<span class="badge badge-warning">Pending</span>';
+                ? '<span class="badge badge-success px-2 py-1">Approved</span>' 
+                : '<span class="badge badge-warning px-2 py-1">Pending</span>';
 
-            if (isApproved) approvedCount++;
-            else pendingCount++;
+            if (!isApproved) pendingCount++;
 
             var actionBtns = `
                 <a href="javascript:void(0)" class="edit-item-btn" title="Edit Application" onclick="editLeaveApplication(${headerId})"><i class="fas fa-edit fa-sm fa-fw"></i></a>
@@ -314,8 +291,8 @@
                 docDate,
                 postDate,
                 displayEmpName,
-                displayLeaveType,
-                totalDuration.toFixed(1),
+                displayBadgesHtml || 'Leave Application',
+                rowDuration.toFixed(1),
                 docBtn,
                 comments,
                 statusBadge
@@ -325,11 +302,9 @@
         leaveDataTable.draw(false);
 
         // Update Stat Cards
-        var totalRows = rawLeaveTransactions.length;
-        $('#stat-total').text(totalRows);
-        $('#stat-active').text(approvedCount);
-        $('#stat-modified').text(pendingCount);
-        $('#record-count-badge').text(totalRows + ' Records');
+        $('#stat-total-leaves').text(rawLeaveTransactions.length);
+        $('#stat-total-days').text(totalDays.toFixed(1));
+        $('#stat-pending-leaves').text(pendingCount);
     }
 
     function editLeaveApplication(headerId) {
@@ -361,5 +336,3 @@
         });
     }
 </script>
-</body>
-</html>

@@ -105,6 +105,11 @@
         font-weight: 600;
         white-space: nowrap;
     }
+
+    .row-selected-edit {
+        background-color: #fff3cd !important;
+        border-left: 4px solid #ffc107;
+    }
 </style>
 
 <div class="container-fluid py-3">
@@ -184,8 +189,9 @@
 
         <!-- LEAVE APPLICATION DETAILS CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom bg-info">
-                <i class="fas fa-calendar-check mr-2"></i>Leave Selection & Details
+            <div class="card-header card-header-custom bg-info d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-calendar-check mr-2"></i>Leave Selection & Details</span>
+                <span class="badge badge-light" id="subleave-indicator" style="display:none;">Editing Sub-Leave</span>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -246,8 +252,11 @@
                         </select>
                     </div>
 
-                    <div class="col-md-12 text-right mt-2">
-                        <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addToGrid()">
+                    <div class="col-md-12 text-right mt-2" id="grid-action-container">
+                        <button type="button" class="btn btn-secondary btn-sm shadow-sm mr-2" id="btn-cancel-subleave" style="display:none;" onclick="cancelSubLeaveEdit()">
+                            <i class="fas fa-times fa-sm text-white-50 mr-1"></i> Cancel Line Edit
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btn-add-to-grid" onclick="addToGrid()">
                             <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Leave to Grid
                         </button>
                     </div>
@@ -288,19 +297,20 @@
 
     <!-- DETAILED USER GRID -->
     <div class="card shadow mb-4">
-        <div class="card-header card-header-custom bg-secondary">
-            <i class="fas fa-list mr-2"></i>Leaves Detailed
+        <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list mr-2"></i>Leaves Detailed (Sub-Leaves)</span>
+            <small class="text-white-50">Click Edit to select a sub-leave</small>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0" id="user-grid-table">
                     <thead class="thead-light">
                         <tr>
-                            <th style="width: 60px; text-align:center;">Action</th>
+                            <th style="width: 80px; text-align:center;">Action</th>
                             <th>Leave Type</th>
                             <th>From Date</th>
                             <th>To Date</th>
-                            <th class="num-col" style="width:100px;">Duration</th>
+                            <th class="num-col" style="width:100px;">Duration (Days)</th>
                             <th>Contact No</th>
                             <th>Substitute Employee</th>
                             <th class="num-col">Eligible</th>
@@ -355,6 +365,9 @@
     var stagedSystemLeaves = [];
     var editHeaderId = 0;
     var isEditMode = false;
+    var editingSubLeaveId = null;
+    var fromDatePicker = null;
+    var toDatePicker = null;
 
     $(document).ready(function() {
         var urlParams = new URLSearchParams(window.location.search);
@@ -368,6 +381,7 @@
             $('#hdr-header-id').val(editHeaderId);
         }
 
+        initFlatpickrs();
         initHeader();
 
         // Load Employees master and existing transactions in parallel
@@ -397,15 +411,28 @@
         $('#hdr-employee').change(onEmployeeChange);
         $('#dtl-leavetype').change(onLeaveTypeChange);
         $('.calc-trigger').on('change input', calculateLeaves);
+    });
 
-        flatpickr(".datepicker", {
+    function initFlatpickrs() {
+        flatpickr("#hdr-date", { dateFormat: "d-M-Y", defaultDate: "today" });
+        flatpickr("#hdr-postdate", { dateFormat: "d-M-Y", defaultDate: "today" });
+
+        fromDatePicker = flatpickr("#dtl-fromdate", {
             dateFormat: "d-M-Y",
             defaultDate: "today",
             onChange: function() {
                 calculateLeaves();
             }
         });
-    });
+
+        toDatePicker = flatpickr("#dtl-todate", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today",
+            onChange: function() {
+                calculateLeaves();
+            }
+        });
+    }
 
     function initHeader() {
         if (isEditMode) return;
@@ -478,8 +505,8 @@
         }
     }
 
-    function onEmployeeChange() {
-        var empVal = $(this).val();
+    function onEmployeeChange(callback) {
+        var empVal = $('#hdr-employee').val();
         updateSubstituteDropdown(empVal);
 
         if (!empVal) {
@@ -487,6 +514,7 @@
             $('#dtl-leavetype').empty().append('<option value="">Select Leave Type...</option>');
             $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
             currentEmployeeLeaves = [];
+            if (typeof callback === 'function') callback();
             return;
         }
 
@@ -509,16 +537,19 @@
                 ltSelect.append(`<option value="${ltId}" data-name="${ltName}">${ltName}</option>`);
             });
 
-            if (ltSelect.find('option').length > 1) {
+            if (!editingSubLeaveId && ltSelect.find('option').length > 1) {
                 ltSelect.val(ltSelect.find('option:eq(1)').val()).trigger('change');
             }
+
+            if (typeof callback === 'function') callback();
         }).fail(function() {
             alertify.log('Failed to fetch leave balances for employee.', 'error', 4000);
+            if (typeof callback === 'function') callback();
         });
     }
 
     function onLeaveTypeChange() {
-        var ltId = parseInt($(this).val()) || 0;
+        var ltId = parseInt($('#dtl-leavetype').val()) || 0;
         if (!ltId || currentEmployeeLeaves.length === 0) {
             $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
             calculateLeaves();
@@ -629,11 +660,10 @@
     }
 
     // Overlap validation based on Start Date and Number of Days (Duration)
-    function checkOverlappingLeave(empId, fDate, tDate, duration) {
+    function checkOverlappingLeave(empId, fDate, tDate, duration, ignoreStagedId) {
         var f = parseDateObj(fDate);
         var t = parseDateObj(tDate);
         
-        // Ensure t is at least f + duration - 1 day
         var durDays = Math.max(1, Math.ceil(duration || 1));
         var minEndFromDur = new Date(f.getTime() + (durDays - 1) * 86400000);
         if (t < f || t < minEndFromDur) {
@@ -643,6 +673,10 @@
         // 1. Check against staged leaves in the current grid
         for (var i = 0; i < stagedLeaves.length; i++) {
             var sl = stagedLeaves[i];
+            if (ignoreStagedId && sl.stagedId === ignoreStagedId) {
+                continue; // Skip the sub-leave being edited
+            }
+
             var sF = parseDateObj(sl.fromDate);
             var sT = parseDateObj(sl.toDate);
             var sDur = Math.max(1, Math.ceil(sl.duration || 1));
@@ -653,7 +687,7 @@
                 return {
                     hasOverlap: true,
                     source: 'grid',
-                    message: 'Selected dates (' + sl.fromDate + ' to ' + sl.toDate + ') overlap with a leave already added in the table (' + sl.leaveTypeName + ').'
+                    message: 'Selected dates (' + sl.fromDate + ' to ' + sl.toDate + ') overlap with another sub-leave in the table (' + sl.leaveTypeName + ').'
                 };
             }
         }
@@ -703,7 +737,7 @@
                                 endDate: window.formatDateDisplay(txEnd),
                                 duration: elDur,
                                 leaveType: ltName,
-                                message: 'Overlapping leave detected! Employee already has a leave application (' + docNo + ') from ' + window.formatDateDisplay(txStart) + ' to ' + window.formatDateDisplay(txEnd) + ' (' + elDur.toFixed(1) + ' days - ' + ltName + '). Overlapping applications are not allowed.'
+                                message: 'Overlapping leave detected! Employee already has an existing leave application (' + docNo + ') from ' + window.formatDateDisplay(txStart) + ' to ' + window.formatDateDisplay(txEnd) + ' (' + elDur.toFixed(1) + ' days - ' + ltName + '). Overlapping applications are not allowed.'
                             };
                         }
                     }
@@ -749,12 +783,12 @@
         }
 
         // Rule: Negative leaves available cannot come & cannot exceed available balance
-        if (available <= 0) {
+        if (available <= 0 && !editingSubLeaveId) {
             alertify.log('No leaves available for the selected leave type (Available: 0.0). Application cannot be added.', 'error', 5000);
             return;
         }
 
-        if (usedNow > available) {
+        if (usedNow > available && !editingSubLeaveId) {
             alertify.log('Requested leave duration (' + usedNow.toFixed(1) + ' days) exceeds available leave balance (' + available.toFixed(1) + ' days).', 'error', 5000);
             return;
         }
@@ -767,7 +801,7 @@
         }
 
         // Overlap Check (based on Start Date and Number of Days against Grid and Server Transactions)
-        var overlapResult = checkOverlappingLeave(empVal, fromDate, toDate, usedNow);
+        var overlapResult = checkOverlappingLeave(empVal, fromDate, toDate, usedNow, editingSubLeaveId);
         if (overlapResult.hasOverlap) {
             alertify.log(overlapResult.message, 'error', 7000);
             return;
@@ -782,10 +816,42 @@
         var eligible = parseFloat($('#sum-eligible').text()) || 0;
         var approved = parseFloat($('#sum-approved').text()) || 0;
         var pending = parseFloat($('#sum-unapproved').text()) || 0;
-        var balance = available - usedNow;
+        var balance = Math.max(0, available - usedNow);
 
+        if (editingSubLeaveId) {
+            // Update existing sub-leave
+            var itemIdx = stagedLeaves.findIndex(function(l) { return l.stagedId === editingSubLeaveId; });
+            if (itemIdx > -1) {
+                stagedLeaves[itemIdx].leaveTypeId = leaveTypeId;
+                stagedLeaves[itemIdx].leaveTypeName = leaveTypeName;
+                stagedLeaves[itemIdx].fromDate = fromDate;
+                stagedLeaves[itemIdx].toDate = toDate;
+                stagedLeaves[itemIdx].duration = usedNow;
+                stagedLeaves[itemIdx].contactNo = contactNo;
+                stagedLeaves[itemIdx].substitute = subName;
+                stagedLeaves[itemIdx].eligible = eligible;
+                stagedLeaves[itemIdx].approved = approved;
+                stagedLeaves[itemIdx].pending = pending;
+                stagedLeaves[itemIdx].available = available;
+                stagedLeaves[itemIdx].usedNow = usedNow;
+                stagedLeaves[itemIdx].balance = balance;
+                stagedLeaves[itemIdx].remarks = $('#hdr-comments').val() || leaveTypeName;
+
+                // Rebuild System Grid breakdown for this sub-leave
+                stagedSystemLeaves = stagedSystemLeaves.filter(function(s) { return s.stagedId !== editingSubLeaveId; });
+                buildMonthlyBreakdown(editingSubLeaveId, leaveTypeName, f, t);
+
+                cancelSubLeaveEdit();
+                renderGrids();
+                alertify.log('Sub-leave updated successfully.', 'success', 3000);
+                return;
+            }
+        }
+
+        // Add new sub-leave
+        var newStagedId = 'id_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000);
         var newItem = {
-            stagedId: 'id_' + new Date().getTime(),
+            stagedId: newStagedId,
             leaveTypeId: leaveTypeId,
             leaveTypeName: leaveTypeName,
             fromDate: fromDate,
@@ -803,8 +869,13 @@
         };
 
         stagedLeaves.push(newItem);
+        buildMonthlyBreakdown(newStagedId, leaveTypeName, f, t);
 
-        // Compute Monthly breakdown for System Grid
+        renderGrids();
+        alertify.log('Leave added to list.', 'success', 3000);
+    }
+
+    function buildMonthlyBreakdown(stagedId, leaveTypeName, f, t) {
         var cur = new Date(f);
         var monthsNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -817,7 +888,7 @@
             var chunkDiff = Math.ceil(Math.abs(endChunk - cur) / (1000 * 60 * 60 * 24)) + 1;
 
             stagedSystemLeaves.push({
-                stagedId: newItem.stagedId,
+                stagedId: stagedId,
                 leaveTypeName: leaveTypeName,
                 monthName: monthLabel,
                 fromDate: window.formatDateDisplay(cur),
@@ -827,12 +898,60 @@
 
             cur = new Date(yNum, mIndex + 1, 1);
         }
+    }
 
-        renderGrids();
-        alertify.log('Leave added to list.', 'success', 3000);
+    function selectSubLeaveForEdit(stagedId) {
+        var sl = stagedLeaves.find(function(l) { return l.stagedId === stagedId; });
+        if (!sl) return;
+
+        editingSubLeaveId = stagedId;
+
+        // Populate details card
+        $('#dtl-leavetype').val(sl.leaveTypeId).trigger('change');
+        
+        if (fromDatePicker) fromDatePicker.setDate(sl.fromDate, true);
+        else $('#dtl-fromdate').val(sl.fromDate);
+
+        if (toDatePicker) toDatePicker.setDate(sl.toDate, true);
+        else $('#dtl-todate').val(sl.toDate);
+
+        $('#dtl-contact').val(sl.contactNo && sl.contactNo !== '-' ? sl.contactNo : '');
+        
+        if (sl.substitute && sl.substitute !== '-') {
+            var subOption = $('#dtl-substitute option').filter(function() {
+                return $(this).text().indexOf(sl.substitute) > -1 || $(this).val() == sl.substitute;
+            });
+            if (subOption.length > 0) {
+                $('#dtl-substitute').val(subOption.val()).trigger('change');
+            }
+        }
+
+        calculateLeaves();
+
+        // Switch button to Update mode
+        $('#btn-add-to-grid').html('<i class="fas fa-check fa-sm text-white-50 mr-1"></i> Update Selected Sub-Leave')
+                             .removeClass('btn-primary').addClass('btn-warning');
+        $('#btn-cancel-subleave').show();
+        $('#subleave-indicator').text('Editing: ' + sl.leaveTypeName).show();
+
+        // Highlight selected row in table
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
+        $('#row_' + stagedId).addClass('row-selected-edit');
+    }
+
+    function cancelSubLeaveEdit() {
+        editingSubLeaveId = null;
+        $('#btn-add-to-grid').html('<i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Leave to Grid')
+                             .removeClass('btn-warning').addClass('btn-primary');
+        $('#btn-cancel-subleave').hide();
+        $('#subleave-indicator').hide();
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
     }
 
     function deleteStagedLeave(stagedId) {
+        if (editingSubLeaveId === stagedId) {
+            cancelSubLeaveEdit();
+        }
         stagedLeaves = stagedLeaves.filter(function(l) { return l.stagedId !== stagedId; });
         stagedSystemLeaves = stagedSystemLeaves.filter(function(s) { return s.stagedId !== stagedId; });
         renderGrids();
@@ -846,9 +965,12 @@
             uTbody.append('<tr id="empty-row"><td colspan="13" class="text-center text-muted py-3">No leaves added yet. Select options above and click "Add Leave to Grid".</td></tr>');
         } else {
             stagedLeaves.forEach(function(l) {
-                var tr = `<tr>
+                var isSelected = (editingSubLeaveId === l.stagedId);
+                var rowClass = isSelected ? 'row-selected-edit' : '';
+                var tr = `<tr id="row_${l.stagedId}" class="${rowClass}">
                     <td class="action-btns" style="text-align:center;">
-                        <a href="javascript:void(0)" class="remove-item-btn" title="Delete" onclick="deleteStagedLeave('${l.stagedId}')"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                        <a href="javascript:void(0)" class="edit-item-btn mr-2" title="Select / Edit Sub-Leave" onclick="selectSubLeaveForEdit('${l.stagedId}')"><i class="fas fa-edit fa-sm"></i></a>
+                        <a href="javascript:void(0)" class="remove-item-btn" title="Delete" onclick="deleteStagedLeave('${l.stagedId}')"><i class="fas fa-trash-alt fa-sm"></i></a>
                     </td>
                     <td><span class="leave-badge"><i class="fas fa-tag mr-1"></i>${l.leaveTypeName}</span></td>
                     <td>${l.fromDate}</td>
@@ -898,10 +1020,6 @@
             var leavesList = tx.leaves || tx.Leaves || [];
             var firstEmpId = leavesList[0]?.iEmployeeId || leavesList[0]?.employeeId || 0;
 
-            if (firstEmpId > 0) {
-                $('#hdr-employee').val(firstEmpId).trigger('change');
-            }
-
             var fileObj = tx.leaveFile || tx.LeaveFile || tx.attachment || tx.Attachment;
             if (fileObj && fileObj.sAttachmentFilePath) {
                 $('#attachment-note').html(`Current Attachment: <a href="javascript:void(0)" class="text-primary font-weight-bold" onclick="window.openDocPreview('${fileObj.sAttachmentFileName || 'Attachment'}', '${fileObj.sAttachmentFilePath}')"><i class="fas fa-paperclip mr-1"></i>${fileObj.sAttachmentFileName || 'View Attached File'}</a> (Upload new file to replace)`);
@@ -910,19 +1028,33 @@
             stagedLeaves = [];
             stagedSystemLeaves = [];
 
-            leavesList.forEach(function(l) {
+            // Calculate accurate end date and breakdown for each sub-leave
+            leavesList.forEach(function(l, idx) {
                 var lTypeId = l.iLeaveTypeId || 7;
                 var lTypeName = l.sLeaveTypeName || l.leaveTypeName || 'Leave Application';
                 var fDur = parseFloat(l.fDuration || 1);
-                var fDate = window.formatDateDisplay(tx.dDocDate);
-                var tDate = window.formatDateDisplay(tx.dPostDate || tx.dDocDate);
+                
+                var fDateObj = parseDateObj(tx.dDocDate);
+                var durDays = Math.max(1, Math.ceil(fDur));
+                var tDateObj = new Date(fDateObj.getTime() + (durDays - 1) * 86400000);
+
+                if (tx.dPostDate) {
+                    var pDate = parseDateObj(tx.dPostDate);
+                    if (pDate > fDateObj && pDate > tDateObj) {
+                        tDateObj = pDate;
+                    }
+                }
+
+                var fDateStr = window.formatDateDisplay(fDateObj);
+                var tDateStr = window.formatDateDisplay(tDateObj);
+                var stagedId = 'id_' + new Date().getTime() + '_' + idx;
 
                 stagedLeaves.push({
-                    stagedId: 'id_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000),
+                    stagedId: stagedId,
                     leaveTypeId: lTypeId,
                     leaveTypeName: lTypeName,
-                    fromDate: fDate,
-                    toDate: tDate,
+                    fromDate: fDateStr,
+                    toDate: tDateStr,
                     duration: fDur,
                     contactNo: '-',
                     substitute: '-',
@@ -934,9 +1066,22 @@
                     balance: Math.max(0, 30 - fDur),
                     remarks: l.sRemarks || tx.sComments || lTypeName
                 });
+
+                buildMonthlyBreakdown(stagedId, lTypeName, fDateObj, tDateObj);
             });
 
             renderGrids();
+
+            if (firstEmpId > 0) {
+                $('#hdr-employee').val(firstEmpId).trigger('change');
+                onEmployeeChange(function() {
+                    if (stagedLeaves.length > 0) {
+                        selectSubLeaveForEdit(stagedLeaves[0].stagedId);
+                    }
+                });
+            } else if (stagedLeaves.length > 0) {
+                selectSubLeaveForEdit(stagedLeaves[0].stagedId);
+            }
         }
 
         $.getJSON('/Master/GetApiLeaveTransactionById?id=' + headerId).done(function(res) {
@@ -968,7 +1113,7 @@
         // Validate all staged leaves against server transactions before posting
         for (var sIdx = 0; sIdx < stagedLeaves.length; sIdx++) {
             var slItem = stagedLeaves[sIdx];
-            var ovCheck = checkOverlappingLeave(empVal, slItem.fromDate, slItem.toDate, slItem.duration);
+            var ovCheck = checkOverlappingLeave(empVal, slItem.fromDate, slItem.toDate, slItem.duration, slItem.stagedId);
             if (ovCheck.hasOverlap && ovCheck.source === 'server') {
                 alertify.log(ovCheck.message, 'error', 7000);
                 return;

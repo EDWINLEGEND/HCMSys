@@ -350,6 +350,7 @@
 <script>
     var employeesData = [];
     var currentEmployeeLeaves = [];
+    var allExistingTransactions = [];
     var stagedLeaves = [];
     var stagedSystemLeaves = [];
     var editHeaderId = 0;
@@ -378,13 +379,13 @@
             employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
             
             var allTxs = txRes[0] || txRes;
-            var txList = Array.isArray(allTxs) ? allTxs : (allTxs && allTxs.data ? allTxs.data : []);
+            allExistingTransactions = Array.isArray(allTxs) ? allTxs : (allTxs && allTxs.data ? allTxs.data : []);
 
             populateEmployeeDropdown();
             $('select.form-control').select2({ width: '100%' });
 
             if (isEditMode) {
-                loadLeaveTransactionForEdit(editHeaderId, txList);
+                loadLeaveTransactionForEdit(editHeaderId, allExistingTransactions);
             }
         }).fail(function() {
             if (typeof alertify !== 'undefined') {
@@ -423,6 +424,7 @@
 
         $.getJSON('/Master/GetApiLeaveTransactions').done(function(txs) {
             var rawList = Array.isArray(txs) ? txs : (txs && txs.data ? txs.data : []);
+            allExistingTransactions = rawList;
             var maxNum = 0;
             rawList.forEach(function(item) {
                 var dNo = item.sDocNo || item.docNo || '';
@@ -626,6 +628,92 @@
         }
     }
 
+    // Overlap validation based on Start Date and Number of Days (Duration)
+    function checkOverlappingLeave(empId, fDate, tDate, duration) {
+        var f = parseDateObj(fDate);
+        var t = parseDateObj(tDate);
+        
+        // Ensure t is at least f + duration - 1 day
+        var durDays = Math.max(1, Math.ceil(duration || 1));
+        var minEndFromDur = new Date(f.getTime() + (durDays - 1) * 86400000);
+        if (t < f || t < minEndFromDur) {
+            t = minEndFromDur;
+        }
+
+        // 1. Check against staged leaves in the current grid
+        for (var i = 0; i < stagedLeaves.length; i++) {
+            var sl = stagedLeaves[i];
+            var sF = parseDateObj(sl.fromDate);
+            var sT = parseDateObj(sl.toDate);
+            var sDur = Math.max(1, Math.ceil(sl.duration || 1));
+            var sMinEnd = new Date(sF.getTime() + (sDur - 1) * 86400000);
+            if (sT < sMinEnd) sT = sMinEnd;
+
+            if (f.getTime() <= sT.getTime() && t.getTime() >= sF.getTime()) {
+                return {
+                    hasOverlap: true,
+                    source: 'grid',
+                    message: 'Selected dates (' + sl.fromDate + ' to ' + sl.toDate + ') overlap with a leave already added in the table (' + sl.leaveTypeName + ').'
+                };
+            }
+        }
+
+        // 2. Check against active transactions from the server
+        if (Array.isArray(allExistingTransactions)) {
+            for (var j = 0; j < allExistingTransactions.length; j++) {
+                var tx = allExistingTransactions[j];
+                var hId = tx.iHeaderId || tx.id || 0;
+                
+                // When in edit mode, do not check against the transaction currently being updated
+                if (isEditMode && editHeaderId > 0 && hId === editHeaderId) {
+                    continue;
+                }
+
+                var txLeaves = tx.leaves || tx.Leaves || [];
+                var empLeaves = txLeaves.filter(function(l) {
+                    var lEmpId = l.iEmployeeId || l.employeeId;
+                    return String(lEmpId) === String(empId);
+                });
+
+                if (empLeaves.length > 0) {
+                    var txStart = parseDateObj(tx.dDocDate || tx.docDate);
+
+                    for (var k = 0; k < empLeaves.length; k++) {
+                        var el = empLeaves[k];
+                        var elDur = parseFloat(el.fDuration || el.duration || 1);
+                        var txDurDays = Math.max(1, Math.ceil(elDur));
+                        var txEnd = new Date(txStart.getTime() + (txDurDays - 1) * 86400000);
+
+                        if (tx.dPostDate) {
+                            var pDate = parseDateObj(tx.dPostDate);
+                            if (pDate > txStart && pDate > txEnd) {
+                                txEnd = pDate;
+                            }
+                        }
+
+                        // Overlap condition: f <= txEnd && t >= txStart
+                        if (f.getTime() <= txEnd.getTime() && t.getTime() >= txStart.getTime()) {
+                            var docNo = tx.sDocNo || tx.docNo || ('#' + hId);
+                            var ltName = el.sLeaveTypeName || el.leaveTypeName || el.sRemarks || 'Leave';
+                            return {
+                                hasOverlap: true,
+                                source: 'server',
+                                docNo: docNo,
+                                startDate: window.formatDateDisplay(txStart),
+                                endDate: window.formatDateDisplay(txEnd),
+                                duration: elDur,
+                                leaveType: ltName,
+                                message: 'Overlapping leave detected! Employee already has a leave application (' + docNo + ') from ' + window.formatDateDisplay(txStart) + ' to ' + window.formatDateDisplay(txEnd) + ' (' + elDur.toFixed(1) + ' days - ' + ltName + '). Overlapping applications are not allowed.'
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        return { hasOverlap: false };
+    }
+
     function addToGrid() {
         var empVal = $('#hdr-employee').val();
         var leaveTypeId = parseInt($('#dtl-leavetype').val()) || 0;
@@ -678,15 +766,10 @@
             return;
         }
 
-        // Prevent overlapping dates in grid
-        var hasOverlap = stagedLeaves.some(function(item) {
-            var sF = parseDateObj(item.fromDate);
-            var sT = parseDateObj(item.toDate);
-            return (f <= sT && t >= sF);
-        });
-
-        if (hasOverlap) {
-            alertify.log('Selected date range overlaps with an already added leave.', 'error', 5000);
+        // Overlap Check (based on Start Date and Number of Days against Grid and Server Transactions)
+        var overlapResult = checkOverlappingLeave(empVal, fromDate, toDate, usedNow);
+        if (overlapResult.hasOverlap) {
+            alertify.log(overlapResult.message, 'error', 7000);
             return;
         }
 
@@ -882,6 +965,16 @@
             return;
         }
 
+        // Validate all staged leaves against server transactions before posting
+        for (var sIdx = 0; sIdx < stagedLeaves.length; sIdx++) {
+            var slItem = stagedLeaves[sIdx];
+            var ovCheck = checkOverlappingLeave(empVal, slItem.fromDate, slItem.toDate, slItem.duration);
+            if (ovCheck.hasOverlap && ovCheck.source === 'server') {
+                alertify.log(ovCheck.message, 'error', 7000);
+                return;
+            }
+        }
+
         var docNo = $('#hdr-docno').val();
         var dateStr = $('#hdr-date').val();
         var postDateStr = $('#hdr-postdate').val() || dateStr;
@@ -951,7 +1044,7 @@
                     }
                 } else {
                     var errMsg = (res && res.message) ? res.message : 'Error saving Leave Application.';
-                    alertify.log(errMsg, 'error', 6000);
+                    alertify.log(errMsg, 'error', 7000);
                 }
             },
             error: function(xhr, status, err) {

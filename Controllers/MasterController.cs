@@ -245,6 +245,19 @@ namespace HCMSys.Controllers
             return Json(types);
         }
 
+        private bool TryParseDate(string? dateStr, out DateTime dt)
+        {
+            dt = DateTime.MinValue;
+            if (string.IsNullOrWhiteSpace(dateStr)) return false;
+
+            var formats = new[] { "yyyy-MM-dd", "dd-MMM-yyyy", "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.fffZ", "d-M-yyyy", "dd/MM/yyyy", "MM/dd/yyyy", "d-MMM-yyyy" };
+            if (DateTime.TryParseExact(dateStr.Trim(), formats, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out dt))
+            {
+                return true;
+            }
+            return DateTime.TryParse(dateStr, out dt);
+        }
+
         [HttpPost]
         public async Task<IActionResult> SaveApiLeaveTransaction()
         {
@@ -300,6 +313,57 @@ namespace HCMSys.Controllers
             }
 
             if (dto == null) return BadRequest(new { success = false, message = "Invalid request payload." });
+
+            // Validate overlapping leaves against existing transactions
+            if (dto.Leaves != null && dto.Leaves.Count > 0)
+            {
+                var existingTxs = await _apiService.GetLeaveTransactionsAsync(dto.ICompanyId, dto.IPayYearId);
+                if (TryParseDate(dto.DDocDate, out var newStart))
+                {
+                    foreach (var newItem in dto.Leaves)
+                    {
+                        var newDuration = newItem.FDuration > 0 ? (int)Math.Ceiling(newItem.FDuration) : 1;
+                        var newEnd = newStart.AddDays(newDuration - 1);
+                        if (TryParseDate(dto.DPostDate, out var parsedPostDate) && parsedPostDate > newStart && parsedPostDate > newEnd)
+                        {
+                            newEnd = parsedPostDate;
+                        }
+
+                        foreach (var exTx in existingTxs)
+                        {
+                            if (exTx.IHeaderId == dto.IHeaderId && dto.IHeaderId > 0) continue; // Skip self when updating
+
+                            if (!TryParseDate(exTx.DDocDate, out var exStart)) continue;
+
+                            var exLines = (exTx.Leaves ?? new List<LeaveTransactionBodyDto>())
+                                          .Where(l => l.IEmployeeId == newItem.IEmployeeId)
+                                          .ToList();
+
+                            foreach (var exLine in exLines)
+                            {
+                                var exDuration = exLine.FDuration > 0 ? (int)Math.Ceiling(exLine.FDuration) : 1;
+                                var exEnd = exStart.AddDays(exDuration - 1);
+                                if (TryParseDate(exTx.DPostDate, out var exPostDate) && exPostDate > exStart && exPostDate > exEnd)
+                                {
+                                    exEnd = exPostDate;
+                                }
+
+                                // Overlap condition: startA <= endB && endA >= startB
+                                if (newStart.Date <= exEnd.Date && newEnd.Date >= exStart.Date)
+                                {
+                                    string empName = !string.IsNullOrEmpty(newItem.SEmployeeName) ? newItem.SEmployeeName : (!string.IsNullOrEmpty(exLine.SEmployeeName) ? exLine.SEmployeeName : $"Employee #{newItem.IEmployeeId}");
+                                    string docNo = !string.IsNullOrEmpty(exTx.SDocNo) ? exTx.SDocNo : $"#{exTx.IHeaderId}";
+                                    return Json(new ApiResponseEnvelope<object>
+                                    {
+                                        Success = false,
+                                        Message = $"Overlapping leave detected! {empName} already has a leave application ({docNo}) from {exStart:dd-MMM-yyyy} to {exEnd:dd-MMM-yyyy} ({exLine.FDuration} days). Overlapping leave applications are not permitted."
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             var result = await _apiService.SaveLeaveTransactionAsync(dto, fileBytes, fileName, contentType);
             return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Save Leave Transaction API." });

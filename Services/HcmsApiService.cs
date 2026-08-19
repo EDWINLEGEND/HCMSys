@@ -516,12 +516,46 @@ namespace HCMSys.Services
                         var jsonString = await response.Content.ReadAsStringAsync();
                         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                        // 1. Try envelope deserialization
+                        // 1. Try envelope deserialization (Docs/API.pdf Section 10 structure)
                         try
                         {
                             var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<EmployeeLeavesEnvelope>>(jsonString, options);
                             var leaves = envelope?.Data?.Employees?.Result?.Data?.Leaves;
-                            if (leaves != null && leaves.Count > 0) return leaves;
+                            if (leaves != null && leaves.Count > 0)
+                            {
+                                try
+                                {
+                                    var transactions = await GetLeaveTransactionsAsync(1, 1);
+                                    foreach (var t in transactions)
+                                    {
+                                        var tLeaves = (t.Leaves ?? new List<LeaveTransactionBodyDto>()).Where(l => l.IEmployeeId == employeeId);
+                                        foreach (var tl in tLeaves)
+                                        {
+                                            var match = leaves.FirstOrDefault(l => (tl.ILeaveTypeId > 0 && l.ILeaveTypeId == tl.ILeaveTypeId) ||
+                                                                                   (!string.IsNullOrEmpty(tl.SLeaveTypeName) && string.Equals(l.SLeaveName, tl.SLeaveTypeName, StringComparison.OrdinalIgnoreCase)) ||
+                                                                                   (!string.IsNullOrEmpty(tl.SRemarks) && tl.SRemarks.IndexOf(l.SLeaveName, StringComparison.OrdinalIgnoreCase) >= 0));
+                                            if (match != null)
+                                            {
+                                                if (t.ITransTypeId == 0 || t.ITransTypeId == 1) // 0 = Opening Leaves, 1 = Eligibility
+                                                {
+                                                    match.OpeningLeaves += tl.FDuration;
+                                                }
+                                                else if (t.ITransTypeId == 2) // 2 = Applications / Adjustments
+                                                {
+                                                    match.LeavesApproved += tl.FDuration;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    foreach (var l in leaves)
+                                    {
+                                        l.LeaveBalance = Math.Max(0, l.OpeningLeaves - l.LeavesApproved - l.LeavesPending);
+                                    }
+                                }
+                                catch { }
+
+                                return leaves;
+                            }
                         }
                         catch { }
 
@@ -540,28 +574,52 @@ namespace HCMSys.Services
                 _logger.LogError(ex, "Error fetching Employee Leaves from API for emp {EmpId}", employeeId);
             }
 
-            // Calculate live balances for employee from active Leave Transactions
+            // Calculate live balances for employee from active Leave Transactions (iTransTypeId 0 = Opening Leaves, 1 = Eligibility, 2 = Applications)
             try
             {
                 var transactions = await GetLeaveTransactionsAsync(1, 1);
-                var empLines = transactions.SelectMany(t => t.Leaves ?? new List<LeaveTransactionBodyDto>())
-                                           .Where(l => l.IEmployeeId == employeeId)
-                                           .ToList();
-
                 var defaultTypes = new List<EmployeeLeaveItemDto>
                 {
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 10, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 10 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 }
                 };
+
+                foreach (var t in transactions)
+                {
+                    var tLeaves = (t.Leaves ?? new List<LeaveTransactionBodyDto>()).Where(l => l.IEmployeeId == employeeId);
+                    foreach (var l in tLeaves)
+                    {
+                        var match = defaultTypes.FirstOrDefault(dt => (l.ILeaveTypeId > 0 && dt.ILeaveTypeId == l.ILeaveTypeId) ||
+                                                                       (!string.IsNullOrEmpty(l.SLeaveTypeName) && string.Equals(dt.SLeaveName, l.SLeaveTypeName, StringComparison.OrdinalIgnoreCase)) ||
+                                                                       (!string.IsNullOrEmpty(l.SRemarks) && l.SRemarks.IndexOf(dt.SLeaveName, StringComparison.OrdinalIgnoreCase) >= 0));
+                        if (match == null && l.ILeaveTypeId > 0)
+                        {
+                            match = new EmployeeLeaveItemDto
+                            {
+                                ILeaveTypeId = l.ILeaveTypeId,
+                                SLeaveName = !string.IsNullOrWhiteSpace(l.SLeaveTypeName) ? l.SLeaveTypeName : (!string.IsNullOrWhiteSpace(l.SRemarks) ? l.SRemarks : "Leave")
+                            };
+                            defaultTypes.Add(match);
+                        }
+
+                        if (match != null)
+                        {
+                            if (t.ITransTypeId == 0 || t.ITransTypeId == 1) // 0 = Opening, 1 = Eligibility
+                            {
+                                match.OpeningLeaves += l.FDuration;
+                            }
+                            else // 2 = Applications / Adjustments
+                            {
+                                match.LeavesApproved += l.FDuration;
+                            }
+                        }
+                    }
+                }
 
                 foreach (var dt in defaultTypes)
                 {
-                    var linesForType = empLines.Where(l => l.ILeaveTypeId == dt.ILeaveTypeId || 
-                                                           string.Equals(l.SLeaveTypeName, dt.SLeaveName, StringComparison.OrdinalIgnoreCase)).ToList();
-                    decimal totalUsed = linesForType.Sum(l => l.FDuration);
-                    dt.LeavesApproved = totalUsed;
                     dt.LeaveBalance = Math.Max(0, dt.OpeningLeaves - dt.LeavesApproved - dt.LeavesPending);
                 }
 
@@ -571,10 +629,10 @@ namespace HCMSys.Services
             {
                 return new List<EmployeeLeaveItemDto>
                 {
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 10, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 10 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave" },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave" },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave" },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave" }
                 };
             }
         }
@@ -895,10 +953,10 @@ namespace HCMSys.Services
             {
                 leaveTypes = new List<EmployeeLeaveItemDto>
                 {
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 10, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 10 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave" },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave" },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave" },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave" }
                 };
             }
 

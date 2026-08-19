@@ -55,26 +55,38 @@
         padding: 10px 15px;
     }
     
+    /* BLUE BOX (SUMMARY PANEL) */
     .summary-panel {
-        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        background: linear-gradient(135deg, #3a60d0 0%, #1e3c9c 100%);
         color: white;
+        border-radius: 0.45rem;
+        padding: 14px 18px;
+        box-shadow: 0 4px 12px rgba(30, 60, 156, 0.25);
+    }
+    .summary-card-inner {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
         border-radius: 0.35rem;
-        padding: 12px 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 8px 6px;
+        transition: all 0.2s ease;
+    }
+    .summary-card-inner:hover {
+        background: rgba(255, 255, 255, 0.18);
     }
     .summary-label {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
-        font-weight: bold;
-        opacity: 0.9;
-        margin-bottom: 2px;
+        font-weight: 700;
+        opacity: 0.92;
+        margin-bottom: 3px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
     .summary-val {
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         font-weight: 800;
+        letter-spacing: -0.02em;
     }
     
     .number-align {
@@ -264,32 +276,50 @@
             </div>
         </div>
 
-        <!-- SUMMARY PANEL -->
+        <!-- SUMMARY PANEL (BLUE BOX) -->
         <div class="summary-panel mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                <div class="font-weight-bold" style="font-size: 0.82rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                    <i class="fas fa-chart-pie mr-2"></i><span id="summary-header-label">Leave Balance & Overview</span>
+                </div>
+                <span class="badge badge-light px-2 py-1" id="summary-type-badge" style="font-size: 0.75rem; color: #1e3c9c; font-weight: 700;">No Leave Type Selected</span>
+            </div>
             <div class="row text-center align-items-center">
-                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
-                    <div class="summary-label">Lvs Eligible</div>
-                    <div class="summary-val" id="sum-eligible">0.0</div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-award mr-1"></i>Eligible</div>
+                        <div class="summary-val" id="sum-eligible">0.0</div>
+                    </div>
                 </div>
-                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
-                    <div class="summary-label">Lvs Approved</div>
-                    <div class="summary-val" id="sum-approved">0.0</div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-check-circle mr-1"></i>Approved</div>
+                        <div class="summary-val" id="sum-approved">0.0</div>
+                    </div>
                 </div>
-                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
-                    <div class="summary-label">Lvs Pending</div>
-                    <div class="summary-val" id="sum-unapproved">0.0</div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-clock mr-1"></i>Pending</div>
+                        <div class="summary-val" id="sum-unapproved">0.0</div>
+                    </div>
                 </div>
-                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
-                    <div class="summary-label">Lvs Available</div>
-                    <div class="summary-val text-warning font-weight-bold" id="sum-available">0.0</div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-wallet mr-1 text-warning"></i>Available</div>
+                        <div class="summary-val text-warning font-weight-bold" id="sum-available">0.0</div>
+                    </div>
                 </div>
-                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
-                    <div class="summary-label">Lvs Used Now</div>
-                    <div class="summary-val" id="sum-usednow">0.0</div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-calendar-minus mr-1"></i>Used Now</div>
+                        <div class="summary-val" id="sum-usednow">0.0</div>
+                    </div>
                 </div>
-                <div class="col-6 col-sm-4 col-md-2 mb-3 mb-md-0">
-                    <div class="summary-label">Lvs Balance</div>
-                    <div class="summary-val text-success font-weight-bold" id="sum-balance">0.0</div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-balance-scale mr-1 text-success"></i>Balance</div>
+                        <div class="summary-val text-success font-weight-bold" id="sum-balance">0.0</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -408,9 +438,15 @@
         });
 
         // Event listeners
-        $('#hdr-employee').change(onEmployeeChange);
-        $('#dtl-leavetype').change(onLeaveTypeChange);
-        $('.calc-trigger').on('change input', calculateLeaves);
+        $('#hdr-employee').change(function() {
+            onEmployeeChange();
+        });
+        $('#dtl-leavetype').change(function() {
+            onLeaveTypeChange();
+        });
+        $('.calc-trigger').on('change input', function() {
+            calculateLeaves();
+        });
     });
 
     function initFlatpickrs() {
@@ -512,6 +548,8 @@
         if (!empVal) {
             $('#hdr-designation, #hdr-department, #hdr-manager, #dtl-contact').val('');
             $('#dtl-leavetype').empty().append('<option value="">Select Leave Type...</option>');
+            $('#summary-type-badge').text('No Leave Type Selected');
+            $('#summary-header-label').text('Leave Balance & Overview');
             $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
             currentEmployeeLeaves = [];
             if (typeof callback === 'function') callback();
@@ -539,6 +577,8 @@
 
             if (!editingSubLeaveId && ltSelect.find('option').length > 1) {
                 ltSelect.val(ltSelect.find('option:eq(1)').val()).trigger('change');
+            } else {
+                onLeaveTypeChange();
             }
 
             if (typeof callback === 'function') callback();
@@ -550,11 +590,22 @@
 
     function onLeaveTypeChange() {
         var ltId = parseInt($('#dtl-leavetype').val()) || 0;
+        var ltOpt = $('#dtl-leavetype option:selected');
+        var ltName = ltOpt.data('name') || ltOpt.text();
+        var empVal = $('#hdr-employee').val();
+        var empOpt = $('#hdr-employee option:selected');
+        var empName = empOpt.data('name') || empOpt.text();
+
         if (!ltId || currentEmployeeLeaves.length === 0) {
-            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
+            $('#summary-type-badge').text('No Leave Type Selected');
+            $('#summary-header-label').text('Leave Balance & Overview');
+            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
             calculateLeaves();
             return;
         }
+
+        $('#summary-type-badge').text(ltName);
+        $('#summary-header-label').text('Leave Balance: ' + ltName + (empName && empVal ? ' (' + empName + ')' : ''));
 
         var bal = currentEmployeeLeaves.find(l => l.iLeaveTypeId === ltId);
         if (bal) {
@@ -562,11 +613,21 @@
             var approved = parseFloat(bal.leavesApproved || 0);
             var pending = parseFloat(bal.leavesPending || 0);
             
-            // Rule: Available leaves cannot be negative
+            // Deduct any other sub-leaves already staged in this application for the same leave type
+            var stagedUsed = 0;
+            if (Array.isArray(stagedLeaves)) {
+                stagedLeaves.forEach(function(sl) {
+                    if (sl.leaveTypeId === ltId && (!editingSubLeaveId || sl.stagedId !== editingSubLeaveId)) {
+                        stagedUsed += parseFloat(sl.duration || 0);
+                    }
+                });
+            }
+
             var rawAvailable = (bal.leaveBalance !== undefined && bal.leaveBalance !== null) 
                 ? parseFloat(bal.leaveBalance) 
                 : (eligible - approved - pending);
-            var available = Math.max(0, rawAvailable);
+            
+            var available = Math.max(0, rawAvailable - stagedUsed);
 
             $('#sum-eligible').text(eligible.toFixed(1));
             $('#sum-approved').text(approved.toFixed(1));
@@ -643,9 +704,11 @@
         var $balEl = $('#sum-balance');
         $balEl.text(finalBalance.toFixed(1));
         if (finalBalance < 0) {
-            $balEl.removeClass('text-success').addClass('text-danger');
+            $balEl.removeClass('text-success text-warning').addClass('text-danger');
+        } else if (finalBalance === 0 && noOfLeaves > 0) {
+            $balEl.removeClass('text-danger text-success').addClass('text-warning');
         } else {
-            $balEl.removeClass('text-danger').addClass('text-success');
+            $balEl.removeClass('text-danger text-warning').addClass('text-success');
         }
     }
 
@@ -843,6 +906,7 @@
 
                 cancelSubLeaveEdit();
                 renderGrids();
+                onLeaveTypeChange();
                 alertify.log('Sub-leave updated successfully.', 'success', 3000);
                 return;
             }
@@ -872,6 +936,7 @@
         buildMonthlyBreakdown(newStagedId, leaveTypeName, f, t);
 
         renderGrids();
+        onLeaveTypeChange();
         alertify.log('Leave added to list.', 'success', 3000);
     }
 
@@ -926,7 +991,7 @@
             }
         }
 
-        calculateLeaves();
+        onLeaveTypeChange();
 
         // Switch button to Update mode
         $('#btn-add-to-grid').html('<i class="fas fa-check fa-sm text-white-50 mr-1"></i> Update Selected Sub-Leave')
@@ -946,6 +1011,7 @@
         $('#btn-cancel-subleave').hide();
         $('#subleave-indicator').hide();
         $('#user-grid-table tbody tr').removeClass('row-selected-edit');
+        onLeaveTypeChange();
     }
 
     function deleteStagedLeave(stagedId) {
@@ -955,6 +1021,7 @@
         stagedLeaves = stagedLeaves.filter(function(l) { return l.stagedId !== stagedId; });
         stagedSystemLeaves = stagedSystemLeaves.filter(function(s) { return s.stagedId !== stagedId; });
         renderGrids();
+        onLeaveTypeChange();
     }
 
     function renderGrids() {
@@ -1047,6 +1114,13 @@
 
                 var fDateStr = window.formatDateDisplay(fDateObj);
                 var tDateStr = window.formatDateDisplay(tDateObj);
+                var bal = currentEmployeeLeaves.find(function(b) { return b.iLeaveTypeId === lTypeId; });
+                var eligible = bal ? parseFloat(bal.openingLeaves || 0) : 0;
+                var approved = bal ? parseFloat(bal.leavesApproved || 0) : fDur;
+                var pending = bal ? parseFloat(bal.leavesPending || 0) : 0;
+                var available = bal ? Math.max(0, bal.leaveBalance !== undefined ? bal.leaveBalance : (eligible - approved - pending)) : 0;
+                var balance = Math.max(0, available - fDur);
+
                 var stagedId = 'id_' + new Date().getTime() + '_' + idx;
 
                 stagedLeaves.push({
@@ -1058,12 +1132,12 @@
                     duration: fDur,
                     contactNo: '-',
                     substitute: '-',
-                    eligible: 30,
-                    approved: fDur,
-                    pending: 0,
-                    available: Math.max(0, 30 - fDur),
+                    eligible: eligible,
+                    approved: approved,
+                    pending: pending,
+                    available: available,
                     usedNow: fDur,
-                    balance: Math.max(0, 30 - fDur),
+                    balance: balance,
                     remarks: l.sRemarks || tx.sComments || lTypeName
                 });
 

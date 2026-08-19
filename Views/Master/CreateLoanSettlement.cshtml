@@ -99,7 +99,9 @@
     <form id="settlementForm" autocomplete="off">
         <!-- DISBURSEMENT SELECTION & COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General</div>
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 mb-3">
@@ -110,15 +112,15 @@
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Settlement Doc No</label>
-                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Settlement Date</label>
-                        <input type="text" class="form-control" id="hdr-date" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Post Date</label>
-                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
                 </div>
             </div>
@@ -126,7 +128,9 @@
 
         <!-- SAME HEADER OF DISBURSEMENT CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom bg-info text-white">Same Header of Disbursement</div>
+            <div class="card-header card-header-custom bg-info text-white">
+                <i class="fas fa-file-contract mr-2"></i>Disbursement Reference Details
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 mb-3">

@@ -75,8 +75,11 @@
                     <i class="fas fa-undo fa-sm text-primary mr-2"></i> HR Return
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("HRReturnIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
                     <button type="button" class="btn btn-info btn-sm shadow-sm ml-2" onclick="showReturnable()">
-                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show
+                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show Returnable
                     </button>
                     <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveReturn()">
                         <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
@@ -89,20 +92,22 @@
     <form id="returnForm" autocomplete="off">
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General</div>
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Doc No</label>
-                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Date</label>
-                        <input type="text" class="form-control" id="hdr-date" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Post Date</label>
-                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
@@ -123,13 +128,14 @@
                         <input type="text" class="form-control" id="hdr-manager" readonly />
                     </div>
                     <div class="col-md-8 mb-3">
-                        <label class="form-label">Remarks</label>
-                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <label class="form-label">Remarks / Comments</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter remarks or comments..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
                         <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Attachment (Max 25MB)</label>
                         <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                        <small class="text-muted">Upload return document if any.</small>
                     </div>
                 </div>
             </div>
@@ -137,7 +143,10 @@
     </form>
 
     <div class="card shadow mb-4">
-        <div class="card-header card-header-custom bg-secondary">Returnable Items Detailed</div>
+        <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-undo mr-2"></i>Returnable Items Detailed</span>
+            <small class="text-white-50">Click "Show Returnable" to select items</small>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0" id="user-grid-table">

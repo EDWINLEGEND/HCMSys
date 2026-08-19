@@ -109,20 +109,22 @@
     <form id="tripForm" autocomplete="off">
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General</div>
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Doc No</label>
-                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Date</label>
-                        <input type="text" class="form-control" id="hdr-date" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Post Date</label>
-                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>

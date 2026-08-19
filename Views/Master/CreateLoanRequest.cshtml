@@ -107,20 +107,22 @@
     <form id="loanRequestForm" autocomplete="off">
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General</div>
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Doc No</label>
-                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Date</label>
-                        <input type="text" class="form-control" id="hdr-date" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Post Date</label>
-                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
@@ -141,12 +143,12 @@
                         <input type="text" class="form-control" id="hdr-manager" readonly />
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">Date Of Joining (Read Only)</label>
+                        <label class="form-label">Date Of Joining</label>
                         <input type="text" class="form-control" id="hdr-doj" readonly placeholder="--" />
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">Current Outstanding (Read Only)</label>
-                        <input type="text" class="form-control number-align" id="hdr-outstanding" readonly value="0.00" />
+                        <label class="form-label">Current Outstanding</label>
+                        <input type="text" class="form-control number-align font-weight-bold text-danger" id="hdr-outstanding" readonly value="0.00" />
                     </div>
                     
                     <div class="col-md-6 mb-3">

@@ -60,11 +60,14 @@
         <div class="card-header py-3">
             <div class="page-title-bar">
                 <div class="page-title-text">
-                    <i class="fas fa-boxes fa-sm text-primary mr-2"></i> Asset De-Allocation
+                    <i class="fas fa-undo fa-sm text-primary mr-2"></i> Asset De-Allocation
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("AssetDeAllocationIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
                     <button type="button" class="btn btn-info btn-sm shadow-sm ml-2" onclick="openInHandAssetsModal()">
-                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show In hand Assets
+                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show In Hand Assets
                     </button>
                     <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveDeAllocation()">
                         <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
@@ -77,20 +80,22 @@
     <form id="deAllocationForm" autocomplete="off">
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General</div>
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Doc No</label>
-                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Date</label>
-                        <input type="text" class="form-control" id="hdr-date" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Post Date</label>
-                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
@@ -111,13 +116,14 @@
                         <input type="text" class="form-control" id="hdr-manager" readonly />
                     </div>
                     <div class="col-md-8 mb-3">
-                        <label class="form-label">Comments</label>
-                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <label class="form-label">Comments / Reason</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter reason or comments..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
                         <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Attachment (Max 25MB)</label>
                         <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                        <small class="text-muted">Upload handover document if any.</small>
                     </div>
                 </div>
             </div>
@@ -125,7 +131,10 @@
     </form>
 
     <div class="card shadow mb-4">
-        <div class="card-header card-header-custom bg-secondary">Assets to De-Allocate</div>
+        <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-boxes mr-2"></i>Assets to De-Allocate</span>
+            <small class="text-white-50">Click "Show In Hand Assets" to select assets</small>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0" id="user-grid-table">
@@ -134,7 +143,7 @@
                             <th style="width: 60px; text-align:center;">Action</th>
                             <th>Allocation No</th>
                             <th>Asset Category</th>
-                            <th>Assets Code</th>
+                            <th>Asset Code</th>
                             <th>Asset Name</th>
                             <th>Tag Number</th>
                             <th class="num-col">Qty</th>
@@ -142,6 +151,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <tr id="empty-row"><td colspan="8" class="text-center text-muted py-3">No assets selected for de-allocation. Click "Show In Hand Assets" above.</td></tr>
                     </tbody>
                 </table>
             </div>

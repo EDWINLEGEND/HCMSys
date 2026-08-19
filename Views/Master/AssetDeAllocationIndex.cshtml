@@ -57,6 +57,18 @@
     .action-btns .fa-trash-alt { color: #e74a3b; }
 
     .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+
+    .asset-badge {
+        display: inline-block;
+        background-color: #eef2fd;
+        color: #2e59d9;
+        border: 1px solid #c2d4f8;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="container-fluid py-3">
@@ -65,7 +77,7 @@
         <div class="card-header py-3">
             <div class="page-title-bar">
                 <div class="page-title-text">
-                    <i class="fas fa-box-open fa-sm"></i>
+                    <i class="fas fa-undo fa-sm"></i>
                     Asset De-Allocation List
                 </div>
                 <div class="btn-group-actions">
@@ -232,8 +244,8 @@
                     dNo,
                     window.formatDateDisplay(item.deAllocDate || item.returnDate),
                     item.employeeName || '-',
-                    item.categoryName || '-',
-                    aCode,
+                    '<span class="asset-badge"><i class="fas fa-tag mr-1"></i>' + (item.categoryName || '-') + '</span>',
+                    '<span class="font-weight-bold text-primary">' + aCode + '</span>',
                     item.assetName || '-',
                     item.deAllocRemarks || item.returnRemarks || 'De-Allocated'
                 ]);

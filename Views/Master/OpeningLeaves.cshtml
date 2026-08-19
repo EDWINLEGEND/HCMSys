@@ -81,28 +81,31 @@
     <form id="entryForm" autocomplete="off">
         <!-- COMMON HEADER CARD -->
         <div class="card shadow mb-4">
-            <div class="card-header card-header-custom">General Information</div>
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Doc No</label>
-                        <input type="text" class="form-control" id="hdr-docno" readonly />
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Date</label>
-                        <input type="text" class="form-control" id="hdr-date" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Post Date</label>
-                        <input type="text" class="form-control" id="hdr-postdate" readonly />
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Attachment (Max 25MB)</label>
                         <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                        <small class="text-muted">Upload supporting attachment if any.</small>
                     </div>
                     <div class="col-md-12 mb-3">
-                        <label class="form-label">Comments</label>
-                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <label class="form-label">Comments / Reason</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter comments or notes..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
                         <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
                     </div>
                 </div>
@@ -123,10 +126,10 @@
                 <table class="table table-bordered table-hover mb-0" id="user-grid-table">
                     <thead class="thead-light">
                         <tr>
-                            <th style="width: 50px; text-align:center;">Action</th>
-                            <th style="min-width: 200px;">Employee <span class="text-danger">*</span></th>
-                            <th style="min-width: 180px;">Leave Type <span class="text-danger">*</span></th>
-                            <th style="width: 130px;" class="text-right">Duration <span class="text-danger">*</span></th>
+                            <th style="width: 60px; text-align:center;">Action</th>
+                            <th style="min-width: 220px;">Employee <span class="text-danger">*</span></th>
+                            <th style="min-width: 200px;">Leave Type <span class="text-danger">*</span></th>
+                            <th style="width: 140px;" class="text-right">Duration (Days) <span class="text-danger">*</span></th>
                             <th>Remarks</th>
                         </tr>
                     </thead>

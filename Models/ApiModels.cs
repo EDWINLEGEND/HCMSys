@@ -590,4 +590,77 @@ namespace HCMSys.Models
         [JsonPropertyName("halfDay")]
         public List<HalfDayDto> HalfDay { get; set; } = new List<HalfDayDto>();
     }
+
+    // --- Leave Return (Return From Leave) DTOs ---
+    public class SaveLeaveReturnDto
+    {
+        [JsonPropertyName("iHeaderId")]
+        public int IHeaderId { get; set; } = 0;
+
+        [JsonPropertyName("sDocNo")]
+        public string SDocNo { get; set; } = string.Empty;
+
+        [JsonPropertyName("dDocDate")]
+        public string DDocDate { get; set; } = string.Empty; // Return / Process Date
+
+        [JsonPropertyName("dPostDate")]
+        public string DPostDate { get; set; } = string.Empty;
+
+        [JsonPropertyName("iLeaveApplicationId")]
+        public int ILeaveApplicationId { get; set; } = 0;
+
+        [JsonPropertyName("sLeaveAppDocNo")]
+        public string SLeaveAppDocNo { get; set; } = string.Empty;
+
+        [JsonPropertyName("iEmpId")]
+        public int IEmpId { get; set; }
+
+        [JsonPropertyName("sEmployeeCode")]
+        public string? SEmployeeCode { get; set; }
+
+        [JsonPropertyName("sEmployeeName")]
+        public string? SEmployeeName { get; set; }
+
+        [JsonPropertyName("sDepartmentName")]
+        public string? SDepartmentName { get; set; }
+
+        [JsonPropertyName("sDesignationName")]
+        public string? SDesignationName { get; set; }
+
+        [JsonPropertyName("sReportingToName")]
+        public string? SReportingToName { get; set; }
+
+        [JsonPropertyName("dLeaveStartDate")]
+        public string? DLeaveStartDate { get; set; }
+
+        [JsonPropertyName("dLeaveEndDate")]
+        public string? DLeaveEndDate { get; set; }
+
+        [JsonPropertyName("dRejoiningDate")]
+        public string? DRejoiningDate { get; set; }
+
+        [JsonPropertyName("fLateEarlyDays")]
+        public decimal FLateEarlyDays { get; set; } = 0;
+
+        [JsonPropertyName("sLateEarlyStatus")]
+        public string? SLateEarlyStatus { get; set; } // "On-Time", "Late", "Early"
+
+        [JsonPropertyName("sComments")]
+        public string? SComments { get; set; }
+
+        [JsonPropertyName("iCompanyId")]
+        public int ICompanyId { get; set; } = 1;
+
+        [JsonPropertyName("iPayYearId")]
+        public int IPayYearId { get; set; } = 1;
+
+        [JsonPropertyName("iStatus")]
+        public int IStatus { get; set; } = 1;
+
+        [JsonPropertyName("leaves")]
+        public List<LeaveTransactionBodyDto> Leaves { get; set; } = new List<LeaveTransactionBodyDto>();
+
+        [JsonPropertyName("attachment")]
+        public LeaveTransactionFileDto? Attachment { get; set; }
+    }
 }

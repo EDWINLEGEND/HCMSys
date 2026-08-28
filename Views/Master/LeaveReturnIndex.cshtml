@@ -1,0 +1,483 @@
+@{
+    ViewData["Title"] = "Leave Return List";
+}
+
+<!-- DataTables & Alertify CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #tblLeaveReturn thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+    }
+    #tblLeaveReturn tbody tr:hover { background-color: #f0f3ff; }
+    #tblLeaveReturn td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .action-btns .fa-paperclip { color: #1cc88a; }
+
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-danger { border-left: 0.25rem solid #e74a3b !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+
+    .badge-ontime {
+        display: inline-block;
+        background-color: #e6f9f0;
+        color: #0d8a4f;
+        border: 1px solid #a3e9c6;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .badge-late {
+        display: inline-block;
+        background-color: #fdf0ed;
+        color: #d92510;
+        border: 1px solid #f8b4aa;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .badge-early {
+        display: inline-block;
+        background-color: #fef8e7;
+        color: #b78103;
+        border: 1px solid #fde499;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .leave-ref-badge {
+        display: inline-block;
+        background-color: #eef2fd;
+        color: #2e59d9;
+        border: 1px solid #c2d4f8;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-calendar-check fa-sm"></i>
+                    Leave Return List (Return From Leave)
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateLeaveReturn", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Process Return
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Returns</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-returns">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">On-Time Returns</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-ontime-returns">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Late Returns</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-late-returns">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Early Returns</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-early-returns">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-undo-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA TABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Processed Leave Returns
+            </h6>
+            <button class="btn btn-sm btn-outline-primary shadow-sm" onclick="loadGridData()">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tblLeaveReturn" class="table table-bordered table-striped table-hover" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width:80px; text-align:center;">Action</th>
+                            <th>Return Doc No</th>
+                            <th>Return Date</th>
+                            <th>Leave App No</th>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Designation</th>
+                            <th>Leave End Date</th>
+                            <th>Rejoining Date</th>
+                            <th style="text-align:center;">Late / Early</th>
+                            <th>Status</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- DataTables & Alertify Scripts -->
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var table = null;
+    var currentLeaveReturns = [];
+
+    function formatListDate(dVal) {
+        if (!dVal) return '-';
+        if (typeof window.formatDateDisplay === 'function') {
+            return window.formatDateDisplay(dVal);
+        }
+        var str = String(dVal);
+        if (str.includes('T')) str = str.split('T')[0];
+        var parts = str.split('-');
+        if (parts.length === 3 && parts[0].length === 4) {
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var mIdx = parseInt(parts[1], 10) - 1;
+            return (parts[2].padStart(2, '0')) + '-' + (months[mIdx] || parts[1]) + '-' + parts[0];
+        }
+        return str;
+    }
+
+    $(document).ready(function () {
+        if ($.fn.DataTable.isDataTable('#tblLeaveReturn')) {
+            $('#tblLeaveReturn').DataTable().destroy();
+        }
+
+        table = $('#tblLeaveReturn').DataTable({
+            "pageLength": 10,
+            "order": [],
+            "language": {
+                search: "",
+                searchPlaceholder: "Search leave returns...",
+                info: "Showing _START_ to _END_ of _TOTAL_ records",
+                emptyTable: "No leave return records found"
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": 0 }
+            ]
+        });
+
+        loadGridData();
+
+        // Edit Button Click Handler
+        $('#tblLeaveReturn tbody').off('click', '.edit-item-btn').on('click', '.edit-item-btn', function (e) {
+            e.preventDefault();
+            var headerId = $(this).data('headerid');
+            var editUrl = '@Url.Action("CreateLeaveReturn", "Master")' + '?id=' + (headerId || 0);
+
+            if (typeof loadPageContent === 'function') {
+                loadPageContent(editUrl, true);
+            } else {
+                window.location.href = editUrl;
+            }
+        });
+
+        // Delete Button Click Handler
+        $('#tblLeaveReturn tbody').off('click', '.remove-item-btn').on('click', '.remove-item-btn', function (e) {
+            e.preventDefault();
+            var docNo = String($(this).data('docno'));
+            var headerId = parseInt($(this).data('headerid')) || 0;
+
+            alertify.confirm('Are you sure you want to delete Leave Return ' + docNo + '?', function (confirmed) {
+                if (confirmed) {
+                    var saved = JSON.parse(localStorage.getItem('savedLeaveReturns') || '[]');
+                    saved = saved.filter(function(r) {
+                        return !(r.sDocNo === docNo || (headerId && r.iHeaderId == headerId));
+                    });
+                    localStorage.setItem('savedLeaveReturns', JSON.stringify(saved));
+
+                    currentLeaveReturns = currentLeaveReturns.filter(function(r) {
+                        return !(r.sDocNo === docNo || (headerId && r.iHeaderId == headerId));
+                    });
+
+                    renderRows(currentLeaveReturns);
+                    alertify.log('Leave Return ' + docNo + ' deleted successfully.', 'success', 3500);
+                }
+            });
+        });
+
+        // Attachment Preview Click Handler
+        $('#tblLeaveReturn tbody').off('click', '.preview-doc-btn').on('click', '.preview-doc-btn', function (e) {
+            e.preventDefault();
+            var filename = $(this).data('filename') || 'Leave_Return_Attachment.pdf';
+            var fileUrl = $(this).data('fileurl') || '';
+            if (typeof window.openDocPreview === 'function') {
+                window.openDocPreview(filename, fileUrl);
+            } else {
+                window.open(fileUrl || '#', '_blank');
+            }
+        });
+    });
+
+    function loadGridData() {
+        if (!localStorage.getItem('savedLeaveReturns')) {
+            // Seed with realistic sample returns if empty
+            var sampleReturns = [
+                {
+                    iHeaderId: 1,
+                    sDocNo: "LVR000001",
+                    dDocDate: "2026-08-01",
+                    dPostDate: "2026-08-01",
+                    iLeaveApplicationId: 101,
+                    sLeaveAppDocNo: "LVS000001",
+                    iEmpId: 1,
+                    sEmployeeCode: "EMP001",
+                    sEmployeeName: "Smitha Sebastian",
+                    sDepartmentName: "Information Technology",
+                    sDesignationName: "Senior Software Engineer",
+                    sReportingToName: "Operations Director",
+                    dLeaveStartDate: "2026-07-15",
+                    dLeaveEndDate: "2026-07-31",
+                    dRejoiningDate: "2026-08-01",
+                    fLateEarlyDays: 0,
+                    sLateEarlyStatus: "On-Time",
+                    sComments: "Resumed work on schedule without delay.",
+                    attachment: { sAttachmentFileName: "LVR000001_RejoiningNote.pdf" }
+                },
+                {
+                    iHeaderId: 2,
+                    sDocNo: "LVR000002",
+                    dDocDate: "2026-08-06",
+                    dPostDate: "2026-08-06",
+                    iLeaveApplicationId: 102,
+                    sLeaveAppDocNo: "LVS000002",
+                    iEmpId: 2,
+                    sEmployeeCode: "EMP002",
+                    sEmployeeName: "Alex Mercer",
+                    sDepartmentName: "Human Resources",
+                    sDesignationName: "HR Specialist",
+                    sReportingToName: "HR Manager",
+                    dLeaveStartDate: "2026-07-20",
+                    dLeaveEndDate: "2026-07-31",
+                    dRejoiningDate: "2026-08-05",
+                    fLateEarlyDays: -5,
+                    sLateEarlyStatus: "Late",
+                    sComments: "Flight delayed by 5 days. Extension leave applied.",
+                    attachment: { sAttachmentFileName: "Flight_Delay_Proof.pdf" }
+                },
+                {
+                    iHeaderId: 3,
+                    sDocNo: "LVR000003",
+                    dDocDate: "2026-08-10",
+                    dPostDate: "2026-08-10",
+                    iLeaveApplicationId: 103,
+                    sLeaveAppDocNo: "LVS000003",
+                    iEmpId: 3,
+                    sEmployeeCode: "EMP003",
+                    sEmployeeName: "Priya Sharma",
+                    sDepartmentName: "Finance & Accounts",
+                    sDesignationName: "Financial Analyst",
+                    sReportingToName: "Chief Financial Officer",
+                    dLeaveStartDate: "2026-08-01",
+                    dLeaveEndDate: "2026-08-15",
+                    dRejoiningDate: "2026-08-11",
+                    fLateEarlyDays: 4,
+                    sLateEarlyStatus: "Early",
+                    sComments: "Reported back 4 days earlier than planned.",
+                    attachment: { sAttachmentFileName: "Early_Return_Approval.pdf" }
+                }
+            ];
+            localStorage.setItem('savedLeaveReturns', JSON.stringify(sampleReturns));
+        }
+
+        var saved = JSON.parse(localStorage.getItem('savedLeaveReturns') || '[]');
+        currentLeaveReturns = saved;
+        renderRows(currentLeaveReturns);
+    }
+
+    function renderRows(items) {
+        if (!table) return;
+        table.clear();
+
+        var totalCount = items.length;
+        var onTimeCount = 0;
+        var lateCount = 0;
+        var earlyCount = 0;
+
+        items.forEach(function (row) {
+            var hId = row.iHeaderId || 0;
+            var docNo = row.sDocNo || ('LVR' + String(hId).padStart(6, '0'));
+            var retDate = formatListDate(row.dDocDate);
+            var leaveAppNo = row.sLeaveAppDocNo || ('LVS' + String(row.iLeaveApplicationId || 1).padStart(6, '0'));
+            var empCode = row.sEmployeeCode || '';
+            var empName = row.sEmployeeName || '';
+            var empDisplay = (empCode ? (empCode + ' - ') : '') + empName;
+            var dept = row.sDepartmentName || '-';
+            var desig = row.sDesignationName || '-';
+            var leaveEnd = formatListDate(row.dLeaveEndDate);
+            var rejoining = formatListDate(row.dRejoiningDate);
+            var lateEarlyDays = parseFloat(row.fLateEarlyDays || 0);
+
+            var badgeHtml = '';
+            if (lateEarlyDays === 0) {
+                badgeHtml = '<span class="badge-ontime"><i class="fas fa-check-circle mr-1"></i>0 Days (On-Time)</span>';
+                onTimeCount++;
+            } else if (lateEarlyDays < 0) {
+                badgeHtml = '<span class="badge-late"><i class="fas fa-exclamation-triangle mr-1"></i>' + lateEarlyDays + ' Days (Late)</span>';
+                lateCount++;
+            } else {
+                badgeHtml = '<span class="badge-early"><i class="fas fa-undo-alt mr-1"></i>+' + lateEarlyDays + ' Days (Early)</span>';
+                earlyCount++;
+            }
+
+            var statusBadge = '<span class="badge badge-success px-2 py-1">Processed</span>';
+            var comments = row.sComments || '-';
+
+            var hasAttach = row.attachment && (row.attachment.sAttachmentFileName || row.attachment.sAttachmentFilePath);
+            var attachName = row.attachment ? (row.attachment.sAttachmentFileName || 'Leave_Return_Attachment.pdf') : '';
+            var attachUrl = row.attachment ? (row.attachment.sAttachmentFilePath || '') : '';
+
+            var attachBtn = hasAttach
+                ? `<a class="preview-doc-btn" data-filename="${attachName}" data-fileurl="${attachUrl}" title="View Attached Document"><i class="fas fa-paperclip"></i></a>`
+                : '';
+
+            var actions = `
+                <div class="action-btns" style="text-align: center; white-space: nowrap;">
+                    <a class="edit-item-btn" data-headerid="${hId}" data-docno="${docNo}" title="Edit Leave Return"><i class="fas fa-edit"></i></a>
+                    ${attachBtn}
+                    <a class="remove-item-btn" data-headerid="${hId}" data-docno="${docNo}" title="Delete Leave Return"><i class="fas fa-trash-alt"></i></a>
+                </div>
+            `;
+
+            table.row.add([
+                actions,
+                `<strong class="text-primary">${docNo}</strong>`,
+                retDate,
+                `<span class="leave-ref-badge"><i class="fas fa-calendar-alt mr-1"></i>${leaveAppNo}</span>`,
+                `<strong>${empDisplay}</strong>`,
+                dept,
+                desig,
+                leaveEnd,
+                `<strong class="text-dark">${rejoining}</strong>`,
+                `<div style="text-align:center;">${badgeHtml}</div>`,
+                statusBadge,
+                comments
+            ]);
+        });
+
+        table.draw();
+
+        $('#stat-total-returns').text(totalCount);
+        $('#stat-ontime-returns').text(onTimeCount);
+        $('#stat-late-returns').text(lateCount);
+        $('#stat-early-returns').text(earlyCount);
+    }
+</script>

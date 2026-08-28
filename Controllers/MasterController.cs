@@ -397,6 +397,17 @@ namespace HCMSys.Controllers
             return View();
         }
 
+        public ActionResult LeaveReturnIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateLeaveReturn(int? id)
+        {
+            ViewBag.EditId = id ?? 0;
+            return View();
+        }
+
         public ActionResult ClaimIndex()
         {
             return View();

@@ -276,6 +276,7 @@
                 <div id="collapseLeaves" class="collapse @(isLeavesActive ? "show" : "")" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item @(currentAction.StartsWith("LeaveApplication") ? "active" : "")" href="@Url.Action("LeaveApplicationIndex", "Master")">Leave Application</a>
+                        <a class="collapse-item @(currentAction.StartsWith("LeaveReturn") || currentAction.StartsWith("ReturnFromLeave") ? "active" : "")" href="@Url.Action("LeaveReturnIndex", "Master")">Leave Return</a>
                         <a class="collapse-item @(currentAction.StartsWith("OpeningLeaves") ? "active" : "")" href="@Url.Action("OpeningLeavesIndex", "Master")">Opening Leaves</a>
                         <a class="collapse-item @(currentAction.StartsWith("LeaveEligibility") ? "active" : "")" href="@Url.Action("LeaveEligibilityIndex", "Master")">Leave Eligibility</a>
                         <a class="collapse-item @(currentAction.StartsWith("LeaveAdjustments") ? "active" : "")" href="@Url.Action("LeaveAdjustmentsIndex", "Master")">Leave Adjustments</a>

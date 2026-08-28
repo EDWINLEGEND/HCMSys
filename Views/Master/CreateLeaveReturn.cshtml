@@ -1,0 +1,1477 @@
+@{
+    ViewData["Title"] = "Create Leave Return";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-text i { color: #4e73df; }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    
+    /* BLUE BOX (SUMMARY PANEL) */
+    .summary-panel {
+        background: linear-gradient(135deg, #3a60d0 0%, #1e3c9c 100%);
+        color: white;
+        border-radius: 0.45rem;
+        padding: 14px 18px;
+        box-shadow: 0 4px 12px rgba(30, 60, 156, 0.25);
+    }
+    .summary-card-inner {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 0.35rem;
+        padding: 8px 6px;
+        transition: all 0.2s ease;
+    }
+    .summary-card-inner:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+    .summary-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        opacity: 0.92;
+        margin-bottom: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .summary-val {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+    
+    .number-align {
+        text-align: right;
+    }
+    input[type="text"], select, textarea {
+        text-align: left;
+    }
+    .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+        background-color: #e9ecef !important; 
+        opacity: 1; 
+    }
+    .flatpickr-input[readonly], .datepicker[readonly] {
+        background-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+    .table th, .table td { vertical-align: middle; }
+    .table td.num-col { text-align: right; }
+
+    .leave-badge {
+        display: inline-block;
+        background-color: #eef2fd;
+        color: #2e59d9;
+        border: 1px solid #c2d4f8;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .late-early-display {
+        font-size: 1.15rem;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        min-width: 100px;
+        text-align: center;
+    }
+    .late-early-ontime {
+        background-color: #e6f9f0;
+        color: #0d8a4f;
+        border: 2px solid #28a745;
+    }
+    .late-early-late {
+        background-color: #fdf0ed;
+        color: #d92510;
+        border: 2px solid #dc3545;
+    }
+    .late-early-early {
+        background-color: #fef8e7;
+        color: #b78103;
+        border: 2px solid #ffc107;
+    }
+
+    .row-selected-edit {
+        background-color: #fff3cd !important;
+        border-left: 4px solid #ffc107;
+    }
+
+    .notification-banner {
+        border-radius: 0.45rem;
+        padding: 12px 18px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text" id="page-header-title">
+                    <i class="fas fa-calendar-check fa-sm"></i> Process Return From Leave
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("LeaveReturnIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm mr-2">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm" id="btn-save-return" onclick="saveLeaveReturn()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save Return
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="leaveReturnForm" autocomplete="off">
+        <input type="hidden" id="hdr-header-id" value="0" />
+
+        <!-- GENERAL INFORMATION & APPLICATION SELECTOR CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information & Employee Reference
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Doc No & Processing Dates -->
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc Date</label>
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Post Date</label>
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
+                    </div>
+
+                    <!-- 1. EMPLOYEE SELECTION FIRST -->
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Select Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Select Employee...</option>
+                        </select>
+                    </div>
+
+                    <!-- Employee Details (Auto-populated from employee selection) -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto loaded" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto loaded" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto loaded" />
+                    </div>
+
+                    <!-- 2. LEAVE APPLICATIONS DROPDOWN (Filtered for selected employee) -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Leave Application No <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-leaveapp" required>
+                            <option value="">Select Employee First...</option>
+                        </select>
+                    </div>
+
+                    <!-- LEAVE RETURN SPECIFIC DATE CALCULATION FIELDS -->
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Leave Start Date</label>
+                        <input type="text" class="form-control datepicker" id="hdr-leavestartdate" placeholder="Leave Start Date" />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label text-primary">Leave End Date <span class="badge badge-primary ml-1">Auto Load Max</span></label>
+                        <input type="text" class="form-control font-weight-bold text-primary datepicker" id="hdr-leaveenddate" placeholder="Leave End Date" />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label text-success">Return / Rejoining Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control font-weight-bold text-success datepicker" id="hdr-rejoiningdate" required />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Late / Early (Days)</label>
+                        <div class="d-flex align-items-center">
+                            <input type="text" class="form-control font-weight-bold number-align mr-2" id="hdr-lateearlydays" readonly value="0" style="font-size: 1.1rem; width: 100px;" />
+                            <div id="late-early-badge-container">
+                                <span class="late-early-display late-early-ontime" id="late-early-badge">0 Days</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Comments / Remarks</label>
+                        <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter reason or return comments..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
+                        <div id="comments-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                        <small class="text-muted" id="attachment-note">Upload rejoining note, travel tickets, or supporting document.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DYNAMIC SMART RULE & NOTIFICATION BANNER -->
+        <div id="smart-notification-container" class="mb-4" style="display:none;">
+            <!-- Populated dynamically based on Late/Early Days value -->
+        </div>
+
+        <!-- ORIGINAL LEAVE APPLICATION REFERENCE DETAILS (READONLY) -->
+        <div class="card shadow mb-4" id="orig-leave-card" style="display:none;">
+            <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-history mr-2"></i>Original Leave Application Details</span>
+                <span class="badge badge-light" id="orig-leave-badge">Application Info</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <small class="text-muted text-uppercase font-weight-bold">Leave Type</small>
+                        <div class="font-weight-bold text-dark" id="orig-leavetype">-</div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <small class="text-muted text-uppercase font-weight-bold">Leave Duration</small>
+                        <div class="font-weight-bold text-primary" id="orig-duration">0 Days</div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <small class="text-muted text-uppercase font-weight-bold">Original Approved Period</small>
+                        <div class="font-weight-bold text-dark" id="orig-period">-</div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <small class="text-muted text-uppercase font-weight-bold">Application Remarks</small>
+                        <div class="font-weight-bold text-muted" id="orig-remarks">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEAVE EXTENSION SECTION (ENABLED WHEN LATE / FOR ADJUSTMENTS) -->
+        <div class="card shadow mb-4" id="leave-extension-card">
+            <div class="card-header card-header-custom bg-info d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-calendar-plus mr-2"></i>Leave Extension Details (For Excess / Late Days)</span>
+                <span class="badge badge-light" id="extension-status-badge">Required for Late Return</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Leave Type <span class="text-danger">*</span></label>
+                        <select class="form-control calc-trigger" id="dtl-leavetype">
+                            <option value="">Select Leave Type...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Payment Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="dtl-paymenttype">
+                            <option value="0">In Payroll</option>
+                            <option value="1">Settlement</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Half Day <span class="text-danger">*</span></label>
+                        <select class="form-control calc-trigger" id="dtl-halfday">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Extension From Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control calc-trigger datepicker" id="dtl-fromdate" />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Extension To Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control calc-trigger datepicker" id="dtl-todate" />
+                    </div>
+                    <div class="col-4 col-md-2 mb-3">
+                        <label class="form-label">Total Days</label>
+                        <input type="number" class="form-control number-align" id="dtl-duration" readonly />
+                    </div>
+                    <div class="col-4 col-md-2 mb-3">
+                        <label class="form-label">Weekly Off</label>
+                        <input type="number" class="form-control calc-trigger number-align" id="dtl-weeklyoff" value="0" min="0" />
+                    </div>
+                    <div class="col-4 col-md-2 mb-3">
+                        <label class="form-label">Holiday</label>
+                        <input type="number" class="form-control calc-trigger number-align" id="dtl-publicholiday" value="0" min="0" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Days to Apply (Used Now) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control font-weight-bold text-primary number-align" id="dtl-noofleaves" readonly />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Contact No</label>
+                        <input type="text" class="form-control" id="dtl-contact" placeholder="Contact number" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Substitute Employee</label>
+                        <select class="form-control" id="dtl-substitute">
+                            <option value="">Select Substitute...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 text-right mt-2" id="grid-action-container">
+                        <button type="button" class="btn btn-secondary btn-sm shadow-sm mr-2" id="btn-cancel-subleave" style="display:none;" onclick="cancelSubLeaveEdit()">
+                            <i class="fas fa-times fa-sm text-white-50 mr-1"></i> Cancel Edit
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btn-add-to-grid" onclick="addToGrid()">
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Extension to Grid
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY PANEL (BLUE BOX) -->
+        <div class="summary-panel mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                <div class="font-weight-bold" style="font-size: 0.82rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                    <i class="fas fa-chart-pie mr-2"></i><span id="summary-header-label">Leave Balance & Overview</span>
+                </div>
+                <span class="badge badge-light px-2 py-1" id="summary-type-badge" style="font-size: 0.75rem; color: #1e3c9c; font-weight: 700;">No Leave Type Selected</span>
+            </div>
+            <div class="row text-center align-items-center">
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-award mr-1"></i>Eligible</div>
+                        <div class="summary-val" id="sum-eligible">0.0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-check-circle mr-1"></i>Approved</div>
+                        <div class="summary-val" id="sum-approved">0.0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-clock mr-1"></i>Pending</div>
+                        <div class="summary-val" id="sum-unapproved">0.0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-wallet mr-1 text-warning"></i>Available</div>
+                        <div class="summary-val text-warning font-weight-bold" id="sum-available">0.0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-calendar-minus mr-1"></i>Used Now</div>
+                        <div class="summary-val" id="sum-usednow">0.0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-2 mb-2 mb-md-0">
+                    <div class="summary-card-inner">
+                        <div class="summary-label"><i class="fas fa-balance-scale mr-1 text-success"></i>Balance</div>
+                        <div class="summary-val text-success font-weight-bold" id="sum-balance">0.0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- DETAILED EXTENSION LEAVE GRID -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list mr-2"></i>Extension Leaves Detailed (Sub-Leaves Grid)</span>
+            <small class="text-white-50">Extension lines applied for late return</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="user-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 80px; text-align:center;">Action</th>
+                            <th>Leave Type</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th class="num-col" style="width:100px;">Duration (Days)</th>
+                            <th>Contact No</th>
+                            <th>Substitute Employee</th>
+                            <th class="num-col">Eligible</th>
+                            <th class="num-col">Approved</th>
+                            <th class="num-col">Pending</th>
+                            <th class="num-col">Available</th>
+                            <th class="num-col">Used Now</th>
+                            <th class="num-col">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="empty-row"><td colspan="13" class="text-center text-muted py-3">No extension leaves added. (Required only when Late/Early Days &lt; 0).</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONTHLY BREAKDOWN SYSTEM GRID -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-dark">
+            <i class="fas fa-calendar-week mr-2"></i>Monthly Breakdown (System Grid)
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="system-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Leave Type</th>
+                            <th>Month</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th class="num-col" style="width:120px;">Days in Month</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="empty-sys-row"><td colspan="5" class="text-center text-muted py-3">No breakdown available.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var employeesData = [];
+    var leaveApplicationsData = [];
+    var currentEmployeeLeaves = [];
+    var stagedLeaves = [];
+    var stagedSystemLeaves = [];
+    var editHeaderId = 0;
+    var isEditMode = false;
+    var editingSubLeaveId = null;
+    var fromDatePicker = null;
+    var toDatePicker = null;
+    var rejoiningDatePicker = null;
+    var leaveEndDatePicker = null;
+    var leaveStartDatePicker = null;
+    var selectedLeaveApp = null;
+
+    $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var paramId = urlParams.get('id') || '@ViewBag.EditId';
+        editHeaderId = parseInt(paramId) || 0;
+        isEditMode = editHeaderId > 0;
+
+        if (isEditMode) {
+            $('#page-header-title').html('<i class="fas fa-edit fa-sm text-primary mr-2"></i> Edit Return From Leave <span class="badge badge-primary font-weight-bold ml-2">Edit Mode</span>');
+            $('#btn-save-return').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Return');
+            $('#hdr-header-id').val(editHeaderId);
+        }
+
+        initFlatpickrs();
+        initHeaderDocNo();
+
+        // Load Employees & Leave Applications in parallel
+        $.when(
+            $.getJSON('/Master/GetApiEmployees'),
+            $.getJSON('/Master/GetApiLeaveTransactions')
+        ).done(function(empRes, txRes) {
+            var empArr = empRes[0] || empRes;
+            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
+
+            var allTxs = txRes[0] || txRes;
+            var rawList = Array.isArray(allTxs) ? allTxs : (allTxs && allTxs.data ? allTxs.data : []);
+            
+            buildLeaveApplicationsList(rawList);
+            populateEmployeeDropdown();
+            updateSubstituteDropdown('');
+
+            $('select.form-control').select2({ width: '100%' });
+
+            if (isEditMode) {
+                loadLeaveReturnForEdit(editHeaderId);
+            }
+        }).fail(function() {
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to load employee masters or leave applications.', 'error', 4000);
+            }
+        });
+
+        // 1. Employee selection change
+        $('#hdr-employee').change(function() {
+            onEmployeeChange();
+        });
+
+        // 2. Leave application selection change
+        $('#hdr-leaveapp').change(function() {
+            onLeaveAppChange();
+        });
+
+        // 3. Extension leave type change
+        $('#dtl-leavetype').change(function() {
+            onLeaveTypeChange();
+        });
+
+        // 4. Extension calculations
+        $('.calc-trigger').on('change input', function() {
+            calculateExtensionLeaves();
+        });
+    });
+
+    function initFlatpickrs() {
+        flatpickr("#hdr-date", { dateFormat: "d-M-Y", defaultDate: "today" });
+        flatpickr("#hdr-postdate", { dateFormat: "d-M-Y", defaultDate: "today" });
+
+        leaveStartDatePicker = flatpickr("#hdr-leavestartdate", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today"
+        });
+
+        leaveEndDatePicker = flatpickr("#hdr-leaveenddate", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today",
+            onChange: function() {
+                recalculateLateEarly();
+            }
+        });
+
+        rejoiningDatePicker = flatpickr("#hdr-rejoiningdate", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today",
+            onChange: function() {
+                recalculateLateEarly();
+            }
+        });
+
+        fromDatePicker = flatpickr("#dtl-fromdate", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today",
+            onChange: function() {
+                calculateExtensionLeaves();
+            }
+        });
+
+        toDatePicker = flatpickr("#dtl-todate", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today",
+            onChange: function() {
+                calculateExtensionLeaves();
+            }
+        });
+    }
+
+    function initHeaderDocNo() {
+        if (isEditMode) return;
+
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var mmm = months[d.getMonth()];
+        var dd = String(d.getDate()).padStart(2, '0');
+        var yyyy = d.getFullYear();
+        var todayStr = dd + '-' + mmm + '-' + yyyy;
+
+        $('#hdr-date').val(todayStr);
+        $('#hdr-postdate').val(todayStr);
+        $('#dtl-fromdate').val(todayStr);
+        $('#dtl-todate').val(todayStr);
+
+        var savedReturns = JSON.parse(localStorage.getItem('savedLeaveReturns') || '[]');
+        var maxNum = 0;
+        savedReturns.forEach(function(item) {
+            var dNo = item.sDocNo || '';
+            var match = dNo.match(/\d+/);
+            if (match) {
+                var n = parseInt(match[0], 10);
+                if (!isNaN(n) && n > maxNum) maxNum = n;
+            }
+        });
+        var nextNum = Math.max(maxNum, savedReturns.length) + 1;
+        $('#hdr-docno').val('LVR' + String(nextNum).padStart(6, '0'));
+    }
+
+    function populateEmployeeDropdown() {
+        var empSelect = $('#hdr-employee');
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
+                empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
+            });
+        }
+    }
+
+    function buildLeaveApplicationsList(apiTransactions) {
+        var list = [];
+        
+        if (Array.isArray(apiTransactions)) {
+            apiTransactions.forEach(function(tx) {
+                var lines = tx.leaves || [];
+                if (lines.length > 0) {
+                    lines.forEach(function(l) {
+                        var emp = employeesData.find(e => e.id == l.iEmployeeId || e.iMasterId == l.iEmployeeId);
+                        var sDate = tx.dDocDate || '2026-07-15';
+                        var dur = l.fDuration > 0 ? l.fDuration : 1;
+                        var eDateObj = parseDateObj(sDate);
+                        eDateObj.setDate(eDateObj.getDate() + parseInt(dur) - 1);
+                        var eDateStr = formatDateStr(eDateObj);
+
+                        list.push({
+                            id: tx.iHeaderId || l.iHeaderId || (list.length + 1),
+                            docNo: tx.sDocNo || ('LVS' + String(tx.iHeaderId || list.length + 1).padStart(6, '0')),
+                            employeeId: l.iEmployeeId,
+                            employeeCode: l.sEmployeeCode || (emp ? emp.sCode : ''),
+                            employeeName: l.sEmployeeName || (emp ? emp.sName : 'Employee'),
+                            department: l.sDepartmentName || (emp ? emp.sDepartmentName : ''),
+                            designation: l.sDesignationName || (emp ? emp.sDesignationName : ''),
+                            manager: l.sReportingToName || (emp ? emp.sReportingToName : ''),
+                            leaveTypeId: l.iLeaveTypeId || 7,
+                            leaveTypeName: l.sLeaveTypeName || 'Annual Leave',
+                            startDate: sDate,
+                            endDate: eDateStr,
+                            duration: dur,
+                            comments: tx.sComments || l.sRemarks || 'Approved Leave'
+                        });
+                    });
+                }
+            });
+        }
+
+        // Realistic seed applications for initial exploration
+        if (list.length === 0) {
+            list = [
+                {
+                    id: 101,
+                    docNo: "LVS000001",
+                    employeeId: 1,
+                    employeeCode: "EMP001",
+                    employeeName: "Smitha Sebastian",
+                    department: "Information Technology",
+                    designation: "Senior Software Engineer",
+                    manager: "Operations Director",
+                    leaveTypeId: 7,
+                    leaveTypeName: "Annual Leave",
+                    startDate: "2026-07-15",
+                    endDate: "2026-07-31",
+                    duration: 17,
+                    comments: "Annual Family Vacation"
+                },
+                {
+                    id: 102,
+                    docNo: "LVS000002",
+                    employeeId: 2,
+                    employeeCode: "EMP002",
+                    employeeName: "Alex Mercer",
+                    department: "Human Resources",
+                    designation: "HR Specialist",
+                    manager: "HR Manager",
+                    leaveTypeId: 7,
+                    leaveTypeName: "Annual Leave",
+                    startDate: "2026-07-20",
+                    endDate: "2026-07-31",
+                    duration: 12,
+                    comments: "Annual Leave"
+                },
+                {
+                    id: 103,
+                    docNo: "LVS000003",
+                    employeeId: 3,
+                    employeeCode: "EMP003",
+                    employeeName: "Priya Sharma",
+                    department: "Finance & Accounts",
+                    designation: "Financial Analyst",
+                    manager: "Chief Financial Officer",
+                    leaveTypeId: 8,
+                    leaveTypeName: "Sick Leave",
+                    startDate: "2026-08-01",
+                    endDate: "2026-08-15",
+                    duration: 15,
+                    comments: "Medical recuperation"
+                },
+                {
+                    id: 104,
+                    docNo: "LVS000004",
+                    employeeId: 4,
+                    employeeCode: "EMP004",
+                    employeeName: "David Chen",
+                    department: "Engineering",
+                    designation: "Tech Lead",
+                    manager: "VP Engineering",
+                    leaveTypeId: 7,
+                    leaveTypeName: "Annual Leave",
+                    startDate: "2026-08-10",
+                    endDate: "2026-08-25",
+                    duration: 16,
+                    comments: "Annual Summer Leave"
+                },
+                {
+                    id: 105,
+                    docNo: "LVS000005",
+                    employeeId: 1,
+                    employeeCode: "EMP001",
+                    employeeName: "Smitha Sebastian",
+                    department: "Information Technology",
+                    designation: "Senior Software Engineer",
+                    manager: "Operations Director",
+                    leaveTypeId: 8,
+                    leaveTypeName: "Sick Leave",
+                    startDate: "2026-08-10",
+                    endDate: "2026-08-20",
+                    duration: 11,
+                    comments: "Medical Leave"
+                }
+            ];
+        }
+
+        leaveApplicationsData = list;
+    }
+
+    // 1. Triggered when Employee is selected
+    function onEmployeeChange() {
+        var empId = $('#hdr-employee').val();
+        var leaveAppSelect = $('#hdr-leaveapp');
+        leaveAppSelect.empty();
+
+        if (!empId) {
+            $('#hdr-designation, #hdr-department, #hdr-manager, #hdr-leavestartdate, #hdr-leaveenddate').val('');
+            $('#hdr-lateearlydays').val('0');
+            $('#late-early-badge').attr('class', 'late-early-display late-early-ontime').text('0 Days');
+            $('#orig-leave-card').hide();
+            $('#smart-notification-container').hide();
+            leaveAppSelect.append('<option value="">Select Employee First...</option>');
+            stagedLeaves = [];
+            renderUserGrid();
+            return;
+        }
+
+        var emp = employeesData.find(e => e.id == empId || e.iMasterId == empId);
+        if (emp) {
+            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '-');
+            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '-');
+            $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || '-');
+        }
+
+        updateSubstituteDropdown(empId);
+        fetchEmployeeBalances(empId);
+
+        // Filter leave applications for this employee
+        var empApps = leaveApplicationsData.filter(a => String(a.employeeId) === String(empId));
+
+        if (empApps.length === 0) {
+            leaveAppSelect.append('<option value="">No Active Leave Applications Found</option>');
+            selectedLeaveApp = null;
+            $('#orig-leave-card').hide();
+            $('#smart-notification-container').hide();
+            return;
+        }
+
+        leaveAppSelect.append('<option value="">Select Leave Application...</option>');
+        empApps.forEach(function(app) {
+            var disp = `${app.docNo} - ${app.leaveTypeName} (${formatDateDisplay(app.startDate)} to ${formatDateDisplay(app.endDate)}, ${app.duration}d)`;
+            leaveAppSelect.append(`<option value="${app.id}" data-docno="${app.docNo}">${disp}</option>`);
+        });
+
+        // Automatically select if there is only 1 application or select the first
+        if (empApps.length >= 1) {
+            leaveAppSelect.val(empApps[0].id).trigger('change');
+        }
+    }
+
+    // 2. Triggered when Leave Application is selected
+    function onLeaveAppChange() {
+        var appId = $('#hdr-leaveapp').val();
+        if (!appId) {
+            selectedLeaveApp = null;
+            $('#hdr-leavestartdate, #hdr-leaveenddate').val('');
+            $('#hdr-lateearlydays').val('0');
+            $('#late-early-badge').attr('class', 'late-early-display late-early-ontime').text('0 Days');
+            $('#orig-leave-card').hide();
+            $('#smart-notification-container').hide();
+            stagedLeaves = [];
+            renderUserGrid();
+            return;
+        }
+
+        selectedLeaveApp = leaveApplicationsData.find(a => String(a.id) === String(appId));
+        if (!selectedLeaveApp) return;
+
+        var startFmt = formatDateDisplay(selectedLeaveApp.startDate);
+        var endFmt = formatDateDisplay(selectedLeaveApp.endDate);
+
+        if (leaveStartDatePicker) {
+            leaveStartDatePicker.setDate(startFmt, false);
+        } else {
+            $('#hdr-leavestartdate').val(startFmt);
+        }
+
+        if (leaveEndDatePicker) {
+            leaveEndDatePicker.setDate(endFmt, false);
+        } else {
+            $('#hdr-leaveenddate').val(endFmt);
+        }
+
+        // Populate Original Leave Application Summary
+        $('#orig-leavetype').text(selectedLeaveApp.leaveTypeName || 'Annual Leave');
+        $('#orig-duration').text(selectedLeaveApp.duration + ' Days');
+        $('#orig-period').text(startFmt + ' to ' + endFmt);
+        $('#orig-remarks').text(selectedLeaveApp.comments || 'N/A');
+        $('#orig-leave-card').slideDown(200);
+
+        // Calculate default Return / Rejoining Date (next day after leave end date)
+        var endObj = parseDateObj(selectedLeaveApp.endDate);
+        var defRejoin = new Date(endObj);
+        defRejoin.setDate(defRejoin.getDate() + 1);
+        var defRejoinFmt = formatDateStr(defRejoin);
+        
+        if (rejoiningDatePicker) {
+            rejoiningDatePicker.setDate(defRejoinFmt, true);
+        } else {
+            $('#hdr-rejoiningdate').val(defRejoinFmt);
+            recalculateLateEarly();
+        }
+    }
+
+    function updateSubstituteDropdown(selectedEmpVal) {
+        var subSelect = $('#dtl-substitute');
+        var currentSubVal = subSelect.val();
+        subSelect.empty().append('<option value="">Select Substitute...</option>');
+
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
+                if (selectedEmpVal && String(empId) === String(selectedEmpVal)) return;
+                subSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
+            });
+        }
+        if (currentSubVal && String(currentSubVal) !== String(selectedEmpVal)) {
+            subSelect.val(currentSubVal);
+        }
+    }
+
+    function fetchEmployeeBalances(empId) {
+        if (!empId) return;
+        $.getJSON('/Master/GetApiEmployeeLeaves?id=' + empId).done(function(leaves) {
+            currentEmployeeLeaves = Array.isArray(leaves) ? leaves : [];
+            var ltSelect = $('#dtl-leavetype');
+            ltSelect.empty().append('<option value="">Select Leave Type...</option>');
+
+            currentEmployeeLeaves.forEach(function(lt) {
+                var ltId = lt.iLeaveTypeId;
+                var ltName = lt.sLeaveName;
+                ltSelect.append(`<option value="${ltId}" data-name="${ltName}">${ltName}</option>`);
+            });
+
+            if (ltSelect.find('option').length > 1) {
+                ltSelect.val(ltSelect.find('option:eq(1)').val()).trigger('change');
+            } else {
+                onLeaveTypeChange();
+            }
+        }).fail(function() {
+            currentEmployeeLeaves = [
+                { iLeaveTypeId: 7, sLeaveName: "Annual Leave", openingLeaves: 25, leavesApproved: 10, leavesPending: 0, leaveBalance: 15 },
+                { iLeaveTypeId: 8, sLeaveName: "Sick Leave", openingLeaves: 12, leavesApproved: 2, leavesPending: 0, leaveBalance: 10 }
+            ];
+            var ltSelect = $('#dtl-leavetype');
+            ltSelect.empty().append('<option value="">Select Leave Type...</option>');
+            currentEmployeeLeaves.forEach(function(lt) {
+                ltSelect.append(`<option value="${lt.iLeaveTypeId}" data-name="${lt.sLeaveName}">${lt.sLeaveName}</option>`);
+            });
+            ltSelect.val(7).trigger('change');
+        });
+    }
+
+    function recalculateLateEarly() {
+        var leaveEndStr = $('#hdr-leaveenddate').val() || (selectedLeaveApp ? selectedLeaveApp.endDate : '');
+        var rejoinStr = $('#hdr-rejoiningdate').val();
+
+        if (!leaveEndStr || !rejoinStr) return;
+
+        var leaveEndObj = parseDateObj(leaveEndStr);
+        var rejoinObj = parseDateObj(rejoinStr);
+
+        // Expected return is the next day after leave end date
+        var expectedRejoinObj = new Date(leaveEndObj);
+        expectedRejoinObj.setDate(expectedRejoinObj.getDate() + 1);
+
+        leaveEndObj.setHours(0,0,0,0);
+        rejoinObj.setHours(0,0,0,0);
+        expectedRejoinObj.setHours(0,0,0,0);
+
+        var msPerDay = 1000 * 60 * 60 * 24;
+        var dayDiff = Math.round((expectedRejoinObj - rejoinObj) / msPerDay);
+
+        var lateEarlyDays = 0;
+        var badgeClass = 'late-early-ontime';
+        var badgeText = '0 Days (On-Time)';
+        var notifHtml = '';
+
+        if (dayDiff === 0) {
+            // ON-TIME RETURN (0 Days)
+            lateEarlyDays = 0;
+            badgeClass = 'late-early-ontime';
+            badgeText = '0 Days (On-Time)';
+            notifHtml = `
+                <div class="notification-banner alert-success border border-success">
+                    <i class="fas fa-check-circle fa-2x mr-3 text-success"></i>
+                    <div>
+                        <div class="font-weight-bold text-success" style="font-size: 0.95rem;">On-Time Return (0 Days)</div>
+                        <div class="text-dark">Employee rejoined on schedule on <strong>${formatDateDisplay(rejoinStr)}</strong>. No additional leave adjustments required. You may save the return record immediately.</div>
+                    </div>
+                </div>
+            `;
+            $('#extension-status-badge').text('Not Required (On-Time)').attr('class', 'badge badge-success');
+        } else if (dayDiff < 0) {
+            // LATE RETURN (Negative value, e.g. -5 days)
+            // Difference from leave end date: e.g. 31-Jul to 05-Aug = -5 days
+            var lateDaysFromEnd = Math.round((rejoinObj - leaveEndObj) / msPerDay);
+            lateEarlyDays = -Math.abs(lateDaysFromEnd > 0 ? lateDaysFromEnd : -dayDiff);
+            badgeClass = 'late-early-late';
+            badgeText = lateEarlyDays + ' Days (Late)';
+            var lateCount = Math.abs(lateEarlyDays);
+
+            notifHtml = `
+                <div class="notification-banner alert-danger border border-danger">
+                    <i class="fas fa-exclamation-triangle fa-2x mr-3 text-danger"></i>
+                    <div>
+                        <div class="font-weight-bold text-danger" style="font-size: 0.95rem;">Late Return Detected (${lateCount} Days Overstayed)</div>
+                        <div class="text-dark">Employee rejoined on <strong>${formatDateDisplay(rejoinStr)}</strong>, which is <strong>${lateCount} day(s) late</strong> after the approved leave end date (${formatDateDisplay(leaveEndStr)}). 
+                        <span class="text-danger font-weight-bold">Rule: You must fill the Leave Extension application details in the section below for ${lateCount} day(s) before saving.</span></div>
+                    </div>
+                </div>
+            `;
+            $('#extension-status-badge').text(`Mandatory: ${lateCount} Days Extension`).attr('class', 'badge badge-danger');
+
+            // Auto set default extension dates: from day after leave end date to day before rejoining
+            var extStart = new Date(leaveEndObj);
+            extStart.setDate(extStart.getDate() + 1);
+            var extEnd = new Date(rejoinObj);
+            extEnd.setDate(extEnd.getDate() - 1);
+            if (extEnd < extStart) extEnd = new Date(extStart);
+
+            if (fromDatePicker && toDatePicker && stagedLeaves.length === 0) {
+                fromDatePicker.setDate(formatDateStr(extStart), true);
+                toDatePicker.setDate(formatDateStr(extEnd), true);
+            }
+        } else {
+            // EARLY RETURN (Positive value, e.g. +4 days)
+            var earlyDays = Math.round((leaveEndObj - rejoinObj) / msPerDay) + 1;
+            lateEarlyDays = Math.max(1, earlyDays);
+            badgeClass = 'late-early-early';
+            badgeText = '+' + lateEarlyDays + ' Days (Early)';
+
+            notifHtml = `
+                <div class="notification-banner alert-warning border border-warning">
+                    <i class="fas fa-info-circle fa-2x mr-3 text-warning"></i>
+                    <div>
+                        <div class="font-weight-bold text-warning" style="font-size: 0.95rem;">Early Return (+${lateEarlyDays} Days)</div>
+                        <div class="text-dark">Employee reported back to work early on <strong>${formatDateDisplay(rejoinStr)}</strong> (${lateEarlyDays} day(s) before scheduled leave end date ${formatDateDisplay(leaveEndStr)}). Early return will be recorded upon save.</div>
+                    </div>
+                </div>
+            `;
+            $('#extension-status-badge').text(`Early Return (+${lateEarlyDays} Days)`).attr('class', 'badge badge-warning');
+        }
+
+        $('#hdr-lateearlydays').val(lateEarlyDays);
+        $('#late-early-badge').attr('class', 'late-early-display ' + badgeClass).text(badgeText);
+        $('#smart-notification-container').html(notifHtml).slideDown(200);
+    }
+
+    function onLeaveTypeChange() {
+        var ltId = parseInt($('#dtl-leavetype').val()) || 0;
+        var ltOpt = $('#dtl-leavetype option:selected');
+        var ltName = ltOpt.data('name') || ltOpt.text();
+        var empOpt = $('#hdr-employee option:selected');
+        var empName = empOpt.data('name') || empOpt.text() || '';
+
+        if (!ltId || currentEmployeeLeaves.length === 0) {
+            $('#summary-type-badge').text('No Leave Type Selected');
+            $('#summary-header-label').text('Leave Balance & Overview');
+            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
+            calculateExtensionLeaves();
+            return;
+        }
+
+        $('#summary-type-badge').text(ltName);
+        $('#summary-header-label').text('Leave Balance: ' + ltName + (empName ? ' (' + empName + ')' : ''));
+
+        var bal = currentEmployeeLeaves.find(l => l.iLeaveTypeId === ltId);
+        if (bal) {
+            var eligible = parseFloat(bal.openingLeaves || 0);
+            var approved = parseFloat(bal.leavesApproved || 0);
+            var pending = parseFloat(bal.leavesPending || 0);
+            
+            var stagedUsed = 0;
+            stagedLeaves.forEach(function(sl) {
+                if (sl.leaveTypeId === ltId && (!editingSubLeaveId || sl.stagedId !== editingSubLeaveId)) {
+                    stagedUsed += parseFloat(sl.duration || 0);
+                }
+            });
+
+            var rawAvailable = (bal.leaveBalance !== undefined && bal.leaveBalance !== null) 
+                ? parseFloat(bal.leaveBalance) 
+                : (eligible - approved - pending);
+            var available = Math.max(0, rawAvailable - stagedUsed);
+
+            $('#sum-eligible').text(eligible.toFixed(1));
+            $('#sum-approved').text(approved.toFixed(1));
+            $('#sum-unapproved').text(pending.toFixed(1));
+            $('#sum-available').text(available.toFixed(1));
+        } else {
+            $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available').text('0.0');
+        }
+
+        calculateExtensionLeaves();
+    }
+
+    function calculateExtensionLeaves() {
+        var fromStr = $('#dtl-fromdate').val();
+        var toStr = $('#dtl-todate').val();
+        var isHalf = $('#dtl-halfday').val() === 'Yes';
+        var wOff = parseFloat($('#dtl-weeklyoff').val()) || 0;
+        var pHol = parseFloat($('#dtl-publicholiday').val()) || 0;
+
+        if (!fromStr || !toStr) {
+            $('#dtl-duration').val(0);
+            $('#dtl-noofleaves').val(0);
+            updateSummaryUsedAndBalance(0);
+            return;
+        }
+
+        var dFrom = parseDateObj(fromStr);
+        var dTo = parseDateObj(toStr);
+
+        if (dTo < dFrom) {
+            $('#dtl-duration').val(0);
+            $('#dtl-noofleaves').val(0);
+            updateSummaryUsedAndBalance(0);
+            return;
+        }
+
+        var diffDays = Math.round((dTo - dFrom) / (1000 * 60 * 60 * 24)) + 1;
+        $('#dtl-duration').val(diffDays);
+
+        var netDays = isHalf ? 0.5 : Math.max(0, diffDays - wOff - pHol);
+        $('#dtl-noofleaves').val(netDays);
+        updateSummaryUsedAndBalance(netDays);
+    }
+
+    function updateSummaryUsedAndBalance(usedNow) {
+        $('#sum-usednow').text(usedNow.toFixed(1));
+        var avail = parseFloat($('#sum-available').text()) || 0;
+        var bal = Math.max(0, avail - usedNow);
+        $('#sum-balance').text(bal.toFixed(1));
+    }
+
+    function addToGrid() {
+        var ltId = parseInt($('#dtl-leavetype').val()) || 0;
+        var ltName = $('#dtl-leavetype option:selected').data('name') || $('#dtl-leavetype option:selected').text();
+        var payType = $('#dtl-paymenttype').val();
+        var isHalf = $('#dtl-halfday').val();
+        var fromStr = $('#dtl-fromdate').val();
+        var toStr = $('#dtl-todate').val();
+        var duration = parseFloat($('#dtl-noofleaves').val()) || 0;
+        var contact = $('#dtl-contact').val() || '';
+        var subId = $('#dtl-substitute').val() || '';
+        var subName = $('#dtl-substitute option:selected').data('name') || '';
+
+        if (!ltId) {
+            alertify.log('Please select a Leave Type for extension.', 'error', 3000);
+            return;
+        }
+        if (duration <= 0) {
+            alertify.log('Extension duration must be greater than 0 days.', 'error', 3000);
+            return;
+        }
+
+        var item = {
+            stagedId: editingSubLeaveId || ('STG_' + Date.now()),
+            leaveTypeId: ltId,
+            leaveTypeName: ltName,
+            paymentType: payType,
+            isHalfDay: isHalf,
+            fromDate: fromStr,
+            toDate: toStr,
+            duration: duration,
+            contactNo: contact,
+            substituteId: subId,
+            substituteName: subName,
+            eligible: parseFloat($('#sum-eligible').text()) || 0,
+            approved: parseFloat($('#sum-approved').text()) || 0,
+            pending: parseFloat($('#sum-unapproved').text()) || 0,
+            available: parseFloat($('#sum-available').text()) || 0,
+            usedNow: duration,
+            balance: parseFloat($('#sum-balance').text()) || 0
+        };
+
+        if (editingSubLeaveId) {
+            var idx = stagedLeaves.findIndex(l => l.stagedId === editingSubLeaveId);
+            if (idx > -1) stagedLeaves[idx] = item;
+            editingSubLeaveId = null;
+            $('#btn-cancel-subleave').hide();
+            $('#btn-add-to-grid').html('<i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Extension to Grid');
+        } else {
+            stagedLeaves.push(item);
+        }
+
+        renderUserGrid();
+        recalculateSystemGrid();
+        onLeaveTypeChange();
+        alertify.log('Extension leave line added successfully.', 'success', 2500);
+    }
+
+    function renderUserGrid() {
+        var tbody = $('#user-grid-table tbody');
+        tbody.empty();
+
+        if (stagedLeaves.length === 0) {
+            tbody.append('<tr id="empty-row"><td colspan="13" class="text-center text-muted py-3">No extension leaves added. (Required only when Late/Early Days &lt; 0).</td></tr>');
+            return;
+        }
+
+        stagedLeaves.forEach(function(sl) {
+            var rowHtml = `
+                <tr id="row-${sl.stagedId}">
+                    <td class="action-btns" style="text-align: center;">
+                        <a onclick="editSubLeave('${sl.stagedId}')" title="Edit line"><i class="fas fa-edit"></i></a>
+                        <a onclick="deleteSubLeave('${sl.stagedId}')" title="Delete line"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                    <td><span class="leave-badge">${sl.leaveTypeName}</span></td>
+                    <td>${sl.fromDate}</td>
+                    <td>${sl.toDate}</td>
+                    <td class="num-col font-weight-bold text-primary">${sl.duration.toFixed(1)}</td>
+                    <td>${sl.contactNo || '-'}</td>
+                    <td>${sl.substituteName || '-'}</td>
+                    <td class="num-col">${sl.eligible.toFixed(1)}</td>
+                    <td class="num-col">${sl.approved.toFixed(1)}</td>
+                    <td class="num-col">${sl.pending.toFixed(1)}</td>
+                    <td class="num-col">${sl.available.toFixed(1)}</td>
+                    <td class="num-col font-weight-bold">${sl.usedNow.toFixed(1)}</td>
+                    <td class="num-col font-weight-bold text-success">${sl.balance.toFixed(1)}</td>
+                </tr>
+            `;
+            tbody.append(rowHtml);
+        });
+    }
+
+    function editSubLeave(id) {
+        var sl = stagedLeaves.find(l => l.stagedId === id);
+        if (!sl) return;
+
+        editingSubLeaveId = id;
+        $('#dtl-leavetype').val(sl.leaveTypeId).trigger('change');
+        $('#dtl-paymenttype').val(sl.paymentType);
+        $('#dtl-halfday').val(sl.isHalfDay);
+        if (fromDatePicker) fromDatePicker.setDate(sl.fromDate, true);
+        if (toDatePicker) toDatePicker.setDate(sl.toDate, true);
+        $('#dtl-contact').val(sl.contactNo);
+        $('#dtl-substitute').val(sl.substituteId);
+
+        $('#btn-cancel-subleave').show();
+        $('#btn-add-to-grid').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Line');
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
+        $('#row-' + id).addClass('row-selected-edit');
+    }
+
+    function cancelSubLeaveEdit() {
+        editingSubLeaveId = null;
+        $('#btn-cancel-subleave').hide();
+        $('#btn-add-to-grid').html('<i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Extension to Grid');
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
+        onLeaveTypeChange();
+    }
+
+    function deleteSubLeave(id) {
+        stagedLeaves = stagedLeaves.filter(l => l.stagedId !== id);
+        if (editingSubLeaveId === id) cancelSubLeaveEdit();
+        renderUserGrid();
+        recalculateSystemGrid();
+        onLeaveTypeChange();
+    }
+
+    function recalculateSystemGrid() {
+        var tbody = $('#system-grid-table tbody');
+        tbody.empty();
+
+        if (stagedLeaves.length === 0) {
+            tbody.append('<tr id="empty-sys-row"><td colspan="5" class="text-center text-muted py-3">No breakdown available.</td></tr>');
+            return;
+        }
+
+        var monthsMap = {};
+        var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        stagedLeaves.forEach(function(sl) {
+            var cur = parseDateObj(sl.fromDate);
+            var end = parseDateObj(sl.toDate);
+
+            while (cur <= end) {
+                var mKey = monthNames[cur.getMonth()] + '-' + cur.getFullYear();
+                if (!monthsMap[mKey]) {
+                    monthsMap[mKey] = {
+                        leaveType: sl.leaveTypeName,
+                        month: mKey,
+                        fromDate: formatDateStr(cur),
+                        toDate: formatDateStr(cur),
+                        days: 0
+                    };
+                }
+                monthsMap[mKey].days += (sl.isHalfDay === 'Yes' ? 0.5 : 1);
+                monthsMap[mKey].toDate = formatDateStr(cur);
+                cur.setDate(cur.getDate() + 1);
+            }
+        });
+
+        Object.keys(monthsMap).forEach(function(k) {
+            var m = monthsMap[k];
+            tbody.append(`
+                <tr>
+                    <td><span class="leave-badge">${m.leaveType}</span></td>
+                    <td><strong>${m.month}</strong></td>
+                    <td>${m.fromDate}</td>
+                    <td>${m.toDate}</td>
+                    <td class="num-col font-weight-bold">${m.days.toFixed(1)}</td>
+                </tr>
+            `);
+        });
+    }
+
+    function saveLeaveReturn() {
+        var empId = $('#hdr-employee').val();
+        if (!empId) {
+            alertify.log('Please select an Employee.', 'error', 3500);
+            return;
+        }
+
+        var appId = $('#hdr-leaveapp').val();
+        if (!appId || !selectedLeaveApp) {
+            alertify.log('Please select a valid Leave Application for the employee.', 'error', 3500);
+            return;
+        }
+
+        var rejoiningDate = $('#hdr-rejoiningdate').val();
+        if (!rejoiningDate) {
+            alertify.log('Please specify the Return / Rejoining Date.', 'error', 3500);
+            return;
+        }
+
+        var lateEarlyDays = parseFloat($('#hdr-lateearlydays').val()) || 0;
+
+        // RULE VALIDATIONS:
+        // Case 1: If Late/Early < 0 (Late Return), user MUST fill leave extension grid!
+        if (lateEarlyDays < 0) {
+            if (stagedLeaves.length === 0) {
+                alertify.log(`Employee is returning late by ${Math.abs(lateEarlyDays)} day(s). Please fill the Leave Extension details and add to grid before saving.`, 'error', 6000);
+                $('#leave-extension-card')[0].scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+        }
+
+        var docNo = $('#hdr-docno').val();
+        var returnDate = $('#hdr-date').val();
+        var postDate = $('#hdr-postdate').val();
+        var comments = $('#hdr-comments').val();
+        var leaveStartDate = $('#hdr-leavestartdate').val() || selectedLeaveApp.startDate;
+        var leaveEndDate = $('#hdr-leaveenddate').val() || selectedLeaveApp.endDate;
+        var statusStr = lateEarlyDays === 0 ? "On-Time" : (lateEarlyDays < 0 ? "Late" : "Early");
+
+        var fileInput = document.getElementById('hdr-attachment');
+        var attachFileName = (fileInput && fileInput.files.length > 0) ? fileInput.files[0].name : (editHeaderId ? 'LVR_Attachment.pdf' : '');
+
+        var empOpt = $('#hdr-employee option:selected');
+        var empCode = empOpt.data('code') || selectedLeaveApp.employeeCode;
+        var empName = empOpt.data('name') || selectedLeaveApp.employeeName;
+
+        var record = {
+            iHeaderId: editHeaderId || Date.now(),
+            sDocNo: docNo,
+            dDocDate: returnDate,
+            dPostDate: postDate,
+            iLeaveApplicationId: selectedLeaveApp.id,
+            sLeaveAppDocNo: selectedLeaveApp.docNo,
+            iEmpId: empId,
+            sEmployeeCode: empCode,
+            sEmployeeName: empName,
+            sDepartmentName: $('#hdr-department').val(),
+            sDesignationName: $('#hdr-designation').val(),
+            sReportingToName: $('#hdr-manager').val(),
+            dLeaveStartDate: leaveStartDate,
+            dLeaveEndDate: leaveEndDate,
+            dRejoiningDate: rejoiningDate,
+            fLateEarlyDays: lateEarlyDays,
+            sLateEarlyStatus: statusStr,
+            sComments: comments,
+            leaves: stagedLeaves,
+            attachment: {
+                sAttachmentFileName: attachFileName || `${docNo}_ReturnDoc.pdf`,
+                sAttachmentFilePath: ''
+            }
+        };
+
+        var saved = JSON.parse(localStorage.getItem('savedLeaveReturns') || '[]');
+        if (editHeaderId) {
+            var idx = saved.findIndex(r => r.iHeaderId == editHeaderId || r.sDocNo === docNo);
+            if (idx > -1) saved[idx] = record;
+            else saved.push(record);
+        } else {
+            saved.push(record);
+        }
+        localStorage.setItem('savedLeaveReturns', JSON.stringify(saved));
+
+        // User alert notifications
+        var successMsg = '';
+        if (lateEarlyDays === 0) {
+            successMsg = `On-time return for ${record.sEmployeeName} processed successfully.`;
+        } else if (lateEarlyDays < 0) {
+            successMsg = `Late return by ${Math.abs(lateEarlyDays)} day(s) with leave extension processed successfully.`;
+        } else {
+            successMsg = `Early return (+${lateEarlyDays} days) for ${record.sEmployeeName} recorded successfully.`;
+        }
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: successMsg, type: 'success' }));
+
+        var listUrl = '@Url.Action("LeaveReturnIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(listUrl, true);
+        } else {
+            window.location.href = listUrl;
+        }
+    }
+
+    function loadLeaveReturnForEdit(id) {
+        var saved = JSON.parse(localStorage.getItem('savedLeaveReturns') || '[]');
+        var rec = saved.find(r => r.iHeaderId == id);
+        if (!rec) return;
+
+        $('#hdr-docno').val(rec.sDocNo);
+        $('#hdr-date').val(formatDateDisplay(rec.dDocDate));
+        $('#hdr-postdate').val(formatDateDisplay(rec.dPostDate));
+        $('#hdr-comments').val(rec.sComments || '');
+        if (rec.sComments) $('#comments-counter').text(rec.sComments.length + '/250');
+
+        $('#hdr-employee').val(rec.iEmpId).trigger('change');
+
+        setTimeout(function() {
+            if (rec.iLeaveApplicationId) {
+                $('#hdr-leaveapp').val(rec.iLeaveApplicationId).trigger('change');
+            }
+            if (leaveStartDatePicker && rec.dLeaveStartDate) {
+                leaveStartDatePicker.setDate(formatDateDisplay(rec.dLeaveStartDate), false);
+            }
+            if (leaveEndDatePicker && rec.dLeaveEndDate) {
+                leaveEndDatePicker.setDate(formatDateDisplay(rec.dLeaveEndDate), false);
+            }
+            if (rejoiningDatePicker && rec.dRejoiningDate) {
+                rejoiningDatePicker.setDate(formatDateDisplay(rec.dRejoiningDate), true);
+            }
+            if (Array.isArray(rec.leaves) && rec.leaves.length > 0) {
+                stagedLeaves = rec.leaves;
+                renderUserGrid();
+                recalculateSystemGrid();
+            }
+        }, 300);
+    }
+
+    function parseDateObj(dStr) {
+        if (!dStr) return new Date();
+        if (dStr instanceof Date) return dStr;
+        dStr = String(dStr).trim();
+        if (dStr.includes('T')) dStr = dStr.split('T')[0];
+
+        var months = {
+            'jan':0,'feb':1,'mar':2,'apr':3,'may':4,'jun':5,'jul':6,'aug':7,'sep':8,'oct':9,'nov':10,'dec':11
+        };
+
+        if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(dStr)) {
+            var p = dStr.split('-');
+            var m = months[p[1].toLowerCase()] || 0;
+            return new Date(parseInt(p[2],10), m, parseInt(p[0],10));
+        }
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+            var p = dStr.split('-');
+            return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+        }
+
+        return new Date(dStr);
+    }
+
+    function formatDateStr(d) {
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mmm = months[d.getMonth()];
+        var yyyy = d.getFullYear();
+        return dd + '-' + mmm + '-' + yyyy;
+    }
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 25 * 1024 * 1024) {
+                alertify.log('Attachment exceeds maximum allowed size of 25MB.', 'error', 4000);
+                input.value = '';
+            }
+        }
+    }
+</script>

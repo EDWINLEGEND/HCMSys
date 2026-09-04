@@ -1,0 +1,869 @@
+@{
+    ViewData["Title"] = "Contract Assignment";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+        background-color: #e9ecef !important; 
+        opacity: 1; 
+    }
+    .flatpickr-input[readonly], .datepicker[readonly] {
+        background-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+    .table th, .table td { vertical-align: middle; }
+    
+    .contract-type-badge {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .ctype-new { background-color: #e6f9f0; color: #0d8a4f; border: 1px solid #c3e6cb; }
+    .ctype-extension { background-color: #eef2fd; color: #2e59d9; border: 1px solid #c2d4f8; }
+    .ctype-renewal { background-color: #fef8e7; color: #b78103; border: 1px solid #ffeeba; }
+    .ctype-cancellation { background-color: #fdf0ed; color: #d92510; border: 1px solid #f5c6cb; }
+
+    .row-selected-edit {
+        background-color: #fff3cd !important;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .last-contract-box {
+        background-color: #f8f9fc;
+        border: 1px dashed #b7b9cc;
+        border-radius: 0.35rem;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        color: #4e73df;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text" id="page-header-title">
+                    <i class="fas fa-file-contract fa-sm text-primary mr-2"></i> Create Contract Assignment
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("ContractAssignmentIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" id="btn-save-contract" onclick="saveContractAssignment()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save Assignment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="contractForm" autocomplete="off">
+        <input type="hidden" id="hdr-edit-id" value="0" />
+
+        <!-- COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>General Information &amp; Host Company Reference
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Post Date</label>
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
+                    </div>
+                    
+                    <!-- Employee: From Live API -->
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Loading Employees...</option>
+                        </select>
+                    </div>
+
+                    <!-- Auto-populated from Live API Employee Profile -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto loaded from API" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto loaded from API" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Reporting Manager</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto loaded from API" />
+                    </div>
+
+                    <!-- Host Company: From host_company.json -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Host Company <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-hostcompany" required>
+                            <option value="">Loading Host Companies...</option>
+                        </select>
+                    </div>
+
+                    <!-- Contract Type: Selection List -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Contract Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-contracttype" required onchange="onContractTypeChange()">
+                            <option value="0">0 - New</option>
+                            <option value="1">1 - Extension</option>
+                            <option value="2">2 - Renewal</option>
+                            <option value="3">3 - Cancellation</option>
+                        </select>
+                    </div>
+
+                    <!-- Previous Contract Reference: Filtered by same employee & host company -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Previous Contract Reference <span id="prev-contract-req-star" class="text-danger" style="display:none;">*</span></label>
+                        <select class="form-control" id="hdr-prevcontract" onchange="onPrevContractChange()">
+                            <option value="">Select Employee &amp; Host Company First...</option>
+                        </select>
+                        <small id="prev-contract-hint" class="text-muted">Mandatory for Extension, Renewal, and Cancellation.</small>
+                    </div>
+
+                    <!-- Last Contract Info (Readonly box): Loads Start Date & End Date -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Contract Info</label>
+                        <div class="last-contract-box" id="hdr-lastcontractinfo-box">
+                            <i class="fas fa-history mr-2"></i><span id="hdr-lastcontractinfo-text">No previous contract selected</span>
+                        </div>
+                        <input type="hidden" id="hdr-lastcontractinfo" value="" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Attachment (Max 25MB)</label>
+                        <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
+                        <small class="text-muted">Upload contract document / formal agreement.</small>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Remarks</label>
+                        <textarea class="form-control" id="hdr-remarks" rows="2" maxlength="250" placeholder="Enter contract remarks or notes..." onkeyup="document.getElementById('remarks-counter').innerText = this.value.length + '/250'"></textarea>
+                        <div id="remarks-counter" class="text-right small text-muted mt-1">0/250</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTRACT ENTRY STAGING CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom bg-info">
+                <i class="fas fa-file-signature mr-2"></i>Contract Details &amp; Period Entry
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Contract Reference <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control font-weight-bold text-dark" id="dtl-contractref" placeholder="e.g. CNT-2026-001" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Contract Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control datepicker" id="dtl-contractdate" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Contract St Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control datepicker" id="dtl-startdate" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Contract End Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control datepicker" id="dtl-enddate" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Remarks</label>
+                        <input type="text" class="form-control" id="dtl-remarks" placeholder="Optional term remarks..." />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Attachment Reference</label>
+                        <input type="text" class="form-control" id="dtl-attachment" placeholder="e.g. Agreement_v1.pdf or Upload above" />
+                    </div>
+
+                    <div class="col-md-12 text-right mt-2">
+                        <button type="button" class="btn btn-secondary btn-sm shadow-sm mr-2" id="btn-cancel-edit" style="display:none;" onclick="cancelLineEdit()">
+                            <i class="fas fa-times fa-sm text-white-50 mr-1"></i> Cancel Edit
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btn-add-grid" onclick="addToGrid()">
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add to Grid
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- USER GRID: CONTRACTS DETAILED -->
+    <div class="card shadow mb-4">
+        <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list mr-2"></i>User Grid - Contracts Detailed</span>
+            <small class="text-white-50">Contract records and periods assigned</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="user-grid-table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width: 75px; text-align:center;">Action</th>
+                            <th>Contract Reference</th>
+                            <th>Contract Date</th>
+                            <th>Contract St Date</th>
+                            <th>Contract End Date</th>
+                            <th>Remarks</th>
+                            <th>Attachment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="empty-row"><td colspan="7" class="text-center text-muted py-3">No contract lines added to the grid yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var employeesData = [];
+    var hostCompaniesData = [];
+    var existingContractsData = [];
+    var stagedContracts = [];
+    var editHeaderId = 0;
+    var editDocNo = '';
+    var isEditMode = false;
+    var editingStagedId = null;
+
+    var contractDatePicker = null;
+    var startDatePicker = null;
+    var endDatePicker = null;
+
+    $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var paramDocNo = urlParams.get('docNo') || '';
+        var paramId = urlParams.get('id') || '@ViewBag.EditId';
+        editDocNo = paramDocNo;
+        editHeaderId = parseInt(paramId) || 0;
+        isEditMode = (editDocNo.length > 0 || editHeaderId > 0);
+
+        if (isEditMode) {
+            $('#page-header-title').html('<i class="fas fa-edit fa-sm text-primary mr-2"></i> Edit Contract Assignment <span class="badge badge-primary font-weight-bold ml-2">Edit Mode</span>');
+            $('#btn-save-contract').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Assignment');
+            $('#hdr-edit-id').val(editHeaderId);
+        }
+
+        initHeaderDocNo();
+        initFlatpickrs();
+        loadMasters();
+
+        $('#hdr-employee').change(onEmployeeChange);
+        $('#hdr-hostcompany').change(onHostCompanyChange);
+    });
+
+    function initFlatpickrs() {
+        flatpickr("#hdr-date", { dateFormat: "d-M-Y", defaultDate: "today" });
+        flatpickr("#hdr-postdate", { dateFormat: "d-M-Y", defaultDate: "today" });
+
+        contractDatePicker = flatpickr("#dtl-contractdate", { dateFormat: "d-M-Y", defaultDate: "today" });
+        
+        startDatePicker = flatpickr("#dtl-startdate", {
+            dateFormat: "d-M-Y",
+            defaultDate: "today",
+            onChange: function(selectedDates, dateStr) {
+                if (dateStr && endDatePicker) {
+                    endDatePicker.set('minDate', dateStr);
+                }
+            }
+        });
+
+        endDatePicker = flatpickr("#dtl-enddate", {
+            dateFormat: "d-M-Y",
+            defaultDate: new Date(Date.now() + 365 * 86400000)
+        });
+    }
+
+    function initHeaderDocNo() {
+        if (isEditMode) return;
+
+        var d = new Date();
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        
+        var saved = JSON.parse(localStorage.getItem('savedContractAssignments') || '[]');
+        var maxNum = 0;
+        saved.forEach(function(item) {
+            var dNo = item.docNo || '';
+            var match = dNo.match(/\d+$/);
+            if (match) {
+                var n = parseInt(match[0], 10);
+                if (!isNaN(n) && n > maxNum) maxNum = n;
+            }
+        });
+        var nextSeq = Math.max(maxNum, saved.length) + 1;
+        $('#hdr-docno').val('CAS-' + mm + '-' + yy + '-' + String(nextSeq).padStart(5, '0'));
+    }
+
+    function loadMasters() {
+        var empPromise = $.getJSON('/Master/GetApiEmployees').then(function(res) {
+            var empList = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : (res && res.data ? res.data : []);
+            if (empList.length > 0) return empList;
+            return $.getJSON('/api-assets2/employee.json');
+        }, function() {
+            return $.getJSON('/api-assets2/employee.json');
+        });
+
+        var hostPromise = $.getJSON('/api-assets2/host_company.json');
+        var contractsPromise = $.getJSON('/api-assets2/contract_assignments.json');
+
+        $.when(empPromise, hostPromise, contractsPromise).done(function(empRes, hostRes, cntRes) {
+            var rawEmp = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(rawEmp) ? rawEmp : (Array.isArray(empRes) ? empRes : []);
+
+            var rawHost = (hostRes && hostRes[0]) ? hostRes[0] : hostRes;
+            hostCompaniesData = Array.isArray(rawHost) ? rawHost : [];
+
+            var rawCnt = (cntRes && cntRes[0]) ? cntRes[0] : cntRes;
+            existingContractsData = Array.isArray(rawCnt) ? rawCnt : [];
+
+            // Combine with localStorage saved assignments
+            var localAssignments = JSON.parse(localStorage.getItem('savedContractAssignments') || '[]');
+            localAssignments.forEach(function(loc) {
+                if (!existingContractsData.some(c => c.docNo === loc.docNo)) {
+                    existingContractsData.push(loc);
+                }
+            });
+
+            populateDropdowns();
+
+            if (isEditMode) {
+                loadAssignmentForEdit(editHeaderId, editDocNo);
+            }
+        });
+    }
+
+    function populateDropdowns() {
+        // 1. Employee Dropdown (Live API)
+        var empSelect = $('#hdr-employee');
+        empSelect.empty().append('<option value="">Select Employee...</option>');
+        if (Array.isArray(employeesData)) {
+            employeesData.forEach(function(emp) {
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
+                empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
+            });
+        }
+        empSelect.select2({ width: '100%' });
+
+        // 2. Host Company Dropdown (JSON: Id, Name, code, Category Code)
+        var hostSelect = $('#hdr-hostcompany');
+        hostSelect.empty().append('<option value="">Select Host Company...</option>');
+        if (Array.isArray(hostCompaniesData)) {
+            hostCompaniesData.forEach(function(h) {
+                hostSelect.append(`<option value="${h.id}" data-code="${h.code}" data-name="${h.name}">${h.code} - ${h.name} (${h.categoryCode})</option>`);
+            });
+        }
+        hostSelect.select2({ width: '100%' });
+        
+        $('#hdr-prevcontract').select2({ width: '100%' });
+        onContractTypeChange();
+    }
+
+    function onEmployeeChange() {
+        var empVal = $('#hdr-employee').val();
+        if (!empVal) {
+            $('#hdr-designation, #hdr-department, #hdr-manager').val('');
+            updatePreviousContractsDropdown();
+            return;
+        }
+
+        var emp = employeesData.find(e => String(e.id) === String(empVal) || String(e.iMasterId) === String(empVal) || String(e.code) === String(empVal) || String(e.sCode) === String(empVal));
+        if (emp) {
+            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '-');
+            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '-');
+            $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || '-');
+        }
+
+        updatePreviousContractsDropdown();
+    }
+
+    function onHostCompanyChange() {
+        updatePreviousContractsDropdown();
+    }
+
+    // Contract Type Change: Enforce mandatory previous contract when other than '0: New'
+    function onContractTypeChange() {
+        var cType = $('#hdr-contracttype').val();
+        var prevSelect = $('#hdr-prevcontract');
+        var reqStar = $('#prev-contract-req-star');
+        var hint = $('#prev-contract-hint');
+
+        if (cType === "0") {
+            // New Contract: Previous contract reference is optional
+            reqStar.hide();
+            hint.text("Optional for New Contract type.").removeClass('text-danger').addClass('text-muted');
+        } else {
+            // Extension (1), Renewal (2), Cancellation (3): Strictly mandatory!
+            reqStar.show();
+            var typeLabel = $('#hdr-contracttype option:selected').text();
+            hint.text(`Mandatory rule: Previous Contract Reference is required for ${typeLabel}.`).removeClass('text-muted').addClass('text-danger');
+        }
+    }
+
+    // Populate previous contract reference dropdown for the same employee & same host company
+    function updatePreviousContractsDropdown() {
+        var empId = $('#hdr-employee').val();
+        var hostId = $('#hdr-hostcompany').val();
+        var prevSelect = $('#hdr-prevcontract');
+        prevSelect.empty();
+
+        if (!empId || !hostId) {
+            prevSelect.append('<option value="">Select Employee &amp; Host Company First...</option>');
+            $('#hdr-lastcontractinfo-box').html('<i class="fas fa-history mr-2"></i><span>Select employee and host company to view contract info</span>');
+            $('#hdr-lastcontractinfo').val('');
+            return;
+        }
+
+        // Filter contracts for this employee with this host company
+        var matchingContracts = [];
+        existingContractsData.forEach(function(c) {
+            var empMatch = (String(c.employeeId) === String(empId) || String(c.employeeCode) === String(empId));
+            var hostMatch = (String(c.hostCompanyId) === String(hostId) || String(c.hostCompanyCode) === String(hostId));
+
+            if (empMatch && hostMatch) {
+                // If the assignment has sub-contracts
+                if (Array.isArray(c.contracts) && c.contracts.length > 0) {
+                    c.contracts.forEach(function(sc) {
+                        matchingContracts.push({
+                            ref: sc.contractRef || c.docNo,
+                            startDate: sc.contractStartDate || c.date,
+                            endDate: sc.contractEndDate || 'Ongoing',
+                            docNo: c.docNo
+                        });
+                    });
+                } else if (c.previousContractRef || c.docNo) {
+                    matchingContracts.push({
+                        ref: c.previousContractRef || c.docNo,
+                        startDate: c.date || '-',
+                        endDate: c.postDate || '-',
+                        docNo: c.docNo
+                    });
+                }
+            }
+        });
+
+        if (matchingContracts.length === 0) {
+            prevSelect.append('<option value="">No previous contracts found for this employee &amp; host company</option>');
+            $('#hdr-lastcontractinfo-box').html('<i class="fas fa-info-circle mr-2"></i><span>No prior contract on record with this Host Company</span>');
+            $('#hdr-lastcontractinfo').val('');
+            return;
+        }
+
+        prevSelect.append('<option value="">Select Previous Contract Reference...</option>');
+        matchingContracts.forEach(function(mc) {
+            prevSelect.append(`<option value="${mc.ref}" data-start="${mc.startDate}" data-end="${mc.endDate}">${mc.ref} (${mc.startDate} to ${mc.endDate})</option>`);
+        });
+
+        prevSelect.select2({ width: '100%' });
+    }
+
+    // Triggered when user selects a previous contract reference
+    function onPrevContractChange() {
+        var opt = $('#hdr-prevcontract option:selected');
+        var sDate = opt.data('start');
+        var eDate = opt.data('end');
+        var ref = $('#hdr-prevcontract').val();
+
+        if (ref && sDate && eDate) {
+            var infoText = `Previous Contract Period: ${sDate} to ${eDate}`;
+            $('#hdr-lastcontractinfo-box').html(`<i class="fas fa-calendar-check text-success mr-2"></i><strong>${ref}</strong>: Valid from <span class="text-primary">${sDate}</span> to <span class="text-danger">${eDate}</span>`);
+            $('#hdr-lastcontractinfo').val(infoText);
+
+            // Pre-fill Start Date of extension to the day after previous contract end date
+            var eObj = parseDateObj(eDate);
+            if (!isNaN(eObj.getTime())) {
+                var nextSt = new Date(eObj);
+                nextSt.setDate(nextSt.getDate() + 1);
+                var nextStFmt = formatDateStr(nextSt);
+                if (startDatePicker) startDatePicker.setDate(nextStFmt, true);
+            }
+        } else {
+            $('#hdr-lastcontractinfo-box').html('<i class="fas fa-history mr-2"></i><span>No previous contract selected</span>');
+            $('#hdr-lastcontractinfo').val('');
+        }
+    }
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            if (input.files[0].size > 25 * 1024 * 1024) {
+                alertify.log('File size exceeds 25MB limit.', 'error', 4000);
+                input.value = '';
+            }
+        }
+    }
+
+    function addToGrid() {
+        var ref = $('#dtl-contractref').val().trim();
+        var cDate = $('#dtl-contractdate').val();
+        var sDate = $('#dtl-startdate').val();
+        var eDate = $('#dtl-enddate').val();
+        var remarks = $('#dtl-remarks').val().trim();
+        var attachment = $('#dtl-attachment').val().trim();
+
+        if (!ref) {
+            alertify.log('Please enter Contract Reference.', 'error', 3500);
+            $('#dtl-contractref').focus();
+            return;
+        }
+        if (!cDate || !sDate || !eDate) {
+            alertify.log('Contract Date, Start Date, and End Date are all required.', 'error', 3500);
+            return;
+        }
+
+        var sObj = parseDateObj(sDate);
+        var eObj = parseDateObj(eDate);
+        sObj.setHours(0,0,0,0);
+        eObj.setHours(0,0,0,0);
+
+        if (eObj < sObj) {
+            alertify.log(`Contract End Date (${eDate}) cannot be earlier than Contract Start Date (${sDate}).`, 'error', 4500);
+            $('#dtl-enddate').focus();
+            return;
+        }
+
+        // Duplicate Reference Check
+        var isDuplicate = stagedContracts.some(function(item) {
+            if (editingStagedId && item.stagedId === editingStagedId) return false;
+            return item.contractRef.toLowerCase() === ref.toLowerCase();
+        });
+
+        if (isDuplicate) {
+            alertify.log(`Contract Reference "${ref}" is already added to the grid. Duplicate references are not allowed.`, 'error', 5000);
+            return;
+        }
+
+        var item = {
+            stagedId: editingStagedId || ('STG_CNT_' + Date.now()),
+            contractRef: ref,
+            contractDate: cDate,
+            contractStartDate: sDate,
+            contractEndDate: eDate,
+            remarks: remarks || '-',
+            attachment: attachment || '-'
+        };
+
+        if (editingStagedId) {
+            var idx = stagedContracts.findIndex(c => c.stagedId === editingStagedId);
+            if (idx > -1) stagedContracts[idx] = item;
+            editingStagedId = null;
+            $('#btn-cancel-edit').hide();
+            $('#btn-add-grid').html('<i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add to Grid');
+        } else {
+            stagedContracts.push(item);
+        }
+
+        renderGrid();
+
+        // Reset inputs
+        $('#dtl-contractref').val('');
+        $('#dtl-remarks').val('');
+        $('#dtl-attachment').val('');
+        alertify.log('Contract line added to grid.', 'success', 2500);
+    }
+
+    function renderGrid() {
+        var tbody = $('#user-grid-table tbody');
+        tbody.empty();
+
+        if (stagedContracts.length === 0) {
+            tbody.append('<tr id="empty-row"><td colspan="7" class="text-center text-muted py-3">No contract lines added to the grid yet.</td></tr>');
+            return;
+        }
+
+        stagedContracts.forEach(function(item) {
+            var tr = `<tr id="row-${item.stagedId}">
+                <td class="action-btns" style="text-align:center;">
+                    <a onclick="editContractLine('${item.stagedId}')" title="Edit line"><i class="fas fa-edit"></i></a>
+                    <a onclick="deleteContractLine('${item.stagedId}')" title="Delete line"><i class="fas fa-trash-alt"></i></a>
+                </td>
+                <td class="font-weight-bold text-dark">${item.contractRef}</td>
+                <td>${item.contractDate}</td>
+                <td><span class="badge badge-light border font-weight-bold text-primary">${item.contractStartDate}</span></td>
+                <td><span class="badge badge-light border font-weight-bold text-success">${item.contractEndDate}</span></td>
+                <td>${item.remarks}</td>
+                <td><span class="text-muted"><i class="fas fa-paperclip mr-1"></i>${item.attachment}</span></td>
+            </tr>`;
+            tbody.append(tr);
+        });
+    }
+
+    function editContractLine(stagedId) {
+        var item = stagedContracts.find(c => c.stagedId === stagedId);
+        if (!item) return;
+
+        editingStagedId = stagedId;
+        $('#dtl-contractref').val(item.contractRef);
+        if (contractDatePicker) contractDatePicker.setDate(item.contractDate, false);
+        if (startDatePicker) startDatePicker.setDate(item.contractStartDate, false);
+        if (endDatePicker) endDatePicker.setDate(item.contractEndDate, false);
+        $('#dtl-remarks').val(item.remarks === '-' ? '' : item.remarks);
+        $('#dtl-attachment').val(item.attachment === '-' ? '' : item.attachment);
+
+        $('#btn-cancel-edit').show();
+        $('#btn-add-grid').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Line');
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
+        $('#row-' + stagedId).addClass('row-selected-edit');
+    }
+
+    function cancelLineEdit() {
+        editingStagedId = null;
+        $('#btn-cancel-edit').hide();
+        $('#btn-add-grid').html('<i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add to Grid');
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
+        $('#dtl-contractref').val('');
+        $('#dtl-remarks').val('');
+        $('#dtl-attachment').val('');
+    }
+
+    function deleteContractLine(stagedId) {
+        stagedContracts = stagedContracts.filter(c => c.stagedId !== stagedId);
+        if (editingStagedId === stagedId) cancelLineEdit();
+        renderGrid();
+        alertify.log('Contract line removed.', 'success', 2000);
+    }
+
+    function saveContractAssignment() {
+        // 1. Mandatory Employee Validation
+        var empId = $('#hdr-employee').val();
+        if (!empId) {
+            alertify.log('Please select an Employee before saving.', 'error', 4000);
+            $('#hdr-employee').select2('open');
+            return;
+        }
+
+        // 2. Mandatory Host Company Validation
+        var hostCompanyId = $('#hdr-hostcompany').val();
+        if (!hostCompanyId) {
+            alertify.log('Please select a Host Company before saving.', 'error', 4000);
+            $('#hdr-hostcompany').select2('open');
+            return;
+        }
+
+        // 3. Mandatory Rule: Other than contract type New (0), Previous Contract Reference is MANDATORY!
+        var contractType = $('#hdr-contracttype').val();
+        var prevContractRef = $('#hdr-prevcontract').val();
+        if (contractType !== "0" && !prevContractRef) {
+            var typeName = $('#hdr-contracttype option:selected').text();
+            alertify.log(`Rule: Previous Contract Reference is mandatory for Contract Type "${typeName}". Please select a previous contract reference.`, 'error', 6000);
+            $('#hdr-prevcontract').select2('open');
+            return;
+        }
+
+        // 4. Must have at least one line in the User Grid
+        if (stagedContracts.length === 0) {
+            alertify.log('Please add at least one contract period to the User Grid before saving.', 'error', 4500);
+            $('#dtl-contractref').focus();
+            return;
+        }
+
+        var empOpt = $('#hdr-employee option:selected');
+        var empCode = empOpt.data('code') || '';
+        var empName = empOpt.data('name') || empOpt.text();
+
+        var hostOpt = $('#hdr-hostcompany option:selected');
+        var hostCode = hostOpt.data('code') || '';
+        var hostName = hostOpt.data('name') || hostOpt.text();
+
+        var docNo = $('#hdr-docno').val();
+        var date = $('#hdr-date').val();
+        var postDate = $('#hdr-postdate').val();
+        var remarks = $('#hdr-remarks').val();
+        var lastContractInfo = $('#hdr-lastcontractinfo').val();
+
+        var fileInput = document.getElementById('hdr-attachment');
+        var attachFileName = (fileInput && fileInput.files.length > 0) ? fileInput.files[0].name : '';
+
+        var contractTypeName = $('#hdr-contracttype option:selected').text();
+
+        var record = {
+            id: isEditMode ? editHeaderId : Date.now(),
+            docNo: docNo,
+            date: date,
+            postDate: postDate,
+            employeeId: empId,
+            employeeCode: empCode,
+            employeeName: empName,
+            department: $('#hdr-department').val(),
+            designation: $('#hdr-designation').val(),
+            manager: $('#hdr-manager').val(),
+            hostCompanyId: hostCompanyId,
+            hostCompanyCode: hostCode,
+            hostCompanyName: hostName,
+            contractType: contractType,
+            contractTypeName: contractTypeName,
+            previousContractRef: prevContractRef || '',
+            lastContractInfo: lastContractInfo,
+            remarks: remarks,
+            attachmentName: attachFileName,
+            status: contractType === "3" ? "Cancelled" : "Active",
+            contracts: stagedContracts
+        };
+
+        var saved = JSON.parse(localStorage.getItem('savedContractAssignments') || '[]');
+        if (isEditMode) {
+            var idx = saved.findIndex(c => (editDocNo && c.docNo === editDocNo) || (editHeaderId && c.id === editHeaderId));
+            if (idx > -1) saved[idx] = record;
+            else saved.push(record);
+        } else {
+            saved.push(record);
+        }
+        localStorage.setItem('savedContractAssignments', JSON.stringify(saved));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({
+            msg: `Contract Assignment ${docNo} for ${empName} (${hostName}) saved successfully!`,
+            type: 'success'
+        }));
+
+        var targetUrl = '@Url.Action("ContractAssignmentIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
+    }
+
+    function loadAssignmentForEdit(id, docNo) {
+        var saved = JSON.parse(localStorage.getItem('savedContractAssignments') || '[]');
+        var record = saved.find(c => (docNo && c.docNo === docNo) || (id && (c.id === id || String(c.id) === String(id))));
+        if (!record && Array.isArray(existingContractsData)) {
+            record = existingContractsData.find(c => (docNo && c.docNo === docNo) || (id && (c.id === id || String(c.id) === String(id))));
+        }
+        if (!record) return;
+
+        editDocNo = record.docNo;
+        editHeaderId = record.id;
+        $('#hdr-edit-id').val(editHeaderId);
+        $('#hdr-docno').val(record.docNo);
+        $('#hdr-date').val(record.date);
+        $('#hdr-postdate').val(record.postDate || record.date);
+        $('#hdr-remarks').val(record.remarks || '');
+        if (record.remarks) $('#remarks-counter').text(record.remarks.length + '/250');
+
+        $('#hdr-employee').val(String(record.employeeId)).trigger('change');
+        $('#hdr-hostcompany').val(String(record.hostCompanyId)).trigger('change');
+        $('#hdr-contracttype').val(record.contractType || "0").trigger('change');
+
+        setTimeout(function() {
+            if (record.previousContractRef) {
+                $('#hdr-prevcontract').val(record.previousContractRef).trigger('change');
+            }
+            if (record.lastContractInfo) {
+                $('#hdr-lastcontractinfo-box').html('<i class="fas fa-history mr-2"></i>' + record.lastContractInfo);
+                $('#hdr-lastcontractinfo').val(record.lastContractInfo);
+            }
+            if (Array.isArray(record.contracts) && record.contracts.length > 0) {
+                stagedContracts = record.contracts;
+                renderGrid();
+            }
+        }, 300);
+    }
+
+    function parseDateObj(dStr) {
+        if (!dStr) return new Date();
+        if (dStr instanceof Date) return dStr;
+        dStr = String(dStr).trim();
+        if (dStr.includes('T')) dStr = dStr.split('T')[0];
+
+        var months = {
+            'jan':0,'feb':1,'mar':2,'apr':3,'may':4,'jun':5,'jul':6,'aug':7,'sep':8,'oct':9,'nov':10,'dec':11
+        };
+
+        if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(dStr)) {
+            var p = dStr.split('-');
+            var m = months[p[1].toLowerCase()] || 0;
+            return new Date(parseInt(p[2],10), m, parseInt(p[0],10));
+        }
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+            var p = dStr.split('-');
+            return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+        }
+
+        return new Date(dStr);
+    }
+
+    function formatDateStr(d) {
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mmm = months[d.getMonth()];
+        var yyyy = d.getFullYear();
+        return dd + '-' + mmm + '-' + yyyy;
+    }
+</script>

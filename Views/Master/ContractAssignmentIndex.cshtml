@@ -1,0 +1,661 @@
+@{
+    ViewData["Title"] = "Contract Assignment List";
+}
+
+<!-- DataTables & Alertify CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #tblContractAssignment thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+    }
+    #tblContractAssignment tbody tr:hover { background-color: #f0f3ff; }
+    #tblContractAssignment td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 4px; transition: opacity 0.15s; cursor: pointer; display: inline-block; font-size: 0.9rem; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-eye { color: #17a2b8; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+    .border-left-danger { border-left: 0.25rem solid #e74a3b !important; }
+
+    .contract-type-badge {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .ctype-new { background-color: #e6f9f0; color: #0d8a4f; border: 1px solid #c3e6cb; }
+    .ctype-extension { background-color: #eef2fd; color: #2e59d9; border: 1px solid #c2d4f8; }
+    .ctype-renewal { background-color: #fef8e7; color: #b78103; border: 1px solid #ffeeba; }
+    .ctype-cancellation { background-color: #fdf0ed; color: #d92510; border: 1px solid #f5c6cb; }
+    .ctype-default { background-color: #f8f9fa; color: #6c757d; border: 1px solid #d6d8db; }
+
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+    .badge-active { background-color: #e6f9f0; color: #0d8a4f; border: 1px solid #a3e9c6; }
+    .badge-cancelled { background-color: #fdf0ed; color: #d92510; border: 1px solid #f8b4aa; }
+    .badge-expired { background-color: #f4f5f7; color: #6c757d; border: 1px solid #d1d3e2; }
+
+    .filter-card {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 12px 15px;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-file-contract fa-sm"></i>
+                    Contract Assignment Management
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateContractAssignment", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> New Contract Assignment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Assignments</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-contract fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">New Contracts</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-new">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Extensions &amp; Renewals</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-ext-ren">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-history fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Cancellations</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-cancellations">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-ban fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA TABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Contract Assignments Records
+            </h6>
+            <button class="btn btn-sm btn-outline-primary shadow-sm" onclick="loadGridData()">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filter-card">
+            <div class="row align-items-center">
+                <div class="col-md-4 col-sm-6 mb-2 mb-md-0">
+                    <label class="small font-weight-bold text-gray-700 mb-1">Filter by Host Company:</label>
+                    <select id="filter-host-company" class="form-control form-control-sm" onchange="applyFilters()">
+                        <option value="">-- All Host Companies --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-2 mb-md-0">
+                    <label class="small font-weight-bold text-gray-700 mb-1">Filter by Contract Type:</label>
+                    <select id="filter-contract-type" class="form-control form-control-sm" onchange="applyFilters()">
+                        <option value="">-- All Contract Types --</option>
+                        <option value="0">New</option>
+                        <option value="1">Extension</option>
+                        <option value="2">Renewal</option>
+                        <option value="3">Cancellation</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-12 text-md-right mt-2 mt-md-4">
+                    <button class="btn btn-sm btn-light border shadow-sm" onclick="resetFilters()">
+                        <i class="fas fa-undo mr-1"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tblContractAssignment" class="table table-bordered table-striped table-hover" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width:85px; text-align:center;">Action</th>
+                            <th>Doc No</th>
+                            <th>Doc Date</th>
+                            <th>Employee</th>
+                            <th>Host Company</th>
+                            <th>Contract Type</th>
+                            <th>Prev Ref</th>
+                            <th>Contract Period</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- VIEW DETAILS MODAL -->
+<div class="modal fade" id="modalViewAssignment" tabindex="-1" role="dialog" aria-labelledby="modalViewLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-3">
+                <h6 class="modal-title font-weight-bold" id="modalViewLabel">
+                    <i class="fas fa-file-contract mr-2"></i>Contract Assignment Details - <span id="mv-docno"></span>
+                </h6>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row mb-3">
+                    <div class="col-md-4 col-6 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Document No</small>
+                        <span id="mv-doc" class="font-weight-bold text-primary"></span>
+                    </div>
+                    <div class="col-md-4 col-6 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Document Date</small>
+                        <span id="mv-date" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-4 col-6 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Post Date</small>
+                        <span id="mv-postdate" class="font-weight-bold text-dark"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3 p-2 bg-light rounded border">
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Employee</small>
+                        <span id="mv-emp" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Department</small>
+                        <span id="mv-dept" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Designation</small>
+                        <span id="mv-desig" class="font-weight-bold text-dark"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Host Company</small>
+                        <span id="mv-host" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Contract Type</small>
+                        <span id="mv-type"></span>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Previous Contract Ref</small>
+                        <span id="mv-prevref" class="font-weight-bold text-dark"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3" id="mv-lastinfo-row">
+                    <div class="col-12">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Last Contract Information</small>
+                        <div class="alert alert-info py-2 px-3 mb-0" id="mv-lastinfo"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block font-weight-bold text-uppercase">Remarks</small>
+                    <div class="p-2 border rounded bg-white text-muted font-italic" id="mv-remarks">-</div>
+                </div>
+
+                <h6 class="font-weight-bold text-primary mb-2 mt-4">
+                    <i class="fas fa-list-ul mr-1"></i> Contract Periods &amp; References
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm table-striped">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Contract Ref</th>
+                                <th>Contract Date</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mv-grid-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DataTables & Alertify Scripts -->
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var table = null;
+    var currentAssignments = [];
+    var hostCompanies = [];
+
+    function formatDisplayDate(dVal) {
+        if (!dVal) return '-';
+        var str = String(dVal).trim();
+        if (str.includes('T')) str = str.split('T')[0];
+        
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(str)) {
+            return str;
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+            var p = str.split('-');
+            var mIdx = parseInt(p[1], 10) - 1;
+            return p[2] + '-' + (months[mIdx] || p[1]) + '-' + p[0];
+        }
+        return str;
+    }
+
+    $(document).ready(function () {
+        // Pending Alertify Toast
+        var pendingAlert = sessionStorage.getItem('pendingAlert');
+        if (pendingAlert) {
+            sessionStorage.removeItem('pendingAlert');
+            try {
+                var pData = JSON.parse(pendingAlert);
+                alertify.log(pData.msg, pData.type || 'success', 4000);
+            } catch(e) {}
+        }
+
+        loadHostCompaniesFilter();
+        loadGridData();
+    });
+
+    function loadHostCompaniesFilter() {
+        $.getJSON('/api-assets2/host_company.json', function (data) {
+            if (Array.isArray(data)) {
+                hostCompanies = data;
+                var $sel = $('#filter-host-company');
+                $sel.find('option:not(:first)').remove();
+                data.forEach(function (h) {
+                    $sel.append(`<option value="${h.Id}">${h.Code} - ${h.Name}</option>`);
+                });
+            }
+        });
+    }
+
+    function loadGridData() {
+        $.getJSON('/api-assets2/contract_assignments.json')
+            .done(function (seedData) {
+                var seedList = Array.isArray(seedData) ? seedData : [];
+                var savedList = [];
+                try {
+                    savedList = JSON.parse(localStorage.getItem('savedContractAssignments') || '[]');
+                } catch(e) {
+                    savedList = [];
+                }
+
+                // Merge savedList overriding seedList with same docNo or Id
+                var map = new Map();
+                seedList.forEach(item => {
+                    var k = item.docNo || ('ID_' + item.id);
+                    map.set(k, item);
+                });
+                savedList.forEach(item => {
+                    var k = item.docNo || ('ID_' + item.id);
+                    map.set(k, item);
+                });
+
+                currentAssignments = Array.from(map.values());
+                populateTable(currentAssignments);
+                updateStats(currentAssignments);
+            })
+            .fail(function () {
+                var savedList = [];
+                try {
+                    savedList = JSON.parse(localStorage.getItem('savedContractAssignments') || '[]');
+                } catch(e) {}
+                currentAssignments = savedList;
+                populateTable(currentAssignments);
+                updateStats(currentAssignments);
+            });
+    }
+
+    function populateTable(dataList) {
+        if ($.fn.DataTable.isDataTable('#tblContractAssignment')) {
+            $('#tblContractAssignment').DataTable().destroy();
+        }
+        $('#tblContractAssignment tbody').empty();
+
+        var editUrlBase = '@Url.Action("CreateContractAssignment", "Master")';
+
+        dataList.forEach(function (item) {
+            // Type badge
+            var typeBadge = '';
+            var tVal = String(item.contractType);
+            var tName = item.contractTypeName || '';
+            if (tVal === "0" || tName.toLowerCase() === 'new') {
+                typeBadge = '<span class="contract-type-badge ctype-new"><i class="fas fa-star mr-1"></i>New</span>';
+            } else if (tVal === "1" || tName.toLowerCase() === 'extension') {
+                typeBadge = '<span class="contract-type-badge ctype-extension"><i class="fas fa-arrows-alt-h mr-1"></i>Extension</span>';
+            } else if (tVal === "2" || tName.toLowerCase() === 'renewal') {
+                typeBadge = '<span class="contract-type-badge ctype-renewal"><i class="fas fa-sync-alt mr-1"></i>Renewal</span>';
+            } else if (tVal === "3" || tName.toLowerCase() === 'cancellation') {
+                typeBadge = '<span class="contract-type-badge ctype-cancellation"><i class="fas fa-times mr-1"></i>Cancellation</span>';
+            } else {
+                typeBadge = `<span class="contract-type-badge ctype-default">${tName || 'Standard'}</span>`;
+            }
+
+            // Status badge
+            var statusBadge = '';
+            var st = (item.status || 'Active').toLowerCase();
+            if (st === 'cancelled') {
+                statusBadge = '<span class="status-badge badge-cancelled"><i class="fas fa-ban mr-1"></i>Cancelled</span>';
+            } else if (st === 'expired') {
+                statusBadge = '<span class="status-badge badge-expired"><i class="fas fa-clock mr-1"></i>Expired</span>';
+            } else {
+                statusBadge = '<span class="status-badge badge-active"><i class="fas fa-check-circle mr-1"></i>Active</span>';
+            }
+
+            // Period Range
+            var periodText = '-';
+            if (Array.isArray(item.contracts) && item.contracts.length > 0) {
+                var first = item.contracts[0];
+                periodText = `${formatDisplayDate(first.startDate)} <span class="text-muted">to</span> ${formatDisplayDate(first.endDate)}`;
+                if (item.contracts.length > 1) {
+                    periodText += ` <span class="badge badge-secondary">+${item.contracts.length - 1}</span>`;
+                }
+            }
+
+            var safeDocNo = (item.docNo || '').replace(/'/g, "\\'");
+            var itemId = item.id || 0;
+
+            var editHref = `${editUrlBase}?id=${itemId}&docNo=${encodeURIComponent(item.docNo || '')}`;
+
+            var tr = `
+                <tr>
+                    <td style="text-align:center;" class="action-btns">
+                        <a onclick="viewAssignmentDetails('${safeDocNo}')" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="${editHref}" title="Edit Assignment">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a onclick="deleteAssignment('${safeDocNo}', ${itemId})" title="Delete Assignment">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </td>
+                    <td class="font-weight-bold text-primary">${item.docNo || '-'}</td>
+                    <td>${formatDisplayDate(item.date)}</td>
+                    <td>
+                        <strong>${item.employeeName || '-'}</strong>
+                        ${item.employeeCode ? `<div class="small text-muted">${item.employeeCode}</div>` : ''}
+                    </td>
+                    <td>
+                        <span class="font-weight-bold">${item.hostCompanyName || '-'}</span>
+                        ${item.hostCompanyCode ? `<div class="small text-muted font-italic">${item.hostCompanyCode}</div>` : ''}
+                    </td>
+                    <td style="text-align:center;">${typeBadge}</td>
+                    <td>
+                        ${item.previousContractRef ? `<span class="badge badge-light border text-dark font-weight-bold">${item.previousContractRef}</span>` : '<span class="text-muted font-italic">N/A</span>'}
+                    </td>
+                    <td>${periodText}</td>
+                    <td style="text-align:center;">${statusBadge}</td>
+                    <td class="text-truncate" style="max-width: 150px;" title="${item.remarks || ''}">${item.remarks || '-'}</td>
+                </tr>
+            `;
+            $('#tblContractAssignment tbody').append(tr);
+        });
+
+        table = $('#tblContractAssignment').DataTable({
+            pageLength: 10,
+            responsive: true,
+            order: [[1, 'desc']],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search contracts...",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
+    }
+
+    function updateStats(dataList) {
+        var total = dataList.length;
+        var newCount = 0;
+        var extRenCount = 0;
+        var cancelCount = 0;
+
+        dataList.forEach(function (i) {
+            var t = String(i.contractType);
+            var tName = (i.contractTypeName || '').toLowerCase();
+            if (t === "0" || tName === 'new') newCount++;
+            else if (t === "1" || t === "2" || tName === 'extension' || tName === 'renewal') extRenCount++;
+            else if (t === "3" || tName === 'cancellation') cancelCount++;
+        });
+
+        $('#stat-total').text(total);
+        $('#stat-new').text(newCount);
+        $('#stat-ext-ren').text(extRenCount);
+        $('#stat-cancellations').text(cancelCount);
+    }
+
+    function applyFilters() {
+        var hostId = $('#filter-host-company').val();
+        var cType = $('#filter-contract-type').val();
+
+        var filtered = currentAssignments.filter(function (item) {
+            var matchHost = true;
+            var matchType = true;
+
+            if (hostId) {
+                matchHost = String(item.hostCompanyId) === String(hostId);
+            }
+            if (cType !== "") {
+                matchType = String(item.contractType) === String(cType);
+            }
+            return matchHost && matchType;
+        });
+
+        populateTable(filtered);
+    }
+
+    function resetFilters() {
+        $('#filter-host-company').val('');
+        $('#filter-contract-type').val('');
+        populateTable(currentAssignments);
+    }
+
+    function viewAssignmentDetails(docNo) {
+        var item = currentAssignments.find(c => c.docNo === docNo);
+        if (!item) return;
+
+        $('#mv-docno').text(item.docNo || '-');
+        $('#mv-doc').text(item.docNo || '-');
+        $('#mv-date').text(formatDisplayDate(item.date));
+        $('#mv-postdate').text(formatDisplayDate(item.postDate || item.date));
+
+        $('#mv-emp').text(`${item.employeeName || '-'} (${item.employeeCode || '-'})`);
+        $('#mv-dept').text(item.department || '-');
+        $('#mv-desig').text(item.designation || '-');
+
+        $('#mv-host').text(`${item.hostCompanyName || '-'} (${item.hostCompanyCode || '-'})`);
+        
+        var tVal = String(item.contractType);
+        var tName = item.contractTypeName || '';
+        var tBadge = `<span class="badge badge-secondary">${tName}</span>`;
+        if (tVal === "0" || tName.toLowerCase() === 'new') tBadge = '<span class="contract-type-badge ctype-new">New</span>';
+        else if (tVal === "1" || tName.toLowerCase() === 'extension') tBadge = '<span class="contract-type-badge ctype-extension">Extension</span>';
+        else if (tVal === "2" || tName.toLowerCase() === 'renewal') tBadge = '<span class="contract-type-badge ctype-renewal">Renewal</span>';
+        else if (tVal === "3" || tName.toLowerCase() === 'cancellation') tBadge = '<span class="contract-type-badge ctype-cancellation">Cancellation</span>';
+        $('#mv-type').html(tBadge);
+
+        $('#mv-prevref').text(item.previousContractRef || 'None (New Contract)');
+
+        if (item.lastContractInfo) {
+            $('#mv-lastinfo').html(`<i class="fas fa-history mr-2"></i>${item.lastContractInfo}`);
+            $('#mv-lastinfo-row').show();
+        } else {
+            $('#mv-lastinfo-row').hide();
+        }
+
+        $('#mv-remarks').text(item.remarks || 'No remarks provided.');
+
+        var tbody = $('#mv-grid-tbody');
+        tbody.empty();
+
+        if (Array.isArray(item.contracts) && item.contracts.length > 0) {
+            item.contracts.forEach(function (c, idx) {
+                var row = `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td class="font-weight-bold text-primary">${c.contractRef || '-'}</td>
+                        <td>${formatDisplayDate(c.contractDate)}</td>
+                        <td><span class="text-success font-weight-bold">${formatDisplayDate(c.startDate)}</span></td>
+                        <td><span class="text-danger font-weight-bold">${formatDisplayDate(c.endDate)}</span></td>
+                        <td>${c.remarks || '-'}</td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        } else {
+            tbody.append('<tr><td colspan="6" class="text-center text-muted">No contract periods recorded.</td></tr>');
+        }
+
+        $('#modalViewAssignment').modal('show');
+    }
+
+    function deleteAssignment(docNo, id) {
+        alertify.confirm(`Are you sure you want to delete Contract Assignment "${docNo}"?`, function (e) {
+            if (e) {
+                var saved = [];
+                try {
+                    saved = JSON.parse(localStorage.getItem('savedContractAssignments') || '[]');
+                } catch(err) {}
+
+                // Remove from local storage
+                saved = saved.filter(c => c.docNo !== docNo && (id ? c.id !== id : true));
+                localStorage.setItem('savedContractAssignments', JSON.stringify(saved));
+
+                // Also remove from current list
+                currentAssignments = currentAssignments.filter(c => c.docNo !== docNo && (id ? c.id !== id : true));
+                populateTable(currentAssignments);
+                updateStats(currentAssignments);
+
+                alertify.log(`Contract Assignment "${docNo}" has been deleted.`, 'success', 3500);
+            }
+        });
+    }
+</script>

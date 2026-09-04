@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "docNo": "REV-08-26-00001",
+    "date": "01-Aug-2026",
+    "postDate": "01-Aug-2026",
+    "employeeId": 36,
+    "employeeCode": "EMP-036",
+    "employeeName": "Smitha Sebastian",
+    "hostCompanyId": 1,
+    "hostCompanyCode": "NEO-TECH",
+    "hostCompanyName": "Neoxis Technologies LLC",
+    "type": "Increment",
+    "revisionDate": "01-Aug-2026",
+    "applicableDate": "01-Sep-2026",
+    "remarks": "Annual merit increment based on excellent FY25 audit performance",
+    "attachmentName": "Merit_Rev_2026.pdf",
+    "status": "Approved",
+    "headsAllocation": [
+      { "head": "Paygroup", "currentValue": "General Staff", "proposedValue": "Senior Staff" },
+      { "head": "Designation", "currentValue": "Accountant", "proposedValue": "Senior Accountant" },
+      { "head": "Department", "currentValue": "ACCOUNTS", "proposedValue": "ACCOUNTS" },
+      { "head": "Project", "currentValue": "Head Office", "proposedValue": "Head Office" }
+    ],
+    "salaryComponents": [
+      { "component": "Basic Salary", "currentValue": 5000.00, "proposedValue": 6000.00 },
+      { "component": "House Rent Allowance (HRA)", "currentValue": 2000.00, "proposedValue": 2500.00 },
+      { "component": "Transport Allowance", "currentValue": 1000.00, "proposedValue": 1200.00 },
+      { "component": "Special / Other Allowance", "currentValue": 500.00, "proposedValue": 800.00 }
+    ],
+    "totalCurrentSalary": 8500.00,
+    "totalProposedSalary": 10500.00,
+    "totalIncrement": 2000.00
+  },
+  {
+    "id": 2,
+    "docNo": "REV-08-26-00002",
+    "date": "15-Aug-2026",
+    "postDate": "15-Aug-2026",
+    "employeeId": 1,
+    "employeeCode": "EMP001",
+    "employeeName": "John Smith",
+    "hostCompanyId": 2,
+    "hostCompanyCode": "APX-GLB",
+    "hostCompanyName": "Apex Global Solutions Ltd",
+    "type": "Promotion",
+    "revisionDate": "15-Aug-2026",
+    "applicableDate": "01-Sep-2026",
+    "remarks": "Promotion to Operations Manager for Middle East terminal",
+    "attachmentName": "Promotion_Notice_2026.pdf",
+    "status": "Approved",
+    "headsAllocation": [
+      { "head": "Paygroup", "currentValue": "Senior Staff", "proposedValue": "Executive" },
+      { "head": "Designation", "currentValue": "Operations Supervisor", "proposedValue": "Operations Manager" },
+      { "head": "Department", "currentValue": "OPERATIONS", "proposedValue": "OPERATIONS" },
+      { "head": "Project", "currentValue": "Dubai Logistics Hub", "proposedValue": "Dubai Logistics Hub" }
+    ],
+    "salaryComponents": [
+      { "component": "Basic Salary", "currentValue": 7000.00, "proposedValue": 9000.00 },
+      { "component": "House Rent Allowance (HRA)", "currentValue": 3000.00, "proposedValue": 4000.00 },
+      { "component": "Transport Allowance", "currentValue": 1500.00, "proposedValue": 2000.00 },
+      { "component": "Special / Other Allowance", "currentValue": 1000.00, "proposedValue": 1500.00 }
+    ],
+    "totalCurrentSalary": 12500.00,
+    "totalProposedSalary": 16500.00,
+    "totalIncrement": 4000.00
+  }
+]

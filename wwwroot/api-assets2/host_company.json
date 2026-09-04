@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "Neoxis Technologies LLC", "code": "NEO-TECH", "categoryCode": "IT-SERVICES" },
+  { "id": 2, "name": "Apex Global Solutions Ltd", "code": "APX-GLB", "categoryCode": "CONSULTING" },
+  { "id": 3, "name": "PetroStar Energy FZE", "code": "PST-NRG", "categoryCode": "ENERGY-OIL" },
+  { "id": 4, "name": "Emirates Logistics & Cargo", "code": "EMR-LOG", "categoryCode": "LOGISTICS" },
+  { "id": 5, "name": "Horizon Healthcare Corp", "code": "HRZ-HLT", "categoryCode": "HEALTHCARE" },
+  { "id": 6, "name": "Gulf Contracting & Build", "code": "GLF-CON", "categoryCode": "CONSTRUCTION" }
+]

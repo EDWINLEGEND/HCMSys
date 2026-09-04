@@ -258,21 +258,30 @@
             return;
         }
 
-        if (!localStorage.getItem('savedHRRequests')) {
-            var sampleRequests = [
-                { docNo: 'HRR-REQ-07-26-00001', date: '23/07/2026', employeeId: '1', employeeName: 'John Smith', reqNo: 'REQ-07-26-10001', selectionCode: 'REQ-04', selectionName: 'Company Laptop', requestType: 'Returnable', prefix: 'LAP', qty: 1, remarks: 'Issued for remote work', status: 'Pending' },
-                { docNo: 'HRR-REQ-07-26-00002', date: '23/07/2026', employeeId: '1', employeeName: 'John Smith', reqNo: 'REQ-07-26-10002', selectionCode: 'REQ-01', selectionName: 'Salary Certificate', requestType: 'Documents', prefix: 'SAL', qty: 1, remarks: 'Required for bank loan', status: 'Pending' }
-            ];
-            localStorage.setItem('savedHRRequests', JSON.stringify(sampleRequests));
+        function filterAndRender(allRequests) {
+            pendingDocs = allRequests.filter(function(req) {
+                return (String(req.employeeId) === String(empId) || (req.employeeCode && req.employeeCode === empId)) && 
+                       req.requestType === 'Documents' && 
+                       req.status === 'Pending';
+            });
+            renderGrid();
         }
 
-        var allRequests = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
-        
-        pendingDocs = allRequests.filter(function(req) {
-            return req.employeeId == empId && req.requestType === 'Documents' && req.status === 'Pending';
-        });
-
-        renderGrid();
+        var raw = localStorage.getItem('savedHRRequests');
+        if (!raw) {
+            $.getJSON('/api-assets2/hr_requests.json').done(function(seed) {
+                if (Array.isArray(seed)) {
+                    localStorage.setItem('savedHRRequests', JSON.stringify(seed));
+                    filterAndRender(seed);
+                } else {
+                    filterAndRender([]);
+                }
+            }).fail(function() {
+                filterAndRender([]);
+            });
+        } else {
+            filterAndRender(JSON.parse(raw || '[]'));
+        }
     }
 
     function renderGrid() {

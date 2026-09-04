@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "docNo": "CAS-08-26-00001",
+    "date": "10-Aug-2026",
+    "postDate": "10-Aug-2026",
+    "employeeId": 36,
+    "employeeCode": "EMP-036",
+    "employeeName": "Smitha Sebastian",
+    "department": "ACCOUNTS",
+    "designation": "Accountant",
+    "manager": "Ajeev Chandrasekar",
+    "hostCompanyId": 1,
+    "hostCompanyCode": "NEO-TECH",
+    "hostCompanyName": "Neoxis Technologies LLC",
+    "contractType": "0",
+    "contractTypeName": "New",
+    "previousContractRef": "",
+    "lastContractInfo": "",
+    "remarks": "Initial 2-year assignment contract at Head Office",
+    "attachmentName": "CNT_001_Initial.pdf",
+    "status": "Active",
+    "contracts": [
+      {
+        "stagedId": "STG_CNT_101",
+        "contractRef": "CNT-NEO-2024-001",
+        "contractDate": "10-Aug-2024",
+        "contractStartDate": "15-Aug-2024",
+        "contractEndDate": "14-Aug-2026",
+        "remarks": "Core finance system consultant assignment",
+        "attachment": "CNT_NEO_001.pdf"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "docNo": "CAS-08-26-00002",
+    "date": "15-Aug-2026",
+    "postDate": "15-Aug-2026",
+    "employeeId": 1,
+    "employeeCode": "EMP001",
+    "employeeName": "John Smith",
+    "department": "OPERATIONS",
+    "designation": "Operations Supervisor",
+    "manager": "Smitha Sebastian",
+    "hostCompanyId": 2,
+    "hostCompanyCode": "APX-GLB",
+    "hostCompanyName": "Apex Global Solutions Ltd",
+    "contractType": "0",
+    "contractTypeName": "New",
+    "previousContractRef": "",
+    "lastContractInfo": "",
+    "remarks": "Senior Operations Consultant secondment",
+    "attachment": "CNT_002_Apex.pdf",
+    "status": "Active",
+    "contracts": [
+      {
+        "stagedId": "STG_CNT_102",
+        "contractRef": "CNT-APX-2024-042",
+        "contractDate": "01-Jul-2024",
+        "contractStartDate": "01-Aug-2024",
+        "contractEndDate": "31-Jul-2026",
+        "remarks": "Logistics operations oversight",
+        "attachment": "CNT_APX_042.pdf"
+      }
+    ]
+  }
+]

@@ -1,3 +1,7 @@
+@{
+    ViewData["Title"] = "HR Request & Disbursement";
+}
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     html { font-size: 14px; }
@@ -13,9 +17,10 @@
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: calc(1.5em + .75rem);
     }
-    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
     .action-btns a:hover { opacity: 0.7; }
     .action-btns .fa-trash-alt { color: #e74a3b; }
+    .action-btns .fa-edit { color: #4e73df; }
     .page-title-bar {
         display: flex;
         align-items: center;
@@ -63,6 +68,36 @@
     }
     .table th, .table td { vertical-align: middle; }
     .table td.num-col { text-align: right; }
+
+    .reqtype-badge {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .reqtype-documents {
+        background-color: #eef2fd;
+        color: #2e59d9;
+        border: 1px solid #c2d4f8;
+    }
+    .reqtype-returnable {
+        background-color: #fef8e7;
+        color: #b78103;
+        border: 1px solid #ffeeba;
+    }
+    .reqtype-issueonly {
+        background-color: #e6f9f0;
+        color: #0d8a4f;
+        border: 1px solid #c3e6cb;
+    }
+
+    .row-selected-edit {
+        background-color: #fff3cd !important;
+        border-left: 4px solid #ffc107;
+    }
 </style>
 
 <div class="container-fluid py-3">
@@ -71,15 +106,15 @@
     <div class="card shadow mb-3">
         <div class="card-header py-3">
             <div class="page-title-bar">
-                <div class="page-title-text">
+                <div class="page-title-text" id="page-header-title">
                     <i class="fas fa-file-invoice fa-sm text-primary mr-2"></i> HR Request & Disbursement
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
                     <a href="@Url.Action("HRRequestIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
                         <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
                     </a>
-                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveRequest()">
-                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" id="btn-save-request" onclick="saveRequest()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save Request
                     </button>
                 </div>
             </div>
@@ -87,7 +122,9 @@
     </div>
 
     <form id="requestForm" autocomplete="off">
-        <!-- COMMON HEADER CARD -->
+        <input type="hidden" id="hdr-edit-id" value="0" />
+
+        <!-- COMMON HEADER CARD (API-DRIVEN EMPLOYEES) -->
         <div class="card shadow mb-4">
             <div class="card-header card-header-custom">
                 <i class="fas fa-info-circle mr-2"></i>General Information
@@ -106,24 +143,29 @@
                         <label class="form-label">Post Date</label>
                         <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
+                    
+                    <!-- Employee dropdown: Loaded via Live API -->
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
                         <select class="form-control" id="hdr-employee" required>
-                            <option value="">Select Employee...</option>
+                            <option value="">Loading Employees...</option>
                         </select>
                     </div>
+
+                    <!-- Auto-populated from Live API Employee Profile -->
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Designation</label>
-                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto loaded from API" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Department</label>
-                        <input type="text" class="form-control" id="hdr-department" readonly />
+                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto loaded from API" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Reporting Manager</label>
-                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto loaded from API" />
                     </div>
+
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Comments / Reason</label>
                         <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter reason or comments..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
@@ -138,35 +180,41 @@
             </div>
         </div>
 
-        <!-- REQUEST DETAILS CARD -->
+        <!-- REQUEST DETAILS CARD (JSON-DRIVEN REQUEST CATALOG) -->
         <div class="card shadow mb-4">
             <div class="card-header card-header-custom bg-info">
                 <i class="fas fa-file-alt mr-2"></i>Request Details
             </div>
             <div class="card-body">
                 <div class="row">
+                    <!-- Request Selection: Loaded via JSON catalog -->
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Selection <span class="text-danger">*</span></label>
+                        <label class="form-label">Selection / Item <span class="text-danger">*</span></label>
                         <select class="form-control" id="dtl-selection" required>
-                            <option value="">Select Request...</option>
+                            <option value="">Select Request Item...</option>
                         </select>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Request Type</label>
-                        <input type="text" class="form-control" id="dtl-requesttype" readonly />
+                        <input type="text" class="form-control font-weight-bold text-dark" id="dtl-requesttype" readonly placeholder="Auto from JSON master" />
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control number-align font-weight-bold" id="dtl-qty" value="1" min="1" max="999" />
+                    </div>
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Remarks</label>
-                        <input type="text" class="form-control" id="dtl-remarks" />
+                        <input type="text" class="form-control" id="dtl-remarks" placeholder="Optional line remarks..." />
                     </div>
                     
-                    <!-- Hidden Qty field as requested -->
-                    <input type="hidden" id="dtl-qty" value="1" />
                     <input type="hidden" id="dtl-prefix" value="" />
                     
-                    <div class="col-md-12 text-right mt-2">
-                        <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addToGrid()">
-                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add
+                    <div class="col-md-12 text-right mt-2" id="grid-btn-container">
+                        <button type="button" class="btn btn-secondary btn-sm shadow-sm mr-2" id="btn-cancel-edit" style="display:none;" onclick="cancelLineEdit()">
+                            <i class="fas fa-times fa-sm text-white-50 mr-1"></i> Cancel Edit
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btn-add-grid" onclick="addToGrid()">
+                            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add to Grid
                         </button>
                     </div>
                 </div>
@@ -174,21 +222,26 @@
         </div>
     </form>
 
+    <!-- REQUESTS DETAILED GRID -->
     <div class="card shadow mb-4">
-        <div class="card-header card-header-custom bg-secondary">Requests Detailed</div>
+        <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list mr-2"></i>Requests Detailed</span>
+            <small class="text-white-50">Staged items for this HR request document</small>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0" id="user-grid-table">
                     <thead class="thead-light">
                         <tr>
-                            <th style="width: 60px; text-align:center;">Action</th>
-                            <th>Selection</th>
+                            <th style="width: 75px; text-align:center;">Action</th>
+                            <th>Selection / Item</th>
                             <th>Request Type</th>
-                            <th class="num-col">Qty</th>
+                            <th class="num-col" style="width: 90px;">Qty</th>
                             <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <tr id="empty-row"><td colspan="5" class="text-center text-muted py-3">No requests added to the grid yet.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -198,38 +251,78 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
 <script>
     var employeesData = [];
     var requestMasterData = [];
     var stagedRequests = [];
+    var editHeaderId = 0;
+    var editDocNo = '';
+    var isEditMode = false;
+    var editingStagedId = null;
 
     $(document).ready(function() {
-        initHeader();
+        var urlParams = new URLSearchParams(window.location.search);
+        var paramDocNo = urlParams.get('docNo') || '';
+        var paramId = urlParams.get('id') || '@ViewBag.EditId';
+        editDocNo = paramDocNo;
+        editHeaderId = parseInt(paramId) || 0;
+        isEditMode = (editDocNo.length > 0 || editHeaderId > 0);
 
-        $.when(
-            $.getJSON('/Master/GetApiEmployees'),
-            $.getJSON('/api-assets1/request_master.json')
-        ).done(function(empRes, reqRes) {
-            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
-            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
-            requestMasterData = reqRes[0] || reqRes;
-            
-            populateDropdowns();
-            $('select.form-control').select2({ width: '100%' });
-        }).fail(function() {
-            alertify.log('Failed to load data', 'error', 5000);
-        });
+        if (isEditMode) {
+            $('#page-header-title').html('<i class="fas fa-edit fa-sm text-primary mr-2"></i> Edit HR Request <span class="badge badge-primary font-weight-bold ml-2">Edit Mode</span>');
+            $('#btn-save-request').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Request');
+            $('#hdr-edit-id').val(editHeaderId);
+        }
 
-        $('#hdr-employee').change(onEmployeeChange);
-        $('#dtl-selection').change(onSelectionChange);
+        initHeaderDocNo();
 
         flatpickr(".datepicker", {
             dateFormat: "d-M-Y",
             defaultDate: "today"
         });
+
+        // 1. LIVE API: Load Employees from live API endpoint
+        // 2. JSON: Load Request Master catalog from /api-assets2/request_master.json
+        function loadMasters() {
+            var empPromise = $.getJSON('/Master/GetApiEmployees').then(function(res) {
+                var empList = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : (res && res.data ? res.data : []);
+                if (empList.length > 0) return empList;
+                return $.getJSON('/api-assets2/employee.json');
+            }, function() {
+                return $.getJSON('/api-assets2/employee.json');
+            });
+
+            var reqPromise = $.getJSON('/api-assets2/request_master.json').then(function(res) {
+                return Array.isArray(res) ? res : [];
+            }, function() {
+                return $.getJSON('/Master/GetApiRequestMaster');
+            });
+
+            $.when(empPromise, reqPromise).done(function(empRes, reqRes) {
+                var rawEmp = (empRes && empRes[0]) ? empRes[0] : empRes;
+                employeesData = Array.isArray(rawEmp) ? rawEmp : (Array.isArray(empRes) ? empRes : []);
+                var rawReq = (reqRes && reqRes[0]) ? reqRes[0] : reqRes;
+                requestMasterData = Array.isArray(rawReq) ? rawReq : (Array.isArray(reqRes) ? reqRes : []);
+
+                populateDropdowns();
+
+                if (isEditMode) {
+                    loadRequestForEdit(editHeaderId, editDocNo);
+                }
+            });
+        }
+
+        loadMasters();
+
+        $('#hdr-employee').change(onEmployeeChange);
+        $('#dtl-selection').change(onSelectionChange);
     });
 
-    function initHeader() {
+    function initHeaderDocNo() {
+        if (isEditMode) return;
+
         var d = new Date();
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         var mmm = months[d.getMonth()];
@@ -237,118 +330,123 @@
         var dd = String(d.getDate()).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
+        var todayStr = dd + '-' + mmm + '-' + yyyy;
+
+        $('#hdr-date').val(todayStr);
+        $('#hdr-postdate').val(todayStr);
         
         var saved = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
-        var seq = String(saved.length + 1).padStart(5, '0');
-        $('#hdr-docno').val('HRR-' + mm + '-' + yy + '-' + seq);
+        var maxNum = 0;
+        saved.forEach(function(item) {
+            var dNo = item.docNo || item.reqNo || '';
+            var match = dNo.match(/\d+$/);
+            if (match) {
+                var n = parseInt(match[0], 10);
+                if (!isNaN(n) && n > maxNum) maxNum = n;
+            }
+        });
+        var nextSeq = Math.max(maxNum, saved.length) + 1;
+        $('#hdr-docno').val('HRR-' + mm + '-' + yy + '-' + String(nextSeq).padStart(5, '0'));
     }
 
     function populateDropdowns() {
+        // 1. Employee dropdown (Live API)
         var empSelect = $('#hdr-employee');
         empSelect.empty().append('<option value="">Select Employee...</option>');
-        if (Array.isArray(employeesData)) {
+        if (Array.isArray(employeesData) && employeesData.length > 0) {
             employeesData.forEach(function(emp) {
-                var empId = emp.id || emp.iMasterId || '';
-                var empCode = emp.code || emp.sCode || '';
-                var empName = emp.name || emp.sName || '';
-                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
+                empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
         }
+        empSelect.select2({ width: '100%' });
 
+        // 2. Request Master dropdown (JSON catalog)
         var reqSelect = $('#dtl-selection');
-        reqSelect.empty().append('<option value="">Select Request Type...</option>');
-        if (Array.isArray(requestMasterData)) {
+        reqSelect.empty().append('<option value="">Select Request Item...</option>');
+        if (Array.isArray(requestMasterData) && requestMasterData.length > 0) {
             requestMasterData.forEach(function(req) {
-                reqSelect.append(`<option value="${req.code}">${req.name}</option>`);
+                var rCode = req.code || ('REQ-' + req.id);
+                var rName = req.name || '';
+                var rType = req.type || 'Documents';
+                var rPrefix = req.prefix || '';
+                reqSelect.append(`<option value="${rCode}" data-name="${rName}" data-type="${rType}" data-prefix="${rPrefix}">${rName} (${rType})</option>`);
             });
         }
+        reqSelect.select2({ width: '100%' });
     }
 
+    // Triggered on Employee selection (Live API data binding)
     function onEmployeeChange() {
-        var empVal = $(this).val();
+        var empVal = $('#hdr-employee').val();
         if (!empVal) {
             $('#hdr-designation, #hdr-department, #hdr-manager').val('');
             return;
         }
 
-        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
+        var emp = employeesData.find(e => String(e.id) === String(empVal) || String(e.iMasterId) === String(empVal) || String(e.code) === String(empVal) || String(e.sCode) === String(empVal));
         if (emp) {
-            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
-            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
-            $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '');
+            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '-');
+            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '-');
+            $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || '-');
         }
     }
     
+    // Triggered on Request Item selection (JSON catalog data binding)
     function onSelectionChange() {
-        var reqCode = $(this).val();
-        $('#dtl-requesttype').val('');
-        $('#dtl-prefix').val('');
-        
-        if (!reqCode) {
-            return;
-        }
+        var opt = $('#dtl-selection option:selected');
+        var reqType = opt.data('type') || '';
+        var prefix = opt.data('prefix') || '';
 
-        var req = requestMasterData.find(r => r.code === reqCode);
-        if (req) {
-            $('#dtl-requesttype').val(req.type);
-            $('#dtl-prefix').val(req.prefix);
-        }
+        $('#dtl-requesttype').val(reqType);
+        $('#dtl-prefix').val(prefix);
     }
 
     function checkFileSize(input) {
         if (input.files && input.files[0]) {
             if (input.files[0].size > 25 * 1024 * 1024) {
-                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
+                alertify.log('File size exceeds 25MB limit.', 'error', 4000);
                 input.value = '';
             }
         }
     }
 
-    function renderGrid() {
-        var uTbody = $('#user-grid-table tbody');
-        uTbody.empty();
-        
-        stagedRequests.forEach(function(item) {
-            var tr = `<tr>
-                <td class="action-btns" style="text-align:center;">
-                    <a href="#" class="remove-item-btn" title="Delete" onclick="deleteStagedRequest('${item.stagedId}'); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                </td>
-                <td>${item.selectionName || '-'}</td>
-                <td>${item.requestType || '-'}</td>
-                <td class="num-col">${item.qty}</td>
-                <td>${item.remarks || '-'}</td>
-            </tr>`;
-            uTbody.append(tr);
-        });
-    }
-
-    function deleteStagedRequest(stagedId) {
-        alertify.confirm('Are you sure you want to remove this request?', function (e) {
-            if (e) {
-                stagedRequests = stagedRequests.filter(function(item) { return item.stagedId !== stagedId; });
-                renderGrid();
-            }
-        });
-    }
-
     function addToGrid() {
         var selectionCode = $('#dtl-selection').val();
-        
-        if(!selectionCode) {
-            alertify.log('Please select a request.', 'error', 5000);
+        if (!selectionCode) {
+            alertify.log('Please select a Request Item.', 'error', 4000);
+            $('#dtl-selection').select2('open');
             return;
         }
 
-        var selectionName = $('#dtl-selection option:selected').text();
-        var requestType = $('#dtl-requesttype').val();
-        var prefix = $('#dtl-prefix').val();
-        var remarks = $('#dtl-remarks').val();
-        var qty = $('#dtl-qty').val();
+        var opt = $('#dtl-selection option:selected');
+        var selectionName = opt.data('name') || opt.text();
+        var requestType = $('#dtl-requesttype').val() || opt.data('type') || 'Documents';
+        var prefix = $('#dtl-prefix').val() || opt.data('prefix') || '';
+        var remarks = $('#dtl-remarks').val() || '';
+        var qty = parseInt($('#dtl-qty').val()) || 1;
 
-        var uniqueStagedId = 'id_' + new Date().getTime();
+        if (qty <= 0) {
+            alertify.log('Quantity must be at least 1.', 'error', 3500);
+            $('#dtl-qty').focus();
+            return;
+        }
 
-        var newItem = {
-            stagedId: uniqueStagedId,
+        // Duplicate Check in the current grid
+        var isDuplicate = stagedRequests.some(function(item) {
+            if (editingStagedId && item.stagedId === editingStagedId) return false;
+            return item.selectionCode === selectionCode;
+        });
+
+        if (isDuplicate) {
+            alertify.log(`Request item "${selectionName}" is already added in the table. Duplicate items cannot be added multiple times in the same request.`, 'error', 5000);
+            return;
+        }
+
+        var item = {
+            stagedId: editingStagedId || ('STG_' + Date.now()),
             selectionCode: selectionCode,
             selectionName: selectionName,
             requestType: requestType,
@@ -357,22 +455,97 @@
             remarks: remarks
         };
 
-        stagedRequests.push(newItem);
+        if (editingStagedId) {
+            var idx = stagedRequests.findIndex(i => i.stagedId === editingStagedId);
+            if (idx > -1) stagedRequests[idx] = item;
+            editingStagedId = null;
+            $('#btn-cancel-edit').hide();
+            $('#btn-add-grid').html('<i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add to Grid');
+        } else {
+            stagedRequests.push(item);
+        }
+
         renderGrid();
         
-        // Reset inputs
+        // Reset line inputs
+        $('#dtl-selection').val('').trigger('change');
+        $('#dtl-requesttype').val('');
+        $('#dtl-remarks').val('');
+        $('#dtl-qty').val('1');
+        alertify.log('Request line added successfully.', 'success', 2500);
+    }
+
+    function renderGrid() {
+        var uTbody = $('#user-grid-table tbody');
+        uTbody.empty();
+
+        if (stagedRequests.length === 0) {
+            uTbody.append('<tr id="empty-row"><td colspan="5" class="text-center text-muted py-3">No requests added to the grid yet.</td></tr>');
+            return;
+        }
+        
+        stagedRequests.forEach(function(item) {
+            var badgeClass = 'reqtype-documents';
+            if (item.requestType === 'Returnable') badgeClass = 'reqtype-returnable';
+            if (item.requestType === 'Issueonly') badgeClass = 'reqtype-issueonly';
+
+            var tr = `<tr id="row-${item.stagedId}">
+                <td class="action-btns" style="text-align:center;">
+                    <a onclick="editStagedRequest('${item.stagedId}')" title="Edit line"><i class="fas fa-edit"></i></a>
+                    <a onclick="deleteStagedRequest('${item.stagedId}')" title="Delete line"><i class="fas fa-trash-alt"></i></a>
+                </td>
+                <td class="font-weight-bold text-dark">${item.selectionName || '-'}</td>
+                <td><span class="reqtype-badge ${badgeClass}">${item.requestType || '-'}</span></td>
+                <td class="num-col font-weight-bold text-primary">${item.qty}</td>
+                <td>${item.remarks || '-'}</td>
+            </tr>`;
+            uTbody.append(tr);
+        });
+    }
+
+    function editStagedRequest(stagedId) {
+        var item = stagedRequests.find(i => i.stagedId === stagedId);
+        if (!item) return;
+
+        editingStagedId = stagedId;
+        $('#dtl-selection').val(item.selectionCode).trigger('change');
+        $('#dtl-qty').val(item.qty || 1);
+        $('#dtl-remarks').val(item.remarks || '');
+
+        $('#btn-cancel-edit').show();
+        $('#btn-add-grid').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Line');
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
+        $('#row-' + stagedId).addClass('row-selected-edit');
+    }
+
+    function cancelLineEdit() {
+        editingStagedId = null;
+        $('#btn-cancel-edit').hide();
+        $('#btn-add-grid').html('<i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add to Grid');
+        $('#user-grid-table tbody tr').removeClass('row-selected-edit');
         $('#dtl-selection').val('').trigger('change');
         $('#dtl-remarks').val('');
+        $('#dtl-qty').val('1');
+    }
+
+    function deleteStagedRequest(stagedId) {
+        stagedRequests = stagedRequests.filter(item => item.stagedId !== stagedId);
+        if (editingStagedId === stagedId) cancelLineEdit();
+        renderGrid();
+        alertify.log('Request line removed.', 'success', 2000);
     }
 
     function saveRequest() {
-        if (stagedRequests.length === 0) {
-            alertify.log('No requests added to the grid.', 'error', 5000);
+        var empId = $('#hdr-employee').val();
+        if (!empId) {
+            alertify.log('Please select an Employee before saving.', 'error', 4000);
+            $('#hdr-employee').select2('open');
             return;
         }
 
-        if(!$('#hdr-employee').val()) {
-            alertify.log('Please fill required Header fields (Employee).', 'error', 5000);
+        if (stagedRequests.length === 0) {
+            alertify.log('Please add at least one request item to the grid before saving.', 'error', 4500);
+            $('#dtl-selection').select2('open');
             return;
         }
 
@@ -380,38 +553,115 @@
         var mm = String(d.getMonth() + 1).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
 
-        var empText = $('#hdr-employee option:selected').text();
-        var empParts = empText.split(' - ');
-        var empName = empParts.length > 1 ? empParts.slice(1).join(' - ') : empText;
+        var empOpt = $('#hdr-employee option:selected');
+        var empCode = empOpt.data('code') || '';
+        var empName = empOpt.data('name') || empOpt.text();
+        var docNo = $('#hdr-docno').val();
+        var docDate = $('#hdr-date').val();
+        var postDate = $('#hdr-postdate').val();
+        var comments = $('#hdr-comments').val() || '';
 
-        var newRequests = stagedRequests.map(function(sr) {
-            var randId = Math.floor(Math.random() * 100000);
-            return {
-                docNo: $('#hdr-docno').val(),
-                date: $('#hdr-date').val(),
-                employeeId: $('#hdr-employee').val(),
+        var fileInput = document.getElementById('hdr-attachment');
+        var attachFileName = (fileInput && fileInput.files.length > 0) ? fileInput.files[0].name : '';
+
+        var savedRequests = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+
+        if (isEditMode) {
+            // Remove previous items belonging to this document and replace with updated ones
+            savedRequests = savedRequests.filter(r => 
+                (!editDocNo || r.docNo !== editDocNo) && 
+                (!editHeaderId || (r.id !== editHeaderId && String(r.id) !== String(editHeaderId)))
+            );
+        }
+
+        stagedRequests.forEach(function(sr, idx) {
+            var reqNo = (sr.prefix ? sr.prefix + '-' : 'REQ-') + mm + '-' + yy + '-' + Math.floor(1000 + Math.random() * 9000);
+            
+            var newRecord = {
+                id: (isEditMode && editHeaderId) ? editHeaderId : Date.now() + idx,
+                docNo: docNo,
+                date: docDate,
+                postDate: postDate,
+                employeeId: empId,
+                employeeCode: empCode,
                 employeeName: empName,
-                reqNo: 'REQ-' + mm + '-' + yy + '-' + randId,
+                department: $('#hdr-department').val(),
+                designation: $('#hdr-designation').val(),
+                manager: $('#hdr-manager').val(),
+                comments: comments,
+                reqNo: reqNo,
                 selectionCode: sr.selectionCode,
                 selectionName: sr.selectionName,
                 requestType: sr.requestType,
                 prefix: sr.prefix,
                 qty: sr.qty,
                 remarks: sr.remarks,
-                status: 'Pending'
+                status: 'Pending',
+                attachmentName: attachFileName
             };
+
+            savedRequests.push(newRecord);
         });
 
-        var existingRequests = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
-        existingRequests = existingRequests.concat(newRequests);
-        localStorage.setItem('savedHRRequests', JSON.stringify(existingRequests));
+        localStorage.setItem('savedHRRequests', JSON.stringify(savedRequests));
 
-        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'HR Request saved successfully!', type: 'success' }));
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ 
+            msg: `HR Request ${docNo} for ${empName} saved successfully!`, 
+            type: 'success' 
+        }));
+
         var targetUrl = '@Url.Action("HRRequestIndex", "Master")';
         if (typeof loadPageContent === 'function') {
             loadPageContent(targetUrl, true);
         } else {
             window.location.href = targetUrl;
         }
+    }
+
+    function loadRequestForEdit(id, docNo) {
+        var saved = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
+        var records = saved.filter(r => (docNo && r.docNo === docNo) || (id && (r.id === id || String(r.id) === String(id))));
+        if (records.length > 0) {
+            applyLoadedRecords(records);
+        } else {
+            $.getJSON('/api-assets2/hr_requests.json').done(function(seedData) {
+                if (Array.isArray(seedData)) {
+                    var seedRecords = seedData.filter(r => (docNo && r.docNo === docNo) || (id && (r.id === id || String(r.id) === String(id))));
+                    if (seedRecords.length > 0) {
+                        applyLoadedRecords(seedRecords);
+                    }
+                }
+            });
+        }
+    }
+
+    function applyLoadedRecords(records) {
+        var first = records[0];
+        editDocNo = first.docNo || '';
+        editHeaderId = first.id || 0;
+        $('#hdr-edit-id').val(editHeaderId);
+        $('#hdr-docno').val(first.docNo || '');
+        $('#hdr-date').val(first.date || '');
+        $('#hdr-postdate').val(first.postDate || first.date || '');
+        $('#hdr-comments').val(first.comments || '');
+        if (first.comments) $('#comments-counter').text(first.comments.length + '/250');
+
+        if (first.employeeId) {
+            $('#hdr-employee').val(String(first.employeeId)).trigger('change');
+        }
+
+        stagedRequests = records.map(function(r, idx) {
+            return {
+                stagedId: 'STG_EDIT_' + idx + '_' + Date.now(),
+                selectionCode: r.selectionCode,
+                selectionName: r.selectionName,
+                requestType: r.requestType,
+                prefix: r.prefix,
+                qty: r.qty || 1,
+                remarks: r.remarks || ''
+            };
+        });
+
+        renderGrid();
     }
 </script>

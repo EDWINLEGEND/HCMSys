@@ -229,7 +229,7 @@
                 var isMastersActive = currentAction.StartsWith("Project");
                 var isLoansActive = currentAction.StartsWith("Loan");
                 var isLeavesActive = currentAction.StartsWith("Leave") || currentAction.StartsWith("OpeningLeaves");
-                var isHrActive = currentAction.StartsWith("Claim") || currentAction.StartsWith("BusinessTrip") || currentAction.StartsWith("HR");
+                var isHrActive = currentAction.StartsWith("Claim") || currentAction.StartsWith("BusinessTrip") || currentAction.StartsWith("HR") || currentAction.StartsWith("ContractAssignment") || currentAction.StartsWith("SalaryRevision");
                 var isAssetsActive = currentAction.StartsWith("Asset");
             }
 
@@ -298,6 +298,8 @@
                         <a class="collapse-item @(currentAction.StartsWith("HRRequest") ? "active" : "")" href="@Url.Action("HRRequestIndex", "Master")">HR Request</a>
                         <a class="collapse-item @(currentAction.StartsWith("HRReturn") ? "active" : "")" href="@Url.Action("HRReturnIndex", "Master")">HR Return</a>
                         <a class="collapse-item @(currentAction.StartsWith("HRDocumentIssue") ? "active" : "")" href="@Url.Action("HRDocumentIssueIndex", "Master")">HR Document Issue</a>
+                        <a class="collapse-item @(currentAction.StartsWith("ContractAssignment") ? "active" : "")" href="@Url.Action("ContractAssignmentIndex", "Master")">Contract Assignment</a>
+                        <a class="collapse-item @(currentAction.StartsWith("SalaryRevision") ? "active" : "")" href="@Url.Action("SalaryRevisionIndex", "Master")">Salary Revision</a>
                     </div>
                 </div>
             </li>

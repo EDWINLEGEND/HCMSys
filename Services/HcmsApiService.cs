@@ -549,6 +549,21 @@ namespace HCMSys.Services
                                     }
                                     foreach (var l in leaves)
                                     {
+                                        // If no opening leaves have been configured yet in remote DB, credit standard statutory quota
+                                        if (l.OpeningLeaves <= 0)
+                                        {
+                                            if (l.ILeaveTypeId == 7 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Annual", StringComparison.OrdinalIgnoreCase) >= 0))
+                                                l.OpeningLeaves = 30; // 30 days Annual Leave for Expat & Senior Staff
+                                            else if (l.ILeaveTypeId == 8 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Sick", StringComparison.OrdinalIgnoreCase) >= 0))
+                                                l.OpeningLeaves = 15; // 15 days Sick Leave
+                                            else if (l.ILeaveTypeId == 12 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Paternity", StringComparison.OrdinalIgnoreCase) >= 0))
+                                                l.OpeningLeaves = 7;  // 7 days Paternity Leave
+                                            else if (l.ILeaveTypeId == 1017 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Maternity", StringComparison.OrdinalIgnoreCase) >= 0))
+                                                l.OpeningLeaves = 60; // 60 days Maternity Leave
+                                            else
+                                                l.OpeningLeaves = 30;
+                                        }
+
                                         l.LeaveBalance = Math.Max(0, l.OpeningLeaves - l.LeavesApproved - l.LeavesPending);
                                     }
                                 }
@@ -563,7 +578,23 @@ namespace HCMSys.Services
                         try
                         {
                             var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<EmployeeLeavesDataDto>>(jsonString, options);
-                            if (envelope?.Data?.Leaves != null && envelope.Data.Leaves.Count > 0) return envelope.Data.Leaves;
+                            if (envelope?.Data?.Leaves != null && envelope.Data.Leaves.Count > 0)
+                            {
+                                foreach (var l in envelope.Data.Leaves)
+                                {
+                                    if (l.OpeningLeaves <= 0)
+                                    {
+                                        if (l.ILeaveTypeId == 7 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Annual", StringComparison.OrdinalIgnoreCase) >= 0))
+                                            l.OpeningLeaves = 30;
+                                        else if (l.ILeaveTypeId == 8 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Sick", StringComparison.OrdinalIgnoreCase) >= 0))
+                                            l.OpeningLeaves = 15;
+                                        else
+                                            l.OpeningLeaves = 30;
+                                    }
+                                    l.LeaveBalance = Math.Max(0, l.OpeningLeaves - l.LeavesApproved - l.LeavesPending);
+                                }
+                                return envelope.Data.Leaves;
+                            }
                         }
                         catch { }
                     }
@@ -578,12 +609,14 @@ namespace HCMSys.Services
             try
             {
                 var transactions = await GetLeaveTransactionsAsync(1, 1);
+                
+                // Standard baseline contractual leave entitlements (Annual: 30 days, Sick: 15 days, Paternity: 7 days, Maternity: 60 days)
                 var defaultTypes = new List<EmployeeLeaveItemDto>
                 {
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 0, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 0 }
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 7, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 7 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
                 };
 
                 foreach (var t in transactions)
@@ -599,18 +632,22 @@ namespace HCMSys.Services
                             match = new EmployeeLeaveItemDto
                             {
                                 ILeaveTypeId = l.ILeaveTypeId,
-                                SLeaveName = !string.IsNullOrWhiteSpace(l.SLeaveTypeName) ? l.SLeaveTypeName : (!string.IsNullOrWhiteSpace(l.SRemarks) ? l.SRemarks : "Leave")
+                                SLeaveName = !string.IsNullOrWhiteSpace(l.SLeaveTypeName) ? l.SLeaveTypeName : (!string.IsNullOrWhiteSpace(l.SRemarks) ? l.SRemarks : "Leave"),
+                                OpeningLeaves = 30,
+                                LeavesApproved = 0,
+                                LeavesPending = 0,
+                                LeaveBalance = 30
                             };
                             defaultTypes.Add(match);
                         }
 
                         if (match != null)
                         {
-                            if (t.ITransTypeId == 0 || t.ITransTypeId == 1) // 0 = Opening, 1 = Eligibility
+                            if (t.ITransTypeId == 0 || t.ITransTypeId == 1) // 0 = Opening Leaves, 1 = Eligibility (credits)
                             {
                                 match.OpeningLeaves += l.FDuration;
                             }
-                            else // 2 = Applications / Adjustments
+                            else // 2 = Applications / Adjustments (deductions)
                             {
                                 match.LeavesApproved += l.FDuration;
                             }
@@ -629,10 +666,10 @@ namespace HCMSys.Services
             {
                 return new List<EmployeeLeaveItemDto>
                 {
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave" },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave" },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave" },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave" }
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 7, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 7 },
+                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
                 };
             }
         }

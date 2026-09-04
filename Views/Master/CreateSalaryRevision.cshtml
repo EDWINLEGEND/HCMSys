@@ -1,0 +1,1016 @@
+@{
+    ViewData["Title"] = "Increment / Promotion / Transfer";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    html { font-size: 14px; }
+    .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        color: #6e707e;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+    }
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+    .form-control { font-size: 0.85rem; border-color: #d1d3e2; color: #6e707e; border-radius: 0.35rem; }
+    .form-control:focus { border-color: #bac8f3; box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.2); }
+    
+    .card-header-custom {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .card-header-secondary-custom {
+        background-color: #36b9cc;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .card-header-success-custom {
+        background-color: #1cc88a;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+    }
+    .form-control[readonly]:not(.flatpickr-input):not(.datepicker) { 
+        background-color: #e9ecef !important; 
+        opacity: 1; 
+    }
+    .flatpickr-input[readonly], .datepicker[readonly] {
+        background-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+    .table th, .table td { vertical-align: middle; }
+    
+    .diff-badge-positive {
+        background-color: #e6f9f0;
+        color: #0d8a4f;
+        border: 1px solid #a3e9c6;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    .diff-badge-negative {
+        background-color: #fdf0ed;
+        color: #d92510;
+        border: 1px solid #f8b4aa;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    .diff-badge-neutral {
+        background-color: #f8f9fc;
+        color: #858796;
+        border: 1px solid #d1d3e2;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .summary-box {
+        background-color: #f8f9fc;
+        border: 1px solid #e3e6f0;
+        border-radius: 0.35rem;
+        padding: 15px;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text" id="page-header-title">
+                    <i class="fas fa-chart-line fa-sm text-primary mr-2"></i> Increment / Promotion / Transfer
+                </div>
+                <div class="ml-auto mt-2 mt-sm-0">
+                    <a href="@Url.Action("SalaryRevisionIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" id="btn-save-revision" onclick="saveSalaryRevision()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save Revision
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="salaryRevisionForm" autocomplete="off">
+        <input type="hidden" id="hdr-edit-id" value="@(ViewBag.EditId ?? 0)" />
+
+        <!-- COMMON HEADER CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom">
+                <i class="fas fa-info-circle mr-2"></i>Common Header Information &amp; Employee Details
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Doc No</label>
+                        <input type="text" class="form-control font-weight-bold text-primary" id="hdr-docno" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="text" class="form-control datepicker" id="hdr-date" readonly />
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Post Date</label>
+                        <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
+                    </div>
+                    
+                    <!-- Employee: Loaded from Live API -->
+                    <div class="col-6 col-md-3 mb-3">
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-employee" required>
+                            <option value="">Loading Employees...</option>
+                        </select>
+                    </div>
+
+                    <!-- Auto-populated from Live API Employee Profile -->
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto-populated" />
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto-populated" />
+                    </div>
+                    <div class="col-md-4 col-sm-12 mb-3">
+                        <label class="form-label">Manager / Reporting Officer</label>
+                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto-populated" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REVISION HEADER DETAILS CARD -->
+        <div class="card shadow mb-4">
+            <div class="card-header card-header-custom" style="background-color: #4e5cd9;">
+                <i class="fas fa-sliders-h mr-2"></i>Revision Header &amp; Configuration
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Host Company -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Host Company <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-hostcompany" required>
+                            <option value="">-- Select Host Company --</option>
+                        </select>
+                    </div>
+
+                    <!-- Type -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-type" required>
+                            <option value="Increment">Increment</option>
+                            <option value="Promotion">Promotion</option>
+                            <option value="Transfer">Transfer</option>
+                            <option value="Decrement">Decrement</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+
+                    <!-- Revision Date -->
+                    <div class="col-md-2 col-6 mb-3">
+                        <label class="form-label">Revision Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control datepicker" id="hdr-revisiondate" required />
+                    </div>
+
+                    <!-- Applicable Date -->
+                    <div class="col-md-2 col-6 mb-3">
+                        <label class="form-label">Applicable Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control datepicker" id="hdr-applicabledate" required />
+                    </div>
+
+                    <!-- Attachment -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Attachment</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="hdr-attachment" onchange="onFileSelected(this)">
+                            <label class="custom-file-label text-truncate" for="hdr-attachment" id="hdr-attachment-lbl">Choose document...</label>
+                        </div>
+                        <small class="form-text text-muted" id="hdr-attachment-info"></small>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Remarks</label>
+                        <input type="text" class="form-control" id="hdr-remarks" placeholder="Enter revision reason, appraisal ref, or notes..." maxlength="250" />
+                    </div>
+
+                    <!-- Load Date / Load Data Button -->
+                    <div class="col-md-2 mb-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary btn-block shadow-sm" id="btn-load-data" onclick="loadEmployeeData(true)">
+                            <i class="fas fa-sync-alt mr-1"></i> Load Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW: GRIDS 1 & 2 -->
+        <div class="row">
+            <!-- GRID 1: HEADS ALLOCATION -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header card-header-secondary-custom d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-sitemap mr-2"></i>Grid 1 - Heads Allocation
+                        </div>
+                        <small class="text-white-50 font-weight-normal">Paygroup, Designation, Department, Project</small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped mb-0" id="tblHeadsAllocation">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th style="width: 25%;">Current Status</th>
+                                        <th style="width: 35%;">Current Status Value</th>
+                                        <th style="width: 40%;">Proposed Status Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Row 1: Paygroup -->
+                                    <tr data-head="Paygroup">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-users-cog text-info mr-1"></i> Paygroup
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm head-current" id="head-current-paygroup" readonly value="General Staff" />
+                                        </td>
+                                        <td>
+                                            <select class="form-control form-control-sm head-proposed" id="head-proposed-paygroup">
+                                                <option value="General Staff">General Staff</option>
+                                                <option value="Senior Staff">Senior Staff</option>
+                                                <option value="Executive">Executive</option>
+                                                <option value="Management">Management</option>
+                                                <option value="Expatriate Staff">Expatriate Staff</option>
+                                                <option value="Daily Rated">Daily Rated</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 2: Designation -->
+                                    <tr data-head="Designation">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-id-badge text-info mr-1"></i> Designation
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm head-current" id="head-current-designation" readonly placeholder="Auto from employee" />
+                                        </td>
+                                        <td>
+                                            <select class="form-control form-control-sm head-proposed" id="head-proposed-designation">
+                                                <option value="">-- Select Proposed Designation --</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 3: Department -->
+                                    <tr data-head="Department">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-building text-info mr-1"></i> Department
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm head-current" id="head-current-department" readonly placeholder="Auto from employee" />
+                                        </td>
+                                        <td>
+                                            <select class="form-control form-control-sm head-proposed" id="head-proposed-department">
+                                                <option value="">-- Select Proposed Department --</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 4: Project -->
+                                    <tr data-head="Project">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-project-diagram text-info mr-1"></i> Project
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm head-current" id="head-current-project" readonly value="Head Office" />
+                                        </td>
+                                        <td>
+                                            <select class="form-control form-control-sm head-proposed" id="head-proposed-project">
+                                                <option value="Head Office">Head Office</option>
+                                                <option value="Dubai Logistics Hub">Dubai Logistics Hub</option>
+                                                <option value="Alpha Portal">Alpha Portal</option>
+                                                <option value="ERP Modernization">ERP Modernization</option>
+                                                <option value="Regional Branches">Regional Branches</option>
+                                                <option value="Project Site A">Project Site A</option>
+                                                <option value="General Operations">General Operations</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID 2: SALARY COMPONENTS -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header card-header-success-custom d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-money-check-alt mr-2"></i>Grid 2 - Salary Components
+                        </div>
+                        <small class="text-white-50 font-weight-normal">Basic, HRA, Transport, Allowances</small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped mb-0" id="tblSalaryComponents">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th style="width: 32%;">Current Status</th>
+                                        <th style="width: 24%;">Current Value</th>
+                                        <th style="width: 24%;">Proposed Value</th>
+                                        <th style="width: 20%; text-align: right;">Difference</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Component 1: Basic -->
+                                    <tr data-component="Basic Salary">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-wallet text-success mr-1"></i> Basic Salary
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm text-right sal-current" id="sal-curr-basic" readonly value="5000.00" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right sal-proposed font-weight-bold text-primary" id="sal-prop-basic" value="5000.00" oninput="recalcSalaryTotals()" />
+                                        </td>
+                                        <td class="text-right" id="sal-diff-basic">
+                                            <span class="diff-badge-neutral">0.00</span>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Component 2: HRA -->
+                                    <tr data-component="House Rent Allowance (HRA)">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-home text-success mr-1"></i> House Rent (HRA)
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm text-right sal-current" id="sal-curr-hra" readonly value="2000.00" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right sal-proposed font-weight-bold text-primary" id="sal-prop-hra" value="2000.00" oninput="recalcSalaryTotals()" />
+                                        </td>
+                                        <td class="text-right" id="sal-diff-hra">
+                                            <span class="diff-badge-neutral">0.00</span>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Component 3: Transport -->
+                                    <tr data-component="Transport Allowance">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-bus text-success mr-1"></i> Transport Allowance
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm text-right sal-current" id="sal-curr-transport" readonly value="1000.00" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right sal-proposed font-weight-bold text-primary" id="sal-prop-transport" value="1000.00" oninput="recalcSalaryTotals()" />
+                                        </td>
+                                        <td class="text-right" id="sal-diff-transport">
+                                            <span class="diff-badge-neutral">0.00</span>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Component 4: Special/Other Allowance -->
+                                    <tr data-component="Special / Other Allowance">
+                                        <td class="font-weight-bold text-dark">
+                                            <i class="fas fa-plus-circle text-success mr-1"></i> Other Allowances
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm text-right sal-current" id="sal-curr-other" readonly value="500.00" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right sal-proposed font-weight-bold text-primary" id="sal-prop-other" value="500.00" oninput="recalcSalaryTotals()" />
+                                        </td>
+                                        <td class="text-right" id="sal-diff-other">
+                                            <span class="diff-badge-neutral">0.00</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- LIVE SALARY TOTALS PANEL -->
+                        <div class="summary-box m-3">
+                            <div class="row text-center">
+                                <div class="col-4 border-right">
+                                    <small class="text-muted d-block text-uppercase font-weight-bold">Current Total</small>
+                                    <span class="h6 mb-0 font-weight-bold text-dark" id="disp-curr-total">8,500.00</span>
+                                </div>
+                                <div class="col-4 border-right">
+                                    <small class="text-muted d-block text-uppercase font-weight-bold">Proposed Total</small>
+                                    <span class="h6 mb-0 font-weight-bold text-primary" id="disp-prop-total">8,500.00</span>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block text-uppercase font-weight-bold">Net Difference</small>
+                                    <span class="h6 mb-0 font-weight-bold text-muted" id="disp-diff-total">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var employeesList = [];
+    var hostCompaniesList = [];
+    var existingRevisions = [];
+    var isEditMode = false;
+    var editId = parseInt('@(ViewBag.EditId ?? 0)', 10) || 0;
+    var urlParams = new URLSearchParams(window.location.search);
+    var queryDocNo = urlParams.get('docNo') || '';
+
+    // Standard catalog lists for dropdowns
+    var standardDepartments = [
+        "ACCOUNTS", "IT & SOFTWARE", "OPERATIONS", "HUMAN RESOURCES", 
+        "SALES & MARKETING", "ADMINISTRATION", "ENGINEERING", "QUALITY ASSURANCE"
+    ];
+
+    var standardDesignations = [
+        "Accountant", "Senior Accountant", "Chief Financial Officer",
+        "Software Engineer", "Senior Software Engineer", "Technical Lead", "IT Manager",
+        "HR Officer", "HR Manager", "Talent Acquisition Specialist",
+        "Operations Supervisor", "Operations Manager", "General Manager",
+        "Sales Executive", "Marketing Coordinator", "Administrative Assistant"
+    ];
+
+    $(document).ready(function () {
+        initDatePickers();
+        initSelect2();
+        populateProposedDropdowns();
+        loadHostCompanies();
+        loadEmployees();
+
+        // Check if editing via query param or ViewBag
+        if (editId > 0 || queryDocNo) {
+            isEditMode = true;
+            $('#page-header-title').html('<i class="fas fa-edit fa-sm text-primary mr-2"></i> Edit Increment / Promotion / Transfer');
+            $('#btn-save-revision').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Revision');
+        } else {
+            generateDocNo();
+        }
+    });
+
+    function initDatePickers() {
+        var today = new Date();
+        var nextMonthFirst = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+        flatpickr("#hdr-date", {
+            dateFormat: "d-M-Y",
+            defaultDate: today,
+            allowInput: false
+        });
+
+        flatpickr("#hdr-postdate", {
+            dateFormat: "d-M-Y",
+            defaultDate: today,
+            allowInput: false
+        });
+
+        flatpickr("#hdr-revisiondate", {
+            dateFormat: "d-M-Y",
+            defaultDate: today,
+            allowInput: false
+        });
+
+        flatpickr("#hdr-applicabledate", {
+            dateFormat: "d-M-Y",
+            defaultDate: nextMonthFirst,
+            allowInput: false
+        });
+    }
+
+    function initSelect2() {
+        if ($.fn.select2) {
+            $('#hdr-employee').select2({
+                placeholder: "Search employee by code or name...",
+                allowClear: false,
+                width: '100%'
+            });
+            $('#hdr-hostcompany').select2({
+                placeholder: "-- Select Host Company --",
+                allowClear: false,
+                width: '100%'
+            });
+            $('#hdr-type').select2({
+                width: '100%'
+            });
+        }
+    }
+
+    function populateProposedDropdowns() {
+        // Department Dropdown
+        var $dept = $('#head-proposed-department');
+        $dept.empty().append('<option value="">-- Select Proposed Department --</option>');
+        standardDepartments.forEach(function(d) {
+            $dept.append(`<option value="${d}">${d}</option>`);
+        });
+
+        // Designation Dropdown
+        var $desig = $('#head-proposed-designation');
+        $desig.empty().append('<option value="">-- Select Proposed Designation --</option>');
+        standardDesignations.forEach(function(d) {
+            $desig.append(`<option value="${d}">${d}</option>`);
+        });
+    }
+
+    function generateDocNo() {
+        var d = new Date();
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var yy = String(d.getFullYear()).slice(-2);
+        var randSeq = Math.floor(1000 + Math.random() * 9000);
+        $('#hdr-docno').val(`REV-${mm}-${yy}-${randSeq}`);
+    }
+
+    function loadHostCompanies() {
+        $.getJSON('/api-assets2/host_company.json', function (data) {
+            if (Array.isArray(data)) {
+                hostCompaniesList = data;
+                var $sel = $('#hdr-hostcompany');
+                $sel.find('option:not(:first)').remove();
+                data.forEach(function (h) {
+                    $sel.append(`<option value="${h.Id}" data-code="${h.Code || ''}" data-name="${h.Name || ''}">${h.Code} - ${h.Name}</option>`);
+                });
+            }
+        });
+    }
+
+    function loadEmployees() {
+        $.getJSON('/Master/GetApiEmployees')
+            .done(function (res) {
+                var list = [];
+                if (res && res.statusCode === 200 && Array.isArray(res.data)) list = res.data;
+                else if (Array.isArray(res)) list = res;
+
+                if (list.length > 0) {
+                    setupEmployeesDropdown(list);
+                } else {
+                    fallbackToEmployeesJson();
+                }
+            })
+            .fail(function () {
+                fallbackToEmployeesJson();
+            });
+    }
+
+    function fallbackToEmployeesJson() {
+        $.getJSON('/api-assets2/employee.json', function (data) {
+            var list = Array.isArray(data) ? data : [];
+            setupEmployeesDropdown(list);
+        });
+    }
+
+    function setupEmployeesDropdown(list) {
+        employeesList = list;
+        var $empSel = $('#hdr-employee');
+        $empSel.empty().append('<option value="">-- Select Employee --</option>');
+
+        list.forEach(function (emp) {
+            var empId = emp.id || emp.Id || emp.employeeId || emp.empId;
+            var empCode = emp.code || emp.Code || emp.empCode || '';
+            var empName = emp.name || emp.Name || emp.fullName || emp.empName || '';
+            var dept = emp.department || emp.Department || '';
+            var desig = emp.designation || emp.Designation || '';
+            var manager = emp.manager || emp.Manager || emp.reportingOfficer || '';
+
+            $empSel.append(`
+                <option value="${empId}" 
+                        data-code="${empCode}" 
+                        data-name="${empName}"
+                        data-dept="${dept}"
+                        data-desig="${desig}"
+                        data-manager="${manager}">
+                    ${empCode ? empCode + ' - ' : ''}${empName}
+                </option>
+            `);
+
+            // Dynamically enrich designation dropdown if new
+            if (desig && !standardDesignations.includes(desig)) {
+                standardDesignations.push(desig);
+                $('#head-proposed-designation').append(`<option value="${desig}">${desig}</option>`);
+            }
+            if (dept && !standardDepartments.includes(dept.toUpperCase())) {
+                standardDepartments.push(dept.toUpperCase());
+                $('#head-proposed-department').append(`<option value="${dept.toUpperCase()}">${dept.toUpperCase()}</option>`);
+            }
+        });
+
+        // Trigger on change
+        $empSel.on('change', function () {
+            onEmployeeSelected($(this).val());
+        });
+
+        // Load existing revisions data
+        $.getJSON('/api-assets2/salary_revisions.json', function (data) {
+            existingRevisions = Array.isArray(data) ? data : [];
+            if (isEditMode) {
+                loadRevisionForEdit(editId, queryDocNo);
+            }
+        });
+    }
+
+    function onEmployeeSelected(empId) {
+        if (!empId) {
+            $('#hdr-department').val('');
+            $('#hdr-designation').val('');
+            $('#hdr-manager').val('');
+            return;
+        }
+
+        var opt = $('#hdr-employee option:selected');
+        var dept = opt.data('dept') || '';
+        var desig = opt.data('desig') || '';
+        var manager = opt.data('manager') || '';
+
+        $('#hdr-department').val(dept);
+        $('#hdr-designation').val(desig);
+        $('#hdr-manager').val(manager);
+
+        // Auto-load data into Grid 1 & 2
+        loadEmployeeData(false);
+    }
+
+    // Function triggered by "Load Data" button or employee selection
+    function loadEmployeeData(isManual) {
+        var empId = $('#hdr-employee').val();
+        if (!empId) {
+            if (isManual) alertify.log('Please select an employee first to load data.', 'error', 3000);
+            return;
+        }
+
+        var opt = $('#hdr-employee option:selected');
+        var dept = opt.data('dept') || 'OPERATIONS';
+        var desig = opt.data('desig') || 'Accountant';
+
+        // 1. Grid 1: Heads Allocation
+        $('#head-current-paygroup').val('General Staff');
+        $('#head-current-designation').val(desig);
+        $('#head-current-department').val(dept);
+        $('#head-current-project').val('Head Office');
+
+        // Set proposed defaults to current values if not yet customized
+        if (!$('#head-proposed-designation').val()) {
+            $('#head-proposed-designation').val(desig);
+        }
+        if (!$('#head-proposed-department').val()) {
+            $('#head-proposed-department').val(dept.toUpperCase());
+        }
+
+        // 2. Grid 2: Salary Components
+        // Check if there is a known previous revision or contract for this employee
+        var prevRev = existingRevisions.find(r => String(r.employeeId) === String(empId));
+        if (prevRev && Array.isArray(prevRev.salaryComponents) && prevRev.salaryComponents.length > 0) {
+            prevRev.salaryComponents.forEach(function(sc) {
+                var compName = (sc.component || '').toLowerCase();
+                var cVal = (sc.proposedValue || sc.currentValue || 0).toFixed(2);
+                if (compName.includes('basic')) {
+                    $('#sal-curr-basic').val(cVal);
+                    $('#sal-prop-basic').val(cVal);
+                } else if (compName.includes('rent') || compName.includes('hra')) {
+                    $('#sal-curr-hra').val(cVal);
+                    $('#sal-prop-hra').val(cVal);
+                } else if (compName.includes('transport')) {
+                    $('#sal-curr-transport').val(cVal);
+                    $('#sal-prop-transport').val(cVal);
+                } else {
+                    $('#sal-curr-other').val(cVal);
+                    $('#sal-prop-other').val(cVal);
+                }
+            });
+        } else {
+            // Default components based on standard grade
+            $('#sal-curr-basic').val('5000.00');
+            $('#sal-prop-basic').val('5000.00');
+            $('#sal-curr-hra').val('2000.00');
+            $('#sal-prop-hra').val('2000.00');
+            $('#sal-curr-transport').val('1000.00');
+            $('#sal-prop-transport').val('1000.00');
+            $('#sal-curr-other').val('500.00');
+            $('#sal-prop-other').val('500.00');
+        }
+
+        recalcSalaryTotals();
+
+        if (isManual) {
+            alertify.log('Current heads and salary components loaded successfully.', 'success', 3000);
+        }
+    }
+
+    function recalcSalaryTotals() {
+        var currBasic = parseFloat($('#sal-curr-basic').val()) || 0;
+        var propBasic = parseFloat($('#sal-prop-basic').val()) || 0;
+        updateComponentDiff('sal-diff-basic', currBasic, propBasic);
+
+        var currHra = parseFloat($('#sal-curr-hra').val()) || 0;
+        var propHra = parseFloat($('#sal-prop-hra').val()) || 0;
+        updateComponentDiff('sal-diff-hra', currHra, propHra);
+
+        var currTrans = parseFloat($('#sal-curr-transport').val()) || 0;
+        var propTrans = parseFloat($('#sal-prop-transport').val()) || 0;
+        updateComponentDiff('sal-diff-transport', currTrans, propTrans);
+
+        var currOther = parseFloat($('#sal-curr-other').val()) || 0;
+        var propOther = parseFloat($('#sal-prop-other').val()) || 0;
+        updateComponentDiff('sal-diff-other', currOther, propOther);
+
+        var totalCurrent = currBasic + currHra + currTrans + currOther;
+        var totalProposed = propBasic + propHra + propTrans + propOther;
+        var totalDiff = totalProposed - totalCurrent;
+
+        $('#disp-curr-total').text(totalCurrent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        $('#disp-prop-total').text(totalProposed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+        var diffElem = $('#disp-diff-total');
+        if (totalDiff > 0) {
+            diffElem.html(`<span class="text-success">+${totalDiff.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`);
+        } else if (totalDiff < 0) {
+            diffElem.html(`<span class="text-danger">${totalDiff.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`);
+        } else {
+            diffElem.html(`<span class="text-muted">0.00</span>`);
+        }
+    }
+
+    function updateComponentDiff(elemId, currVal, propVal) {
+        var diff = propVal - currVal;
+        var badge = '';
+        if (diff > 0) {
+            badge = `<span class="diff-badge-positive">+${diff.toFixed(2)}</span>`;
+        } else if (diff < 0) {
+            badge = `<span class="diff-badge-negative">${diff.toFixed(2)}</span>`;
+        } else {
+            badge = `<span class="diff-badge-neutral">0.00</span>`;
+        }
+        $('#' + elemId).html(badge);
+    }
+
+    function onFileSelected(input) {
+        if (input.files && input.files[0]) {
+            var fileName = input.files[0].name;
+            var sizeKb = (input.files[0].size / 1024).toFixed(1);
+            $('#hdr-attachment-lbl').text(fileName);
+            $('#hdr-attachment-info').html(`<i class="fas fa-file-pdf text-danger mr-1"></i> ${fileName} (${sizeKb} KB)`);
+        }
+    }
+
+    function saveSalaryRevision() {
+        // 1. Mandatory Employee Validation
+        var empId = $('#hdr-employee').val();
+        if (!empId) {
+            alertify.log('Please select an Employee before saving.', 'error', 4000);
+            $('#hdr-employee').select2('open');
+            return;
+        }
+
+        // 2. Mandatory Host Company Validation
+        var hostCompanyId = $('#hdr-hostcompany').val();
+        if (!hostCompanyId) {
+            alertify.log('Please select a Host Company before saving.', 'error', 4000);
+            $('#hdr-hostcompany').select2('open');
+            return;
+        }
+
+        // 3. Mandatory Dates Validation
+        var revisionDate = $('#hdr-revisiondate').val();
+        var applicableDate = $('#hdr-applicabledate').val();
+        if (!revisionDate) {
+            alertify.log('Please select the Revision Date.', 'error', 4000);
+            $('#hdr-revisiondate').focus();
+            return;
+        }
+        if (!applicableDate) {
+            alertify.log('Please select the Applicable Date.', 'error', 4000);
+            $('#hdr-applicabledate').focus();
+            return;
+        }
+
+        var empOpt = $('#hdr-employee option:selected');
+        var empCode = empOpt.data('code') || '';
+        var empName = empOpt.data('name') || empOpt.text();
+
+        var hostOpt = $('#hdr-hostcompany option:selected');
+        var hostCode = hostOpt.data('code') || '';
+        var hostName = hostOpt.data('name') || hostOpt.text();
+
+        var type = $('#hdr-type').val();
+        var docNo = $('#hdr-docno').val();
+        var date = $('#hdr-date').val();
+        var postDate = $('#hdr-postdate').val();
+        var remarks = $('#hdr-remarks').val();
+
+        var fileInput = document.getElementById('hdr-attachment');
+        var attachFileName = (fileInput && fileInput.files.length > 0) ? fileInput.files[0].name : '';
+
+        // Heads Allocation (Grid 1)
+        var headsAllocation = [
+            {
+                head: "Paygroup",
+                currentValue: $('#head-current-paygroup').val() || "General Staff",
+                proposedValue: $('#head-proposed-paygroup').val()
+            },
+            {
+                head: "Designation",
+                currentValue: $('#head-current-designation').val() || $('#hdr-designation').val(),
+                proposedValue: $('#head-proposed-designation').val() || $('#hdr-designation').val()
+            },
+            {
+                head: "Department",
+                currentValue: $('#head-current-department').val() || $('#hdr-department').val(),
+                proposedValue: $('#head-proposed-department').val() || $('#hdr-department').val()
+            },
+            {
+                head: "Project",
+                currentValue: $('#head-current-project').val() || "Head Office",
+                proposedValue: $('#head-proposed-project').val()
+            }
+        ];
+
+        // Salary Components (Grid 2)
+        var currBasic = parseFloat($('#sal-curr-basic').val()) || 0;
+        var propBasic = parseFloat($('#sal-prop-basic').val()) || 0;
+        var currHra = parseFloat($('#sal-curr-hra').val()) || 0;
+        var propHra = parseFloat($('#sal-prop-hra').val()) || 0;
+        var currTrans = parseFloat($('#sal-curr-transport').val()) || 0;
+        var propTrans = parseFloat($('#sal-prop-transport').val()) || 0;
+        var currOther = parseFloat($('#sal-curr-other').val()) || 0;
+        var propOther = parseFloat($('#sal-prop-other').val()) || 0;
+
+        var salaryComponents = [
+            { component: "Basic Salary", currentValue: currBasic, proposedValue: propBasic },
+            { component: "House Rent Allowance (HRA)", currentValue: currHra, proposedValue: propHra },
+            { component: "Transport Allowance", currentValue: currTrans, proposedValue: propTrans },
+            { component: "Special / Other Allowance", currentValue: currOther, proposedValue: propOther }
+        ];
+
+        var totalCurrentSalary = currBasic + currHra + currTrans + currOther;
+        var totalProposedSalary = propBasic + propHra + propTrans + propOther;
+        var totalIncrement = totalProposedSalary - totalCurrentSalary;
+
+        var record = {
+            id: isEditMode ? editId : Date.now(),
+            docNo: docNo,
+            date: date,
+            postDate: postDate,
+            employeeId: empId,
+            employeeCode: empCode,
+            employeeName: empName,
+            hostCompanyId: hostCompanyId,
+            hostCompanyCode: hostCode,
+            hostCompanyName: hostName,
+            type: type,
+            revisionDate: revisionDate,
+            applicableDate: applicableDate,
+            remarks: remarks,
+            attachmentName: attachFileName,
+            status: "Approved",
+            headsAllocation: headsAllocation,
+            salaryComponents: salaryComponents,
+            totalCurrentSalary: totalCurrentSalary,
+            totalProposedSalary: totalProposedSalary,
+            totalIncrement: totalIncrement
+        };
+
+        var saved = JSON.parse(localStorage.getItem('savedSalaryRevisions') || '[]');
+        if (isEditMode) {
+            var idx = saved.findIndex(r => (docNo && r.docNo === docNo) || (editId && r.id === editId));
+            if (idx > -1) saved[idx] = record;
+            else saved.push(record);
+        } else {
+            saved.push(record);
+        }
+        localStorage.setItem('savedSalaryRevisions', JSON.stringify(saved));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({
+            msg: `Revision ${docNo} (${type}) for ${empName} saved successfully!`,
+            type: 'success'
+        }));
+
+        var targetUrl = '@Url.Action("SalaryRevisionIndex", "Master")';
+        if (typeof loadPageContent === 'function') {
+            loadPageContent(targetUrl, true);
+        } else {
+            window.location.href = targetUrl;
+        }
+    }
+
+    function loadRevisionForEdit(id, docNo) {
+        var saved = JSON.parse(localStorage.getItem('savedSalaryRevisions') || '[]');
+        var record = saved.find(r => (docNo && r.docNo === docNo) || (id && (r.id === id || String(r.id) === String(id))));
+        if (!record && Array.isArray(existingRevisions)) {
+            record = existingRevisions.find(r => (docNo && r.docNo === docNo) || (id && (r.id === id || String(r.id) === String(id))));
+        }
+        if (!record) return;
+
+        editId = record.id;
+        $('#hdr-docno').val(record.docNo);
+        $('#hdr-date').val(record.date);
+        $('#hdr-postdate').val(record.postDate || record.date);
+        $('#hdr-remarks').val(record.remarks || '');
+        $('#hdr-type').val(record.type || 'Increment').trigger('change');
+        $('#hdr-revisiondate').val(record.revisionDate || record.date);
+        $('#hdr-applicabledate').val(record.applicableDate || record.date);
+
+        if (record.attachmentName) {
+            $('#hdr-attachment-lbl').text(record.attachmentName);
+            $('#hdr-attachment-info').html(`<i class="fas fa-file-pdf text-danger mr-1"></i> ${record.attachmentName}`);
+        }
+
+        $('#hdr-employee').val(String(record.employeeId)).trigger('change');
+        $('#hdr-hostcompany').val(String(record.hostCompanyId)).trigger('change');
+
+        // Populate heads allocation
+        if (Array.isArray(record.headsAllocation)) {
+            record.headsAllocation.forEach(function(h) {
+                var hName = (h.head || '').toLowerCase();
+                if (hName.includes('paygroup')) {
+                    $('#head-current-paygroup').val(h.currentValue);
+                    $('#head-proposed-paygroup').val(h.proposedValue);
+                } else if (hName.includes('designation')) {
+                    $('#head-current-designation').val(h.currentValue);
+                    $('#head-proposed-designation').val(h.proposedValue);
+                } else if (hName.includes('department')) {
+                    $('#head-current-department').val(h.currentValue);
+                    $('#head-proposed-department').val(h.proposedValue);
+                } else if (hName.includes('project')) {
+                    $('#head-current-project').val(h.currentValue);
+                    $('#head-proposed-project').val(h.proposedValue);
+                }
+            });
+        }
+
+        // Populate salary components
+        if (Array.isArray(record.salaryComponents)) {
+            record.salaryComponents.forEach(function(sc) {
+                var cName = (sc.component || '').toLowerCase();
+                var curr = (sc.currentValue || 0).toFixed(2);
+                var prop = (sc.proposedValue || 0).toFixed(2);
+                if (cName.includes('basic')) {
+                    $('#sal-curr-basic').val(curr);
+                    $('#sal-prop-basic').val(prop);
+                } else if (cName.includes('rent') || cName.includes('hra')) {
+                    $('#sal-curr-hra').val(curr);
+                    $('#sal-prop-hra').val(prop);
+                } else if (cName.includes('transport')) {
+                    $('#sal-curr-transport').val(curr);
+                    $('#sal-prop-transport').val(prop);
+                } else {
+                    $('#sal-curr-other').val(curr);
+                    $('#sal-prop-other').val(prop);
+                }
+            });
+            recalcSalaryTotals();
+        }
+    }
+</script>

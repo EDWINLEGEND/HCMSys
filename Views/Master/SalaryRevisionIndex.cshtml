@@ -1,0 +1,706 @@
+@{
+    ViewData["Title"] = "Increment / Promotion / Transfer List";
+}
+
+<!-- DataTables & Alertify CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css"/>
+<link rel="stylesheet" href="~/alertify.js/alertify.core.css" />
+<link rel="stylesheet" href="~/alertify.js/alertify.default.css" />
+
+<style>
+    html { font-size: 14px; }
+
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    #tblSalaryRevision thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+    }
+    #tblSalaryRevision tbody tr:hover { background-color: #f0f3ff; }
+    #tblSalaryRevision td {
+        font-size: 0.82rem;
+        color: #5a5c69;
+        vertical-align: middle;
+    }
+    .action-btns a { margin: 0 4px; transition: opacity 0.15s; cursor: pointer; display: inline-block; font-size: 0.9rem; }
+    .action-btns a:hover { opacity: 0.7; }
+    .action-btns .fa-eye { color: #17a2b8; }
+    .action-btns .fa-edit { color: #4e73df; }
+    .action-btns .fa-trash-alt { color: #e74a3b; }
+
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+
+    .rev-type-badge {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .rtype-increment { background-color: #e6f9f0; color: #0d8a4f; border: 1px solid #c3e6cb; }
+    .rtype-promotion { background-color: #eef2fd; color: #2e59d9; border: 1px solid #c2d4f8; }
+    .rtype-transfer { background-color: #fef8e7; color: #b78103; border: 1px solid #ffeeba; }
+    .rtype-decrement { background-color: #fdf0ed; color: #d92510; border: 1px solid #f5c6cb; }
+    .rtype-others { background-color: #f8f9fa; color: #6c757d; border: 1px solid #d6d8db; }
+
+    .diff-badge-pos {
+        display: inline-block;
+        background-color: #e6f9f0;
+        color: #0d8a4f;
+        border: 1px solid #a3e9c6;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.78rem;
+    }
+    .diff-badge-neg {
+        display: inline-block;
+        background-color: #fdf0ed;
+        color: #d92510;
+        border: 1px solid #f8b4aa;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.78rem;
+    }
+
+    .filter-card {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 12px 15px;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div class="page-title-text">
+                    <i class="fas fa-chart-line fa-sm"></i>
+                    Increment / Promotion / Transfer Management
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <a href="@Url.Action("CreateSalaryRevision", "Master")" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> New Revision
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Revisions</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Increments</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-increments">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-level-up-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Promotions</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-promotions">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-award fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Transfers &amp; Others</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-transfers">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA TABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Salary Revision Records
+            </h6>
+            <button class="btn btn-sm btn-outline-primary shadow-sm" onclick="loadGridData()">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filter-card">
+            <div class="row align-items-center">
+                <div class="col-md-4 col-sm-6 mb-2 mb-md-0">
+                    <label class="small font-weight-bold text-gray-700 mb-1">Filter by Host Company:</label>
+                    <select id="filter-host-company" class="form-control form-control-sm" onchange="applyFilters()">
+                        <option value="">-- All Host Companies --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-2 mb-md-0">
+                    <label class="small font-weight-bold text-gray-700 mb-1">Filter by Revision Type:</label>
+                    <select id="filter-rev-type" class="form-control form-control-sm" onchange="applyFilters()">
+                        <option value="">-- All Types --</option>
+                        <option value="Increment">Increment</option>
+                        <option value="Promotion">Promotion</option>
+                        <option value="Transfer">Transfer</option>
+                        <option value="Decrement">Decrement</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-12 text-md-right mt-2 mt-md-4">
+                    <button class="btn btn-sm btn-light border shadow-sm" onclick="resetFilters()">
+                        <i class="fas fa-undo mr-1"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tblSalaryRevision" class="table table-bordered table-striped table-hover" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width:85px; text-align:center;">Action</th>
+                            <th>Doc No</th>
+                            <th>Date</th>
+                            <th>Employee</th>
+                            <th>Host Company</th>
+                            <th>Type</th>
+                            <th>Applicable Date</th>
+                            <th style="text-align:right;">Current Total</th>
+                            <th style="text-align:right;">Proposed Total</th>
+                            <th style="text-align:right;">Increment Diff</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- VIEW DETAILS MODAL -->
+<div class="modal fade" id="modalViewRevision" tabindex="-1" role="dialog" aria-labelledby="modalViewLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-3">
+                <h6 class="modal-title font-weight-bold" id="modalViewLabel">
+                    <i class="fas fa-file-invoice-dollar mr-2"></i>Revision Details - <span id="mv-docno"></span>
+                </h6>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Header Info -->
+                <div class="row mb-3">
+                    <div class="col-md-3 col-6 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Document No</small>
+                        <span id="mv-doc" class="font-weight-bold text-primary"></span>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Document Date</small>
+                        <span id="mv-date" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Revision Date</small>
+                        <span id="mv-revdate" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Applicable Date</small>
+                        <span id="mv-appdate" class="font-weight-bold text-success"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3 p-2 bg-light rounded border">
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Employee</small>
+                        <span id="mv-emp" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Host Company</small>
+                        <span id="mv-host" class="font-weight-bold text-dark"></span>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <small class="text-muted d-block font-weight-bold text-uppercase">Revision Type</small>
+                        <span id="mv-type"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block font-weight-bold text-uppercase">Remarks</small>
+                    <div class="p-2 border rounded bg-white text-muted font-italic" id="mv-remarks">-</div>
+                </div>
+
+                <div class="row">
+                    <!-- Grid 1: Heads Allocation -->
+                    <div class="col-md-6 mb-3">
+                        <h6 class="font-weight-bold text-info mb-2">
+                            <i class="fas fa-sitemap mr-1"></i> Grid 1 - Heads Allocation
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm table-striped">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Head</th>
+                                        <th>Current Status Value</th>
+                                        <th>Proposed Status Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mv-heads-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Grid 2: Salary Components -->
+                    <div class="col-md-6 mb-3">
+                        <h6 class="font-weight-bold text-success mb-2">
+                            <i class="fas fa-money-check-alt mr-1"></i> Grid 2 - Salary Components
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm table-striped">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Component</th>
+                                        <th style="text-align: right;">Current</th>
+                                        <th style="text-align: right;">Proposed</th>
+                                        <th style="text-align: right;">Diff</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mv-salary-tbody">
+                                </tbody>
+                                <tfoot class="bg-light font-weight-bold">
+                                    <tr>
+                                        <td>TOTAL</td>
+                                        <td style="text-align: right;" id="mv-total-current">0.00</td>
+                                        <td style="text-align: right; color: #4e73df;" id="mv-total-proposed">0.00</td>
+                                        <td style="text-align: right;" id="mv-total-diff">0.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DataTables & Alertify Scripts -->
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
+<script>
+    var table = null;
+    var currentRevisions = [];
+    var hostCompanies = [];
+
+    function formatDisplayDate(dVal) {
+        if (!dVal) return '-';
+        var str = String(dVal).trim();
+        if (str.includes('T')) str = str.split('T')[0];
+        
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(str)) {
+            return str;
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+            var p = str.split('-');
+            var mIdx = parseInt(p[1], 10) - 1;
+            return p[2] + '-' + (months[mIdx] || p[1]) + '-' + p[0];
+        }
+        return str;
+    }
+
+    $(document).ready(function () {
+        // Check for pending notification
+        var pendingAlert = sessionStorage.getItem('pendingAlert');
+        if (pendingAlert) {
+            sessionStorage.removeItem('pendingAlert');
+            try {
+                var pData = JSON.parse(pendingAlert);
+                alertify.log(pData.msg, pData.type || 'success', 4000);
+            } catch(e) {}
+        }
+
+        loadHostCompaniesFilter();
+        loadGridData();
+    });
+
+    function loadHostCompaniesFilter() {
+        $.getJSON('/api-assets2/host_company.json', function (data) {
+            if (Array.isArray(data)) {
+                hostCompanies = data;
+                var $sel = $('#filter-host-company');
+                $sel.find('option:not(:first)').remove();
+                data.forEach(function (h) {
+                    $sel.append(`<option value="${h.Id}">${h.Code} - ${h.Name}</option>`);
+                });
+            }
+        });
+    }
+
+    function loadGridData() {
+        $.getJSON('/api-assets2/salary_revisions.json')
+            .done(function (seedData) {
+                var seedList = Array.isArray(seedData) ? seedData : [];
+                var savedList = [];
+                try {
+                    savedList = JSON.parse(localStorage.getItem('savedSalaryRevisions') || '[]');
+                } catch(e) {
+                    savedList = [];
+                }
+
+                // Merge savedList overriding seedList with same docNo or Id
+                var map = new Map();
+                seedList.forEach(item => {
+                    var k = item.docNo || ('ID_' + item.id);
+                    map.set(k, item);
+                });
+                savedList.forEach(item => {
+                    var k = item.docNo || ('ID_' + item.id);
+                    map.set(k, item);
+                });
+
+                currentRevisions = Array.from(map.values());
+                populateTable(currentRevisions);
+                updateStats(currentRevisions);
+            })
+            .fail(function () {
+                var savedList = [];
+                try {
+                    savedList = JSON.parse(localStorage.getItem('savedSalaryRevisions') || '[]');
+                } catch(e) {}
+                currentRevisions = savedList;
+                populateTable(currentRevisions);
+                updateStats(currentRevisions);
+            });
+    }
+
+    function populateTable(dataList) {
+        if ($.fn.DataTable.isDataTable('#tblSalaryRevision')) {
+            $('#tblSalaryRevision').DataTable().destroy();
+        }
+        $('#tblSalaryRevision tbody').empty();
+
+        var editUrlBase = '@Url.Action("CreateSalaryRevision", "Master")';
+
+        dataList.forEach(function (item) {
+            // Type badge
+            var typeBadge = '';
+            var tVal = (item.type || '').toLowerCase();
+            if (tVal === 'increment') {
+                typeBadge = '<span class="rev-type-badge rtype-increment"><i class="fas fa-level-up-alt mr-1"></i>Increment</span>';
+            } else if (tVal === 'promotion') {
+                typeBadge = '<span class="rev-type-badge rtype-promotion"><i class="fas fa-award mr-1"></i>Promotion</span>';
+            } else if (tVal === 'transfer') {
+                typeBadge = '<span class="rev-type-badge rtype-transfer"><i class="fas fa-exchange-alt mr-1"></i>Transfer</span>';
+            } else if (tVal === 'decrement') {
+                typeBadge = '<span class="rev-type-badge rtype-decrement"><i class="fas fa-level-down-alt mr-1"></i>Decrement</span>';
+            } else {
+                typeBadge = `<span class="rev-type-badge rtype-others">${item.type || 'Other'}</span>`;
+            }
+
+            // Totals
+            var currTot = parseFloat(item.totalCurrentSalary) || 0;
+            var propTot = parseFloat(item.totalProposedSalary) || 0;
+            var diffTot = parseFloat(item.totalIncrement) || (propTot - currTot);
+
+            var diffBadge = '';
+            if (diffTot > 0) {
+                diffBadge = `<span class="diff-badge-pos">+${diffTot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
+            } else if (diffTot < 0) {
+                diffBadge = `<span class="diff-badge-neg">${diffTot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
+            } else {
+                diffBadge = '<span class="text-muted font-weight-bold">0.00</span>';
+            }
+
+            var safeDocNo = (item.docNo || '').replace(/'/g, "\\'");
+            var itemId = item.id || 0;
+            var editHref = `${editUrlBase}?id=${itemId}&docNo=${encodeURIComponent(item.docNo || '')}`;
+
+            var tr = `
+                <tr>
+                    <td style="text-align:center;" class="action-btns">
+                        <a onclick="viewRevisionDetails('${safeDocNo}')" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="${editHref}" title="Edit Revision">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a onclick="deleteRevision('${safeDocNo}', ${itemId})" title="Delete Revision">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </td>
+                    <td class="font-weight-bold text-primary">${item.docNo || '-'}</td>
+                    <td>${formatDisplayDate(item.date)}</td>
+                    <td>
+                        <strong>${item.employeeName || '-'}</strong>
+                        ${item.employeeCode ? `<div class="small text-muted">${item.employeeCode}</div>` : ''}
+                    </td>
+                    <td>
+                        <span class="font-weight-bold">${item.hostCompanyName || '-'}</span>
+                        ${item.hostCompanyCode ? `<div class="small text-muted font-italic">${item.hostCompanyCode}</div>` : ''}
+                    </td>
+                    <td style="text-align:center;">${typeBadge}</td>
+                    <td class="font-weight-bold text-dark">${formatDisplayDate(item.applicableDate)}</td>
+                    <td style="text-align:right;">${currTot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="text-align:right;" class="font-weight-bold text-primary">${propTot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="text-align:right;">${diffBadge}</td>
+                    <td style="text-align:center;">
+                        <span class="badge badge-success px-2 py-1">${item.status || 'Approved'}</span>
+                    </td>
+                </tr>
+            `;
+            $('#tblSalaryRevision tbody').append(tr);
+        });
+
+        table = $('#tblSalaryRevision').DataTable({
+            pageLength: 10,
+            responsive: true,
+            order: [[1, 'desc']],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search revisions...",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
+    }
+
+    function updateStats(dataList) {
+        var total = dataList.length;
+        var incCount = 0;
+        var promCount = 0;
+        var transCount = 0;
+
+        dataList.forEach(function (i) {
+            var t = (i.type || '').toLowerCase();
+            if (t === 'increment') incCount++;
+            else if (t === 'promotion') promCount++;
+            else transCount++;
+        });
+
+        $('#stat-total').text(total);
+        $('#stat-increments').text(incCount);
+        $('#stat-promotions').text(promCount);
+        $('#stat-transfers').text(transCount);
+    }
+
+    function applyFilters() {
+        var hostId = $('#filter-host-company').val();
+        var revType = $('#filter-rev-type').val();
+
+        var filtered = currentRevisions.filter(function (item) {
+            var matchHost = true;
+            var matchType = true;
+
+            if (hostId) {
+                matchHost = String(item.hostCompanyId) === String(hostId);
+            }
+            if (revType) {
+                matchType = (item.type || '').toLowerCase() === revType.toLowerCase();
+            }
+            return matchHost && matchType;
+        });
+
+        populateTable(filtered);
+    }
+
+    function resetFilters() {
+        $('#filter-host-company').val('');
+        $('#filter-rev-type').val('');
+        populateTable(currentRevisions);
+    }
+
+    function viewRevisionDetails(docNo) {
+        var item = currentRevisions.find(r => r.docNo === docNo);
+        if (!item) return;
+
+        $('#mv-docno').text(item.docNo || '-');
+        $('#mv-doc').text(item.docNo || '-');
+        $('#mv-date').text(formatDisplayDate(item.date));
+        $('#mv-revdate').text(formatDisplayDate(item.revisionDate || item.date));
+        $('#mv-appdate').text(formatDisplayDate(item.applicableDate));
+
+        $('#mv-emp').text(`${item.employeeName || '-'} (${item.employeeCode || '-'})`);
+        $('#mv-host').text(`${item.hostCompanyName || '-'} (${item.hostCompanyCode || '-'})`);
+        
+        var tVal = (item.type || '').toLowerCase();
+        var tBadge = `<span class="badge badge-secondary">${item.type || ''}</span>`;
+        if (tVal === 'increment') tBadge = '<span class="rev-type-badge rtype-increment">Increment</span>';
+        else if (tVal === 'promotion') tBadge = '<span class="rev-type-badge rtype-promotion">Promotion</span>';
+        else if (tVal === 'transfer') tBadge = '<span class="rev-type-badge rtype-transfer">Transfer</span>';
+        else if (tVal === 'decrement') tBadge = '<span class="rev-type-badge rtype-decrement">Decrement</span>';
+        $('#mv-type').html(tBadge);
+
+        $('#mv-remarks').text(item.remarks || 'No remarks provided.');
+
+        // Populate Grid 1: Heads Allocation
+        var headsTbody = $('#mv-heads-tbody');
+        headsTbody.empty();
+        if (Array.isArray(item.headsAllocation) && item.headsAllocation.length > 0) {
+            item.headsAllocation.forEach(function(h) {
+                var isChanged = (h.currentValue || '') !== (h.proposedValue || '');
+                var row = `
+                    <tr>
+                        <td class="font-weight-bold text-dark">${h.head || '-'}</td>
+                        <td>${h.currentValue || '-'}</td>
+                        <td class="${isChanged ? 'text-primary font-weight-bold' : ''}">
+                            ${h.proposedValue || '-'}
+                            ${isChanged ? '<i class="fas fa-arrow-right ml-1 text-xs text-primary"></i>' : ''}
+                        </td>
+                    </tr>
+                `;
+                headsTbody.append(row);
+            });
+        } else {
+            headsTbody.append('<tr><td colspan="3" class="text-center text-muted">No heads allocation recorded.</td></tr>');
+        }
+
+        // Populate Grid 2: Salary Components
+        var salTbody = $('#mv-salary-tbody');
+        salTbody.empty();
+        var sumCurr = 0;
+        var sumProp = 0;
+
+        if (Array.isArray(item.salaryComponents) && item.salaryComponents.length > 0) {
+            item.salaryComponents.forEach(function(sc) {
+                var c = parseFloat(sc.currentValue) || 0;
+                var p = parseFloat(sc.proposedValue) || 0;
+                var d = p - c;
+                sumCurr += c;
+                sumProp += p;
+
+                var diffText = d > 0 ? `+${d.toFixed(2)}` : d.toFixed(2);
+                var diffClass = d > 0 ? 'text-success font-weight-bold' : (d < 0 ? 'text-danger font-weight-bold' : 'text-muted');
+
+                var row = `
+                    <tr>
+                        <td class="font-weight-bold text-dark">${sc.component || '-'}</td>
+                        <td style="text-align: right;">${c.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td style="text-align: right;" class="font-weight-bold text-primary">${p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td style="text-align: right;" class="${diffClass}">${diffText}</td>
+                    </tr>
+                `;
+                salTbody.append(row);
+            });
+        } else {
+            salTbody.append('<tr><td colspan="4" class="text-center text-muted">No salary components recorded.</td></tr>');
+        }
+
+        var sumDiff = sumProp - sumCurr;
+        $('#mv-total-current').text(sumCurr.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        $('#mv-total-proposed').text(sumProp.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        var diffSpan = sumDiff > 0 
+            ? `<span class="text-success">+${sumDiff.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`
+            : (sumDiff < 0 
+                ? `<span class="text-danger">${sumDiff.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`
+                : `<span class="text-muted">0.00</span>`);
+        $('#mv-total-diff').html(diffSpan);
+
+        $('#modalViewRevision').modal('show');
+    }
+
+    function deleteRevision(docNo, id) {
+        alertify.confirm(`Are you sure you want to delete Revision "${docNo}"?`, function (e) {
+            if (e) {
+                var saved = [];
+                try {
+                    saved = JSON.parse(localStorage.getItem('savedSalaryRevisions') || '[]');
+                } catch(err) {}
+
+                saved = saved.filter(r => r.docNo !== docNo && (id ? r.id !== id : true));
+                localStorage.setItem('savedSalaryRevisions', JSON.stringify(saved));
+
+                currentRevisions = currentRevisions.filter(r => r.docNo !== docNo && (id ? r.id !== id : true));
+                populateTable(currentRevisions);
+                updateStats(currentRevisions);
+
+                alertify.log(`Revision "${docNo}" has been deleted.`, 'success', 3500);
+            }
+        });
+    }
+</script>

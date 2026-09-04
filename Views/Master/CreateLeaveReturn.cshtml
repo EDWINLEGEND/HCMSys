@@ -188,7 +188,7 @@
     <form id="leaveReturnForm" autocomplete="off">
         <input type="hidden" id="hdr-header-id" value="0" />
 
-        <!-- GENERAL INFORMATION & APPLICATION SELECTOR CARD -->
+        <!-- GENERAL INFORMATION & EMPLOYEE REFERENCE CARD -->
         <div class="card shadow mb-4">
             <div class="card-header card-header-custom">
                 <i class="fas fa-info-circle mr-2"></i>General Information & Employee Reference
@@ -213,22 +213,22 @@
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Select Employee <span class="text-danger">*</span></label>
                         <select class="form-control" id="hdr-employee" required>
-                            <option value="">Select Employee...</option>
+                            <option value="">Loading Employees...</option>
                         </select>
                     </div>
 
                     <!-- Employee Details (Auto-populated from employee selection) -->
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Designation</label>
-                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto loaded" />
+                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto loaded from API" />
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Department</label>
-                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto loaded" />
+                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto loaded from API" />
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Reporting Manager</label>
-                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto loaded" />
+                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto loaded from API" />
                     </div>
 
                     <!-- 2. LEAVE APPLICATIONS DROPDOWN (Filtered for selected employee) -->
@@ -241,11 +241,11 @@
 
                     <!-- LEAVE RETURN SPECIFIC DATE CALCULATION FIELDS -->
                     <div class="col-6 col-md-3 mb-3">
-                        <label class="form-label">Leave Start Date</label>
+                        <label class="form-label">Leave Start Date <span class="badge badge-secondary ml-1">From Date</span></label>
                         <input type="text" class="form-control datepicker" id="hdr-leavestartdate" placeholder="Leave Start Date" />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
-                        <label class="form-label text-primary">Leave End Date <span class="badge badge-primary ml-1">Auto Load Max</span></label>
+                        <label class="form-label text-primary">Leave End Date <span class="badge badge-primary ml-1">To Date</span></label>
                         <input type="text" class="form-control font-weight-bold text-primary datepicker" id="hdr-leaveenddate" placeholder="Leave End Date" />
                     </div>
                     <div class="col-6 col-md-3 mb-3">
@@ -530,48 +530,25 @@
         initFlatpickrs();
         initHeaderDocNo();
 
-        // Load Employees & Leave Applications in parallel
-        $.when(
-            $.getJSON('/Master/GetApiEmployees'),
-            $.getJSON('/Master/GetApiLeaveTransactions')
-        ).done(function(empRes, txRes) {
-            var empArr = empRes[0] || empRes;
-            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
+        // 1. Fetch Real Employees from API
+        loadApiEmployees();
 
-            var allTxs = txRes[0] || txRes;
-            var rawList = Array.isArray(allTxs) ? allTxs : (allTxs && allTxs.data ? allTxs.data : []);
-            
-            buildLeaveApplicationsList(rawList);
-            populateEmployeeDropdown();
-            updateSubstituteDropdown('');
+        // 2. Fetch Real Leave Transactions from API
+        loadApiLeaveTransactions();
 
-            $('select.form-control').select2({ width: '100%' });
-
-            if (isEditMode) {
-                loadLeaveReturnForEdit(editHeaderId);
-            }
-        }).fail(function() {
-            if (typeof alertify !== 'undefined') {
-                alertify.log('Failed to load employee masters or leave applications.', 'error', 4000);
-            }
-        });
-
-        // 1. Employee selection change
+        // Event listeners
         $('#hdr-employee').change(function() {
             onEmployeeChange();
         });
 
-        // 2. Leave application selection change
         $('#hdr-leaveapp').change(function() {
             onLeaveAppChange();
         });
 
-        // 3. Extension leave type change
         $('#dtl-leavetype').change(function() {
             onLeaveTypeChange();
         });
 
-        // 4. Extension calculations
         $('.calc-trigger').on('change input', function() {
             calculateExtensionLeaves();
         });
@@ -583,13 +560,20 @@
 
         leaveStartDatePicker = flatpickr("#hdr-leavestartdate", {
             dateFormat: "d-M-Y",
-            defaultDate: "today"
+            defaultDate: "today",
+            onChange: function(selectedDates, dateStr) {
+                if (dateStr) {
+                    if (leaveEndDatePicker) leaveEndDatePicker.set('minDate', dateStr);
+                    if (rejoiningDatePicker) rejoiningDatePicker.set('minDate', dateStr);
+                }
+                recalculateLateEarly();
+            }
         });
 
         leaveEndDatePicker = flatpickr("#hdr-leaveenddate", {
             dateFormat: "d-M-Y",
             defaultDate: "today",
-            onChange: function() {
+            onChange: function(selectedDates, dateStr) {
                 recalculateLateEarly();
             }
         });
@@ -597,7 +581,7 @@
         rejoiningDatePicker = flatpickr("#hdr-rejoiningdate", {
             dateFormat: "d-M-Y",
             defaultDate: "today",
-            onChange: function() {
+            onChange: function(selectedDates, dateStr) {
                 recalculateLateEarly();
             }
         });
@@ -605,7 +589,10 @@
         fromDatePicker = flatpickr("#dtl-fromdate", {
             dateFormat: "d-M-Y",
             defaultDate: "today",
-            onChange: function() {
+            onChange: function(selectedDates, dateStr) {
+                if (dateStr && toDatePicker) {
+                    toDatePicker.set('minDate', dateStr);
+                }
                 calculateExtensionLeaves();
             }
         });
@@ -648,11 +635,35 @@
         $('#hdr-docno').val('LVR' + String(nextNum).padStart(6, '0'));
     }
 
+    // 100% PURE API: Load Employees
+    function loadApiEmployees() {
+        $.getJSON('/Master/GetApiEmployees').done(function(res) {
+            var empList = [];
+            if (Array.isArray(res)) {
+                empList = (Array.isArray(res[0]) ? res[0] : res);
+            } else if (res && res.data) {
+                empList = res.data;
+            }
+            employeesData = empList;
+            populateEmployeeDropdown();
+            updateSubstituteDropdown('');
+
+            if (isEditMode) {
+                loadLeaveReturnForEdit(editHeaderId);
+            }
+        }).fail(function() {
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to fetch employee list from API.', 'error', 4000);
+            }
+            $('#hdr-employee').empty().append('<option value="">Error loading employees</option>');
+        });
+    }
+
     function populateEmployeeDropdown() {
         var empSelect = $('#hdr-employee');
         empSelect.empty().append('<option value="">Select Employee...</option>');
 
-        if (Array.isArray(employeesData)) {
+        if (Array.isArray(employeesData) && employeesData.length > 0) {
             employeesData.forEach(function(emp) {
                 var empId = emp.iMasterId || emp.id || '';
                 var empCode = emp.sCode || emp.code || '';
@@ -660,6 +671,29 @@
                 empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
         }
+
+        empSelect.select2({ width: '100%' });
+        $('#hdr-leaveapp').select2({ width: '100%' });
+    }
+
+    // 100% PURE API: Load Leave Transactions
+    function loadApiLeaveTransactions() {
+        $.getJSON('/Master/GetApiLeaveTransactions').done(function(txRes) {
+            var rawList = Array.isArray(txRes) ? txRes : (txRes && txRes.data ? txRes.data : []);
+            
+            // Also combine with locally saved applications if any
+            var localApps = JSON.parse(localStorage.getItem('savedLeaveApplications') || '[]');
+            localApps.forEach(function(loc) {
+                if (!rawList.some(r => r.iHeaderId == loc.iHeaderId || (r.sDocNo && r.sDocNo === loc.sDocNo))) {
+                    rawList.push(loc);
+                }
+            });
+
+            buildLeaveApplicationsList(rawList);
+        }).fail(function() {
+            var localApps = JSON.parse(localStorage.getItem('savedLeaveApplications') || '[]');
+            buildLeaveApplicationsList(localApps);
+        });
     }
 
     function buildLeaveApplicationsList(apiTransactions) {
@@ -668,120 +702,82 @@
         if (Array.isArray(apiTransactions)) {
             apiTransactions.forEach(function(tx) {
                 var lines = tx.leaves || [];
+                var txEmpId = tx.iEmpId || tx.employeeId || 0;
+                var sDocDate = tx.dDocDate || '2026-08-01';
+
                 if (lines.length > 0) {
                     lines.forEach(function(l) {
-                        var emp = employeesData.find(e => e.id == l.iEmployeeId || e.iMasterId == l.iEmployeeId);
-                        var sDate = tx.dDocDate || '2026-07-15';
-                        var dur = l.fDuration > 0 ? l.fDuration : 1;
-                        var eDateObj = parseDateObj(sDate);
-                        eDateObj.setDate(eDateObj.getDate() + parseInt(dur) - 1);
-                        var eDateStr = formatDateStr(eDateObj);
+                        var eId = l.iEmployeeId || txEmpId;
+                        var dur = parseFloat(l.fDuration || l.duration || 1);
+                        if (isNaN(dur) || dur <= 0) dur = 1;
+
+                        var sLDate = l.dFromDate || l.fromDate || sDocDate;
+                        var eLDate = l.dToDate || l.toDate;
+
+                        // ACCURATELY CALCULATE REAL TO DATE IF MISSING OR EQUAL TO START DATE WITH DURATION > 1
+                        if (!eLDate || eLDate === sLDate) {
+                            if (dur > 1) {
+                                var sObj = parseDateObj(sLDate);
+                                var eObj = new Date(sObj);
+                                eObj.setDate(eObj.getDate() + Math.round(dur) - 1);
+                                eLDate = formatDateStr(eObj);
+                            } else {
+                                eLDate = sLDate;
+                            }
+                        }
 
                         list.push({
                             id: tx.iHeaderId || l.iHeaderId || (list.length + 1),
                             docNo: tx.sDocNo || ('LVS' + String(tx.iHeaderId || list.length + 1).padStart(6, '0')),
-                            employeeId: l.iEmployeeId,
-                            employeeCode: l.sEmployeeCode || (emp ? emp.sCode : ''),
-                            employeeName: l.sEmployeeName || (emp ? emp.sName : 'Employee'),
-                            department: l.sDepartmentName || (emp ? emp.sDepartmentName : ''),
-                            designation: l.sDesignationName || (emp ? emp.sDesignationName : ''),
-                            manager: l.sReportingToName || (emp ? emp.sReportingToName : ''),
+                            employeeId: eId,
+                            employeeCode: l.sEmployeeCode || tx.sEmployeeCode || '',
+                            employeeName: l.sEmployeeName || tx.sEmployeeName || 'Employee',
+                            department: l.sDepartmentName || tx.sDepartmentName || '',
+                            designation: l.sDesignationName || tx.sDesignationName || '',
+                            manager: l.sReportingToName || tx.sReportingToName || '',
                             leaveTypeId: l.iLeaveTypeId || 7,
                             leaveTypeName: l.sLeaveTypeName || 'Annual Leave',
-                            startDate: sDate,
-                            endDate: eDateStr,
+                            startDate: sLDate,
+                            endDate: eLDate,
                             duration: dur,
                             comments: tx.sComments || l.sRemarks || 'Approved Leave'
                         });
                     });
+                } else if (txEmpId > 0) {
+                    var dur = parseFloat(tx.fDuration || 1);
+                    if (isNaN(dur) || dur <= 0) dur = 1;
+                    var sLDate = tx.dFromDate || sDocDate;
+                    var eLDate = tx.dToDate;
+
+                    if (!eLDate || eLDate === sLDate) {
+                        if (dur > 1) {
+                            var sObj = parseDateObj(sLDate);
+                            var eObj = new Date(sObj);
+                            eObj.setDate(eObj.getDate() + Math.round(dur) - 1);
+                            eLDate = formatDateStr(eObj);
+                        } else {
+                            eLDate = sLDate;
+                        }
+                    }
+
+                    list.push({
+                        id: tx.iHeaderId || (list.length + 1),
+                        docNo: tx.sDocNo || ('LVS' + String(tx.iHeaderId || list.length + 1).padStart(6, '0')),
+                        employeeId: txEmpId,
+                        employeeCode: tx.sEmployeeCode || '',
+                        employeeName: tx.sEmployeeName || 'Employee',
+                        department: tx.sDepartmentName || '',
+                        designation: tx.sDesignationName || '',
+                        manager: tx.sReportingToName || '',
+                        leaveTypeId: 7,
+                        leaveTypeName: 'Annual Leave',
+                        startDate: sLDate,
+                        endDate: eLDate,
+                        duration: dur,
+                        comments: tx.sComments || 'Approved Leave'
+                    });
                 }
             });
-        }
-
-        // Realistic seed applications for initial exploration
-        if (list.length === 0) {
-            list = [
-                {
-                    id: 101,
-                    docNo: "LVS000001",
-                    employeeId: 1,
-                    employeeCode: "EMP001",
-                    employeeName: "Smitha Sebastian",
-                    department: "Information Technology",
-                    designation: "Senior Software Engineer",
-                    manager: "Operations Director",
-                    leaveTypeId: 7,
-                    leaveTypeName: "Annual Leave",
-                    startDate: "2026-07-15",
-                    endDate: "2026-07-31",
-                    duration: 17,
-                    comments: "Annual Family Vacation"
-                },
-                {
-                    id: 102,
-                    docNo: "LVS000002",
-                    employeeId: 2,
-                    employeeCode: "EMP002",
-                    employeeName: "Alex Mercer",
-                    department: "Human Resources",
-                    designation: "HR Specialist",
-                    manager: "HR Manager",
-                    leaveTypeId: 7,
-                    leaveTypeName: "Annual Leave",
-                    startDate: "2026-07-20",
-                    endDate: "2026-07-31",
-                    duration: 12,
-                    comments: "Annual Leave"
-                },
-                {
-                    id: 103,
-                    docNo: "LVS000003",
-                    employeeId: 3,
-                    employeeCode: "EMP003",
-                    employeeName: "Priya Sharma",
-                    department: "Finance & Accounts",
-                    designation: "Financial Analyst",
-                    manager: "Chief Financial Officer",
-                    leaveTypeId: 8,
-                    leaveTypeName: "Sick Leave",
-                    startDate: "2026-08-01",
-                    endDate: "2026-08-15",
-                    duration: 15,
-                    comments: "Medical recuperation"
-                },
-                {
-                    id: 104,
-                    docNo: "LVS000004",
-                    employeeId: 4,
-                    employeeCode: "EMP004",
-                    employeeName: "David Chen",
-                    department: "Engineering",
-                    designation: "Tech Lead",
-                    manager: "VP Engineering",
-                    leaveTypeId: 7,
-                    leaveTypeName: "Annual Leave",
-                    startDate: "2026-08-10",
-                    endDate: "2026-08-25",
-                    duration: 16,
-                    comments: "Annual Summer Leave"
-                },
-                {
-                    id: 105,
-                    docNo: "LVS000005",
-                    employeeId: 1,
-                    employeeCode: "EMP001",
-                    employeeName: "Smitha Sebastian",
-                    department: "Information Technology",
-                    designation: "Senior Software Engineer",
-                    manager: "Operations Director",
-                    leaveTypeId: 8,
-                    leaveTypeName: "Sick Leave",
-                    startDate: "2026-08-10",
-                    endDate: "2026-08-20",
-                    duration: 11,
-                    comments: "Medical Leave"
-                }
-            ];
         }
 
         leaveApplicationsData = list;
@@ -799,13 +795,13 @@
             $('#late-early-badge').attr('class', 'late-early-display late-early-ontime').text('0 Days');
             $('#orig-leave-card').hide();
             $('#smart-notification-container').hide();
-            leaveAppSelect.append('<option value="">Select Employee First...</option>');
+            leaveAppSelect.append('<option value="">Select Employee First...</option>').select2({ width: '100%' });
             stagedLeaves = [];
             renderUserGrid();
             return;
         }
 
-        var emp = employeesData.find(e => e.id == empId || e.iMasterId == empId);
+        var emp = employeesData.find(e => String(e.id) === String(empId) || String(e.iMasterId) === String(empId));
         if (emp) {
             $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '-');
             $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '-');
@@ -815,24 +811,32 @@
         updateSubstituteDropdown(empId);
         fetchEmployeeBalances(empId);
 
-        // Filter leave applications for this employee
-        var empApps = leaveApplicationsData.filter(a => String(a.employeeId) === String(empId));
+        // Filter leave applications for this employee from real API records
+        var empApps = leaveApplicationsData.filter(a => 
+            String(a.employeeId) === String(empId) || 
+            (emp && emp.code && String(a.employeeCode) === String(emp.code)) ||
+            (emp && emp.sCode && String(a.employeeCode) === String(emp.sCode))
+        );
 
         if (empApps.length === 0) {
-            leaveAppSelect.append('<option value="">No Active Leave Applications Found</option>');
+            leaveAppSelect.append('<option value="">No Active Leave Applications Found for this Employee</option>');
             selectedLeaveApp = null;
             $('#orig-leave-card').hide();
             $('#smart-notification-container').hide();
+            leaveAppSelect.select2({ width: '100%' });
             return;
         }
 
         leaveAppSelect.append('<option value="">Select Leave Application...</option>');
         empApps.forEach(function(app) {
-            var disp = `${app.docNo} - ${app.leaveTypeName} (${formatDateDisplay(app.startDate)} to ${formatDateDisplay(app.endDate)}, ${app.duration}d)`;
+            var fromDisp = formatDateDisplay(app.startDate);
+            var toDisp = formatDateDisplay(app.endDate);
+            var disp = `${app.docNo} - ${app.leaveTypeName} (${fromDisp} to ${toDisp}, ${app.duration}d)`;
             leaveAppSelect.append(`<option value="${app.id}" data-docno="${app.docNo}">${disp}</option>`);
         });
 
-        // Automatically select if there is only 1 application or select the first
+        leaveAppSelect.select2({ width: '100%' });
+
         if (empApps.length >= 1) {
             leaveAppSelect.val(empApps[0].id).trigger('change');
         }
@@ -861,6 +865,8 @@
 
         if (leaveStartDatePicker) {
             leaveStartDatePicker.setDate(startFmt, false);
+            if (leaveEndDatePicker) leaveEndDatePicker.set('minDate', startFmt);
+            if (rejoiningDatePicker) rejoiningDatePicker.set('minDate', startFmt);
         } else {
             $('#hdr-leavestartdate').val(startFmt);
         }
@@ -871,7 +877,7 @@
             $('#hdr-leaveenddate').val(endFmt);
         }
 
-        // Populate Original Leave Application Summary
+        // Populate Original Leave Application Summary Card
         $('#orig-leavetype').text(selectedLeaveApp.leaveTypeName || 'Annual Leave');
         $('#orig-duration').text(selectedLeaveApp.duration + ' Days');
         $('#orig-period').text(startFmt + ' to ' + endFmt);
@@ -902,6 +908,7 @@
                 var empId = emp.iMasterId || emp.id || '';
                 var empCode = emp.sCode || emp.code || '';
                 var empName = emp.sName || emp.name || '';
+                // Rule: Applying employee cannot be their own substitute
                 if (selectedEmpVal && String(empId) === String(selectedEmpVal)) return;
                 subSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
@@ -909,10 +916,14 @@
         if (currentSubVal && String(currentSubVal) !== String(selectedEmpVal)) {
             subSelect.val(currentSubVal);
         }
+        subSelect.select2({ width: '100%' });
     }
 
+    // 100% PURE API: Fetch Real Employee Balances and Leave Types
     function fetchEmployeeBalances(empId) {
         if (!empId) return;
+
+        // Fetch Live Balances directly from API
         $.getJSON('/Master/GetApiEmployeeLeaves?id=' + empId).done(function(leaves) {
             currentEmployeeLeaves = Array.isArray(leaves) ? leaves : [];
             var ltSelect = $('#dtl-leavetype');
@@ -924,40 +935,78 @@
                 ltSelect.append(`<option value="${ltId}" data-name="${ltName}">${ltName}</option>`);
             });
 
+            ltSelect.select2({ width: '100%' });
+
             if (ltSelect.find('option').length > 1) {
                 ltSelect.val(ltSelect.find('option:eq(1)').val()).trigger('change');
             } else {
                 onLeaveTypeChange();
             }
         }).fail(function() {
-            currentEmployeeLeaves = [
-                { iLeaveTypeId: 7, sLeaveName: "Annual Leave", openingLeaves: 25, leavesApproved: 10, leavesPending: 0, leaveBalance: 15 },
-                { iLeaveTypeId: 8, sLeaveName: "Sick Leave", openingLeaves: 12, leavesApproved: 2, leavesPending: 0, leaveBalance: 10 }
-            ];
-            var ltSelect = $('#dtl-leavetype');
-            ltSelect.empty().append('<option value="">Select Leave Type...</option>');
-            currentEmployeeLeaves.forEach(function(lt) {
-                ltSelect.append(`<option value="${lt.iLeaveTypeId}" data-name="${lt.sLeaveName}">${lt.sLeaveName}</option>`);
+            // Fetch fallback Leave Types directly from API
+            $.getJSON('/Master/GetApiLeaveTypes').done(function(lTypes) {
+                var ltArr = (lTypes && lTypes.leaveTypes) ? lTypes.leaveTypes : (Array.isArray(lTypes) ? lTypes : []);
+                var ltSelect = $('#dtl-leavetype');
+                ltSelect.empty().append('<option value="">Select Leave Type...</option>');
+                ltArr.forEach(function(lt) {
+                    var lId = lt.iMasterId || lt.id || lt.code || 7;
+                    var lName = lt.sName || lt.name || 'Annual Leave';
+                    ltSelect.append(`<option value="${lId}" data-name="${lName}">${lName}</option>`);
+                });
+                ltSelect.select2({ width: '100%' });
+                if (ltSelect.find('option').length > 1) {
+                    ltSelect.val(ltSelect.find('option:eq(1)').val()).trigger('change');
+                }
             });
-            ltSelect.val(7).trigger('change');
         });
     }
 
     function recalculateLateEarly() {
+        var leaveStartStr = $('#hdr-leavestartdate').val() || (selectedLeaveApp ? selectedLeaveApp.startDate : '');
         var leaveEndStr = $('#hdr-leaveenddate').val() || (selectedLeaveApp ? selectedLeaveApp.endDate : '');
         var rejoinStr = $('#hdr-rejoiningdate').val();
 
-        if (!leaveEndStr || !rejoinStr) return;
+        if (!leaveStartStr || !leaveEndStr || !rejoinStr) return;
 
+        var leaveStartObj = parseDateObj(leaveStartStr);
         var leaveEndObj = parseDateObj(leaveEndStr);
         var rejoinObj = parseDateObj(rejoinStr);
 
-        // Expected return is the next day after leave end date
-        var expectedRejoinObj = new Date(leaveEndObj);
-        expectedRejoinObj.setDate(expectedRejoinObj.getDate() + 1);
-
+        leaveStartObj.setHours(0,0,0,0);
         leaveEndObj.setHours(0,0,0,0);
         rejoinObj.setHours(0,0,0,0);
+
+        // RULE 1: Leave End Date CANNOT be before Leave Start Date
+        if (leaveEndObj < leaveStartObj) {
+            alertify.log(`Leave End Date (${formatDateDisplay(leaveEndStr)}) cannot be earlier than Leave Start Date (${formatDateDisplay(leaveStartStr)}).`, 'error', 4500);
+            var resetEndFmt = formatDateStr(leaveStartObj);
+            if (leaveEndDatePicker) {
+                leaveEndDatePicker.setDate(resetEndFmt, false);
+            } else {
+                $('#hdr-leaveenddate').val(resetEndFmt);
+            }
+            leaveEndObj = new Date(leaveStartObj);
+            leaveEndStr = resetEndFmt;
+        }
+
+        // RULE 2: Return / Rejoining Date CANNOT be before Leave Start Date
+        if (rejoinObj < leaveStartObj) {
+            alertify.log(`Return / Rejoining Date (${formatDateDisplay(rejoinStr)}) cannot be earlier than Leave Start Date (${formatDateDisplay(leaveStartStr)}).`, 'error', 5000);
+            var resetRejoin = new Date(leaveEndObj);
+            resetRejoin.setDate(resetRejoin.getDate() + 1);
+            var resetRejoinFmt = formatDateStr(resetRejoin);
+            if (rejoiningDatePicker) {
+                rejoiningDatePicker.setDate(resetRejoinFmt, false);
+            } else {
+                $('#hdr-rejoiningdate').val(resetRejoinFmt);
+            }
+            rejoinObj = resetRejoin;
+            rejoinStr = resetRejoinFmt;
+        }
+
+        // Expected on-time return is the day after leave ends
+        var expectedRejoinObj = new Date(leaveEndObj);
+        expectedRejoinObj.setDate(expectedRejoinObj.getDate() + 1);
         expectedRejoinObj.setHours(0,0,0,0);
 
         var msPerDay = 1000 * 60 * 60 * 24;
@@ -978,14 +1027,13 @@
                     <i class="fas fa-check-circle fa-2x mr-3 text-success"></i>
                     <div>
                         <div class="font-weight-bold text-success" style="font-size: 0.95rem;">On-Time Return (0 Days)</div>
-                        <div class="text-dark">Employee rejoined on schedule on <strong>${formatDateDisplay(rejoinStr)}</strong>. No additional leave adjustments required. You may save the return record immediately.</div>
+                        <div class="text-dark">Employee rejoined on schedule on <strong>${formatDateDisplay(rejoinStr)}</strong>. No additional leave adjustments required. Ready to save.</div>
                     </div>
                 </div>
             `;
             $('#extension-status-badge').text('Not Required (On-Time)').attr('class', 'badge badge-success');
         } else if (dayDiff < 0) {
             // LATE RETURN (Negative value, e.g. -5 days)
-            // Difference from leave end date: e.g. 31-Jul to 05-Aug = -5 days
             var lateDaysFromEnd = Math.round((rejoinObj - leaveEndObj) / msPerDay);
             lateEarlyDays = -Math.abs(lateDaysFromEnd > 0 ? lateDaysFromEnd : -dayDiff);
             badgeClass = 'late-early-late';
@@ -1004,7 +1052,7 @@
             `;
             $('#extension-status-badge').text(`Mandatory: ${lateCount} Days Extension`).attr('class', 'badge badge-danger');
 
-            // Auto set default extension dates: from day after leave end date to day before rejoining
+            // Set default extension dates for late overstay: From (Leave End + 1) to (Rejoining Date - 1 or Rejoining Date)
             var extStart = new Date(leaveEndObj);
             extStart.setDate(extStart.getDate() + 1);
             var extEnd = new Date(rejoinObj);
@@ -1012,7 +1060,9 @@
             if (extEnd < extStart) extEnd = new Date(extStart);
 
             if (fromDatePicker && toDatePicker && stagedLeaves.length === 0) {
+                fromDatePicker.set('minDate', formatDateStr(extStart));
                 fromDatePicker.setDate(formatDateStr(extStart), true);
+                toDatePicker.set('minDate', formatDateStr(extStart));
                 toDatePicker.setDate(formatDateStr(extEnd), true);
             }
         } else {
@@ -1047,7 +1097,7 @@
         var empName = empOpt.data('name') || empOpt.text() || '';
 
         if (!ltId || currentEmployeeLeaves.length === 0) {
-            $('#summary-type-badge').text('No Leave Type Selected');
+            $('#summary-type-badge').text(ltName || 'No Leave Type Selected');
             $('#summary-header-label').text('Leave Balance & Overview');
             $('#sum-eligible, #sum-approved, #sum-unapproved, #sum-available, #sum-usednow, #sum-balance').text('0.0');
             calculateExtensionLeaves();
@@ -1103,15 +1153,24 @@
         var dFrom = parseDateObj(fromStr);
         var dTo = parseDateObj(toStr);
 
+        dFrom.setHours(0,0,0,0);
+        dTo.setHours(0,0,0,0);
+
         if (dTo < dFrom) {
-            $('#dtl-duration').val(0);
-            $('#dtl-noofleaves').val(0);
-            updateSummaryUsedAndBalance(0);
-            return;
+            alertify.log('Extension To Date cannot be earlier than Extension From Date.', 'error', 3500);
+            if (toDatePicker) toDatePicker.setDate(fromStr, false);
+            dTo = new Date(dFrom);
         }
 
         var diffDays = Math.round((dTo - dFrom) / (1000 * 60 * 60 * 24)) + 1;
         $('#dtl-duration').val(diffDays);
+
+        if (wOff + pHol >= diffDays) {
+            wOff = 0;
+            pHol = 0;
+            $('#dtl-weeklyoff').val(0);
+            $('#dtl-publicholiday').val(0);
+        }
 
         var netDays = isHalf ? 0.5 : Math.max(0, diffDays - wOff - pHol);
         $('#dtl-noofleaves').val(netDays);
@@ -1123,6 +1182,78 @@
         var avail = parseFloat($('#sum-available').text()) || 0;
         var bal = Math.max(0, avail - usedNow);
         $('#sum-balance').text(bal.toFixed(1));
+    }
+
+    // Comprehensive Overlap Check: Prevents applying for identical or overlapping dates
+    function checkOverlappingExtension(fromStr, toStr, duration, ignoreStagedId) {
+        var f = parseDateObj(fromStr);
+        var t = parseDateObj(toStr);
+        f.setHours(0,0,0,0);
+        t.setHours(0,0,0,0);
+
+        var durDays = Math.max(1, Math.ceil(duration || 1));
+        var minEndFromDur = new Date(f.getTime() + (durDays - 1) * 86400000);
+        minEndFromDur.setHours(0,0,0,0);
+        if (t < f || t < minEndFromDur) {
+            t = minEndFromDur;
+        }
+
+        // 1. Check against the Original Approved Leave Application Period
+        if (selectedLeaveApp) {
+            var origStart = parseDateObj(selectedLeaveApp.startDate);
+            var origEnd = parseDateObj(selectedLeaveApp.endDate);
+            origStart.setHours(0,0,0,0);
+            origEnd.setHours(0,0,0,0);
+
+            // Overlap check: f <= origEnd && t >= origStart
+            if (f.getTime() <= origEnd.getTime() && t.getTime() >= origStart.getTime()) {
+                return {
+                    hasOverlap: true,
+                    message: `Extension dates (${formatDateDisplay(fromStr)} to ${formatDateDisplay(toStr)}) overlap with the original approved leave period (${formatDateDisplay(selectedLeaveApp.startDate)} to ${formatDateDisplay(selectedLeaveApp.endDate)}). Late leave extension must begin after ${formatDateDisplay(selectedLeaveApp.endDate)}.`
+                };
+            }
+        }
+
+        // 2. Check against already staged extension lines in the grid
+        for (var i = 0; i < stagedLeaves.length; i++) {
+            var sl = stagedLeaves[i];
+            if (ignoreStagedId && sl.stagedId === ignoreStagedId) {
+                continue; // Skip the sub-leave being edited
+            }
+
+            var sF = parseDateObj(sl.fromDate);
+            var sT = parseDateObj(sl.toDate);
+            sF.setHours(0,0,0,0);
+            sT.setHours(0,0,0,0);
+
+            var sDur = Math.max(1, Math.ceil(sl.duration || 1));
+            var sMinEnd = new Date(sF.getTime() + (sDur - 1) * 86400000);
+            sMinEnd.setHours(0,0,0,0);
+            if (sT < sMinEnd) sT = sMinEnd;
+
+            // Overlap condition: f <= sT && t >= sF
+            if (f.getTime() <= sT.getTime() && t.getTime() >= sF.getTime()) {
+                return {
+                    hasOverlap: true,
+                    message: `Selected extension dates (${fromStr} to ${toStr}) overlap with an existing line in the grid (${sl.fromDate} to ${sl.toDate} - ${sl.leaveTypeName}). Duplicate or overlapping dates are not allowed.`
+                };
+            }
+        }
+
+        // 3. Check against Return / Rejoining Date
+        var rejoinStr = $('#hdr-rejoiningdate').val();
+        if (rejoinStr) {
+            var rDate = parseDateObj(rejoinStr);
+            rDate.setHours(0,0,0,0);
+            if (f.getTime() >= rDate.getTime()) {
+                return {
+                    hasOverlap: true,
+                    message: `Extension From Date (${fromStr}) cannot be on or after the Return / Rejoining Date (${formatDateDisplay(rejoinStr)}). Employee has already reported back to work on this date.`
+                };
+            }
+        }
+
+        return { hasOverlap: false };
     }
 
     function addToGrid() {
@@ -1143,6 +1274,13 @@
         }
         if (duration <= 0) {
             alertify.log('Extension duration must be greater than 0 days.', 'error', 3000);
+            return;
+        }
+
+        // OVERLAP VALIDATION CHECK
+        var overlapCheck = checkOverlappingExtension(fromStr, toStr, duration, editingSubLeaveId);
+        if (overlapCheck.hasOverlap) {
+            alertify.log(overlapCheck.message, 'error', 7000);
             return;
         }
 
@@ -1227,7 +1365,7 @@
         if (fromDatePicker) fromDatePicker.setDate(sl.fromDate, true);
         if (toDatePicker) toDatePicker.setDate(sl.toDate, true);
         $('#dtl-contact').val(sl.contactNo);
-        $('#dtl-substitute').val(sl.substituteId);
+        $('#dtl-substitute').val(sl.substituteId).trigger('change');
 
         $('#btn-cancel-subleave').show();
         $('#btn-add-to-grid').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Line');
@@ -1299,33 +1437,63 @@
     }
 
     function saveLeaveReturn() {
+        // 1. MANDATORY EMPLOYEE VALIDATION
         var empId = $('#hdr-employee').val();
         if (!empId) {
-            alertify.log('Please select an Employee.', 'error', 3500);
+            alertify.log('Please select an Employee before saving.', 'error', 4000);
+            $('#hdr-employee').select2('open');
             return;
         }
 
+        // 2. MANDATORY LEAVE APPLICATION VALIDATION
         var appId = $('#hdr-leaveapp').val();
         if (!appId || !selectedLeaveApp) {
-            alertify.log('Please select a valid Leave Application for the employee.', 'error', 3500);
+            alertify.log('Please select a valid Leave Application for the employee before saving.', 'error', 4000);
+            $('#hdr-leaveapp').select2('open');
             return;
         }
 
+        // 3. MANDATORY RETURN / REJOINING DATE VALIDATION
         var rejoiningDate = $('#hdr-rejoiningdate').val();
         if (!rejoiningDate) {
-            alertify.log('Please specify the Return / Rejoining Date.', 'error', 3500);
+            alertify.log('Please specify the Return / Rejoining Date.', 'error', 4000);
+            $('#hdr-rejoiningdate').focus();
+            return;
+        }
+
+        var leaveStartDate = $('#hdr-leavestartdate').val() || selectedLeaveApp.startDate;
+        var leaveEndDate = $('#hdr-leaveenddate').val() || selectedLeaveApp.endDate;
+
+        var startObj = parseDateObj(leaveStartDate);
+        var rejoinObj = parseDateObj(rejoiningDate);
+        startObj.setHours(0,0,0,0);
+        rejoinObj.setHours(0,0,0,0);
+
+        if (rejoinObj < startObj) {
+            alertify.log(`Return / Rejoining Date (${formatDateDisplay(rejoiningDate)}) cannot be earlier than Leave Start Date (${formatDateDisplay(leaveStartDate)}).`, 'error', 5000);
+            $('#hdr-rejoiningdate').focus();
             return;
         }
 
         var lateEarlyDays = parseFloat($('#hdr-lateearlydays').val()) || 0;
 
-        // RULE VALIDATIONS:
-        // Case 1: If Late/Early < 0 (Late Return), user MUST fill leave extension grid!
+        // 4. RULE VALIDATIONS:
+        // Case: If Late/Early < 0 (Late Return), user MUST fill leave extension grid!
         if (lateEarlyDays < 0) {
             if (stagedLeaves.length === 0) {
                 alertify.log(`Employee is returning late by ${Math.abs(lateEarlyDays)} day(s). Please fill the Leave Extension details and add to grid before saving.`, 'error', 6000);
                 $('#leave-extension-card')[0].scrollIntoView({ behavior: 'smooth' });
                 return;
+            }
+
+            // Verify no overlapping extension lines before saving
+            for (var i = 0; i < stagedLeaves.length; i++) {
+                var slItem = stagedLeaves[i];
+                var ovCheck = checkOverlappingExtension(slItem.fromDate, slItem.toDate, slItem.duration, slItem.stagedId);
+                if (ovCheck.hasOverlap) {
+                    alertify.log(ovCheck.message, 'error', 6500);
+                    return;
+                }
             }
         }
 
@@ -1333,8 +1501,6 @@
         var returnDate = $('#hdr-date').val();
         var postDate = $('#hdr-postdate').val();
         var comments = $('#hdr-comments').val();
-        var leaveStartDate = $('#hdr-leavestartdate').val() || selectedLeaveApp.startDate;
-        var leaveEndDate = $('#hdr-leaveenddate').val() || selectedLeaveApp.endDate;
         var statusStr = lateEarlyDays === 0 ? "On-Time" : (lateEarlyDays < 0 ? "Late" : "Early");
 
         var fileInput = document.getElementById('hdr-attachment');
@@ -1464,6 +1630,13 @@
         var mmm = months[d.getMonth()];
         var yyyy = d.getFullYear();
         return dd + '-' + mmm + '-' + yyyy;
+    }
+
+    function formatDateDisplay(dStr) {
+        if (!dStr) return '';
+        var d = parseDateObj(dStr);
+        if (isNaN(d.getTime())) return dStr;
+        return formatDateStr(d);
     }
 
     function checkFileSize(input) {

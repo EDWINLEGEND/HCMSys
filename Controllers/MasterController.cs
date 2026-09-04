@@ -41,8 +41,28 @@ namespace HCMSys.Controllers
         [HttpGet]
         public async Task<IActionResult> GetApiEmployees()
         {
-            var employees = await _apiService.GetEmployeesAsync();
-            var normalized = employees.Select(e => new {
+            List<EmployeeDto> employees = new List<EmployeeDto>();
+            try
+            {
+                employees = await _apiService.GetEmployeesAsync();
+            }
+            catch { }
+
+            if (employees == null || employees.Count == 0)
+            {
+                try
+                {
+                    var fallbackPath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "employee.json");
+                    if (System.IO.File.Exists(fallbackPath))
+                    {
+                        var json = await System.IO.File.ReadAllTextAsync(fallbackPath);
+                        return Content(json, "application/json");
+                    }
+                }
+                catch { }
+            }
+
+            var normalized = (employees ?? new List<EmployeeDto>()).Select(e => new {
                 id = e.Id > 0 ? e.Id : e.IMasterId,
                 iMasterId = e.IMasterId > 0 ? e.IMasterId : e.Id,
                 code = !string.IsNullOrEmpty(e.SCode) ? e.SCode : $"EMP-{e.Id:D3}",
@@ -377,6 +397,38 @@ namespace HCMSys.Controllers
             return Json(result ?? new ApiResponseEnvelope<object> { Success = false, Message = "Failed to call Delete Leave Transaction API." });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetApiHRRequests()
+        {
+            try
+            {
+                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "hr_requests.json");
+                if (System.IO.File.Exists(filePath))
+                {
+                    var json = await System.IO.File.ReadAllTextAsync(filePath);
+                    return Content(json, "application/json");
+                }
+            }
+            catch { }
+            return Json(new List<object>());
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApiRequestMaster()
+        {
+            try
+            {
+                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "request_master.json");
+                if (System.IO.File.Exists(filePath))
+                {
+                    var json = await System.IO.File.ReadAllTextAsync(filePath);
+                    return Content(json, "application/json");
+                }
+            }
+            catch { }
+            return Json(new List<object>());
+        }
+
         /// <summary>
         /// ////Project master
         /// </summary>
@@ -464,8 +516,9 @@ namespace HCMSys.Controllers
             return View();
         }
 
-        public ActionResult HRRequest()
+        public ActionResult HRRequest(int? id)
         {
+            ViewBag.EditId = id ?? 0;
             return View();
         }
 
@@ -547,6 +600,30 @@ namespace HCMSys.Controllers
 
         public ActionResult CreateLoanSettlement()
         {
+            return View();
+        }
+
+        // Contract Assignment Module Actions
+        public ActionResult ContractAssignmentIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateContractAssignment(int? id)
+        {
+            ViewBag.EditId = id ?? 0;
+            return View();
+        }
+
+        // Increment / Promotion / Transfer (Salary Revision) Module Actions
+        public ActionResult SalaryRevisionIndex()
+        {
+            return View();
+        }
+
+        public ActionResult CreateSalaryRevision(int? id)
+        {
+            ViewBag.EditId = id ?? 0;
             return View();
         }
 

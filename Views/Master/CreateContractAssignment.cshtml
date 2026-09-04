@@ -373,10 +373,12 @@
     function loadMasters() {
         var empPromise = $.getJSON('/Master/GetApiEmployees').then(function(res) {
             var empList = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : (res && res.data ? res.data : []);
-            if (empList.length > 0) return empList;
-            return $.getJSON('/api-assets2/employee.json');
+            return empList;
         }, function() {
-            return $.getJSON('/api-assets2/employee.json');
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to fetch employee list from API.', 'error', 4000);
+            }
+            return [];
         });
 
         var hostPromise = $.getJSON('/api-assets2/host_company.json');

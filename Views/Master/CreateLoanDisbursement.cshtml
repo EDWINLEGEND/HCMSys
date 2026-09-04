@@ -266,7 +266,7 @@
     $(document).ready(function() {
         initHeader();
 
-        $.getJSON('/api-assets1/loan_requests.json', function(res) {
+        $.getJSON('/api-assets2/loan_requests.json', function(res) {
             var staticReqs = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
             var savedReqs = JSON.parse(localStorage.getItem('savedLoanRequests') || '[]');
             requestsData = savedReqs.concat(staticReqs);

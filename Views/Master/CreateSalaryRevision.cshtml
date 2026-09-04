@@ -593,24 +593,16 @@
             .done(function (res) {
                 var list = [];
                 if (res && res.statusCode === 200 && Array.isArray(res.data)) list = res.data;
-                else if (Array.isArray(res)) list = res;
+                else if (Array.isArray(res)) list = (Array.isArray(res[0]) ? res[0] : res);
 
-                if (list.length > 0) {
-                    setupEmployeesDropdown(list);
-                } else {
-                    fallbackToEmployeesJson();
-                }
+                setupEmployeesDropdown(list);
             })
             .fail(function () {
-                fallbackToEmployeesJson();
+                if (typeof alertify !== 'undefined') {
+                    alertify.log('Failed to fetch employee list from API.', 'error', 4000);
+                }
+                setupEmployeesDropdown([]);
             });
-    }
-
-    function fallbackToEmployeesJson() {
-        $.getJSON('/api-assets2/employee.json', function (data) {
-            var list = Array.isArray(data) ? data : [];
-            setupEmployeesDropdown(list);
-        });
     }
 
     function setupEmployeesDropdown(list) {

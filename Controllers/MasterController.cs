@@ -48,20 +48,6 @@ namespace HCMSys.Controllers
             }
             catch { }
 
-            if (employees == null || employees.Count == 0)
-            {
-                try
-                {
-                    var fallbackPath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "employee.json");
-                    if (System.IO.File.Exists(fallbackPath))
-                    {
-                        var json = await System.IO.File.ReadAllTextAsync(fallbackPath);
-                        return Content(json, "application/json");
-                    }
-                }
-                catch { }
-            }
-
             var normalized = (employees ?? new List<EmployeeDto>()).Select(e => new {
                 id = e.Id > 0 ? e.Id : e.IMasterId,
                 iMasterId = e.IMasterId > 0 ? e.IMasterId : e.Id,

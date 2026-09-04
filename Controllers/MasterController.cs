@@ -415,6 +415,22 @@ namespace HCMSys.Controllers
             return Json(new List<object>());
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetApiCommonMaster()
+        {
+            try
+            {
+                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "common_master.json");
+                if (System.IO.File.Exists(filePath))
+                {
+                    var json = await System.IO.File.ReadAllTextAsync(filePath);
+                    return Content(json, "application/json");
+                }
+            }
+            catch { }
+            return Json(new { });
+        }
+
         /// <summary>
         /// ////Project master
         /// </summary>

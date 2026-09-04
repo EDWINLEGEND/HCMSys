@@ -1,0 +1,111 @@
+{
+  "hostCompanies": [
+    { "id": 1, "name": "Neoxis Technologies LLC", "code": "NEO-TECH", "categoryCode": "IT-SERVICES", "Id": 1, "Name": "Neoxis Technologies LLC", "Code": "NEO-TECH" },
+    { "id": 2, "name": "Apex Global Solutions Ltd", "code": "APX-GLB", "categoryCode": "CONSULTING", "Id": 2, "Name": "Apex Global Solutions Ltd", "Code": "APX-GLB" },
+    { "id": 3, "name": "PetroStar Energy FZE", "code": "PST-NRG", "categoryCode": "ENERGY-OIL", "Id": 3, "Name": "PetroStar Energy FZE", "Code": "PST-NRG" },
+    { "id": 4, "name": "Emirates Logistics & Cargo", "code": "EMR-LOG", "categoryCode": "LOGISTICS", "Id": 4, "Name": "Emirates Logistics & Cargo", "Code": "EMR-LOG" },
+    { "id": 5, "name": "Horizon Healthcare Corp", "code": "HRZ-HLT", "categoryCode": "HEALTHCARE", "Id": 5, "Name": "Horizon Healthcare Corp", "Code": "HRZ-HLT" },
+    { "id": 6, "name": "Gulf Contracting & Build", "code": "GLF-CON", "categoryCode": "CONSTRUCTION", "Id": 6, "Name": "Gulf Contracting & Build", "Code": "GLF-CON" }
+  ],
+  "contractTypes": [
+    { "id": "0", "code": "NEW", "name": "New", "description": "New Contract Assignment", "requiresPreviousContract": false, "badgeClass": "ctype-new" },
+    { "id": "1", "code": "EXT", "name": "Extension", "description": "Contract Extension", "requiresPreviousContract": true, "badgeClass": "ctype-extension" },
+    { "id": "2", "code": "REN", "name": "Renewal", "description": "Contract Renewal", "requiresPreviousContract": true, "badgeClass": "ctype-renewal" },
+    { "id": "3", "code": "CAN", "name": "Cancellation", "description": "Contract Cancellation", "requiresPreviousContract": true, "badgeClass": "ctype-cancellation" }
+  ],
+  "revisionTypes": [
+    { "id": "Increment", "name": "Increment", "code": "INC", "badgeClass": "rtype-increment" },
+    { "id": "Promotion", "name": "Promotion", "code": "PRM", "badgeClass": "rtype-promotion" },
+    { "id": "Transfer", "name": "Transfer", "code": "TRF", "badgeClass": "rtype-transfer" },
+    { "id": "Decrement", "name": "Decrement", "code": "DEC", "badgeClass": "rtype-decrement" },
+    { "id": "Others", "name": "Others", "code": "OTH", "badgeClass": "rtype-others" }
+  ],
+  "headsAllocation": [
+    {
+      "head": "Paygroup",
+      "icon": "fa-users-cog",
+      "defaultValue": "General Staff",
+      "options": [
+        "General Staff",
+        "Monthly Staff",
+        "Senior Staff",
+        "Executive",
+        "Management",
+        "Expatriate Staff",
+        "Daily Rated"
+      ]
+    },
+    {
+      "head": "Designation",
+      "icon": "fa-id-badge",
+      "options": [
+        "Accountant",
+        "Senior Accountant",
+        "Chief Financial Officer",
+        "Software Engineer",
+        "Senior Software Engineer",
+        "Technical Lead",
+        "IT Manager",
+        "HR Officer",
+        "HR Manager",
+        "Talent Acquisition Specialist",
+        "Operations Supervisor",
+        "Operations Manager",
+        "General Manager",
+        "Sales Executive",
+        "Marketing Coordinator",
+        "Administrative Assistant"
+      ]
+    },
+    {
+      "head": "Department",
+      "icon": "fa-building",
+      "options": [
+        "ACCOUNTS",
+        "IT & SOFTWARE",
+        "OPERATIONS",
+        "HUMAN RESOURCES",
+        "SALES & MARKETING",
+        "ADMINISTRATION",
+        "ENGINEERING",
+        "QUALITY ASSURANCE"
+      ]
+    },
+    {
+      "head": "Project",
+      "icon": "fa-project-diagram",
+      "defaultValue": "Head Office",
+      "options": [
+        "Head Office",
+        "Dubai Logistics Hub",
+        "Alpha Portal",
+        "ERP Modernization",
+        "Regional Branches",
+        "Project Site A",
+        "General Operations"
+      ]
+    }
+  ],
+  "salaryComponents": [
+    { "id": 1, "component": "Basic Salary", "code": "BASIC", "icon": "fa-wallet", "defaultValue": 5000.00 },
+    { "id": 2, "component": "House Rent Allowance (HRA)", "code": "HRA", "icon": "fa-home", "defaultValue": 2000.00 },
+    { "id": 3, "component": "Transport Allowance", "code": "TRANS", "icon": "fa-bus", "defaultValue": 1000.00 },
+    { "id": 4, "component": "Special / Other Allowance", "code": "OTHER", "icon": "fa-plus-circle", "defaultValue": 500.00 }
+  ],
+  "currencies": [
+    { "id": 1, "code": "AED", "name": "UAE Dirham", "symbol": "AED", "rate": 1.00 },
+    { "id": 2, "code": "USD", "name": "US Dollar", "symbol": "$", "rate": 3.67 },
+    { "id": 3, "code": "EUR", "name": "Euro", "symbol": "€", "rate": 3.98 },
+    { "id": 4, "code": "GBP", "name": "British Pound", "symbol": "£", "rate": 4.65 },
+    { "id": 5, "code": "SAR", "name": "Saudi Riyal", "symbol": "SAR", "rate": 0.98 },
+    { "id": 6, "code": "QAR", "name": "Qatari Riyal", "symbol": "QAR", "rate": 1.01 },
+    { "id": 7, "code": "OMR", "name": "Omani Rial", "symbol": "OMR", "rate": 9.54 },
+    { "id": 8, "code": "INR", "name": "Indian Rupee", "symbol": "₹", "rate": 0.044 }
+  ],
+  "loanTypes": [
+    { "id": 1, "type": "Personal Loan", "interestRate": 2.5, "maxTermMonths": 24 },
+    { "id": 2, "type": "Emergency Loan", "interestRate": 0.0, "maxTermMonths": 12 },
+    { "id": 3, "type": "Vehicle Loan", "interestRate": 3.2, "maxTermMonths": 36 },
+    { "id": 4, "type": "Housing Advance", "interestRate": 1.8, "maxTermMonths": 48 }
+  ]
+}

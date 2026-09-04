@@ -491,7 +491,7 @@
         initDatePickers();
         initSelect2();
         populateProposedDropdowns();
-        loadHostCompanies();
+        loadCommonMaster();
         loadEmployees();
 
         // Check if editing via query param or ViewBag
@@ -575,17 +575,66 @@
         $('#hdr-docno').val(`REV-${mm}-${yy}-${randSeq}`);
     }
 
-    function loadHostCompanies() {
-        $.getJSON('/api-assets2/host_company.json', function (data) {
-            if (Array.isArray(data)) {
-                hostCompaniesList = data;
-                var $sel = $('#hdr-hostcompany');
-                $sel.find('option:not(:first)').remove();
-                data.forEach(function (h) {
-                    $sel.append(`<option value="${h.Id}" data-code="${h.Code || ''}" data-name="${h.Name || ''}">${h.Code} - ${h.Name}</option>`);
+    var commonMasterData = null;
+
+    function loadCommonMaster() {
+        $.getJSON('/api-assets2/common_master.json')
+            .done(function (data) {
+                commonMasterData = data;
+                if (data.hostCompanies && Array.isArray(data.hostCompanies)) {
+                    hostCompaniesList = data.hostCompanies;
+                    var $sel = $('#hdr-hostcompany');
+                    $sel.find('option:not(:first)').remove();
+                    data.hostCompanies.forEach(function (h) {
+                        var hId = h.id || h.Id;
+                        var hCode = h.code || h.Code;
+                        var hName = h.name || h.Name;
+                        $sel.append(`<option value="${hId}" data-code="${hCode}" data-name="${hName}">${hCode} - ${hName}</option>`);
+                    });
+                }
+                if (data.revisionTypes && Array.isArray(data.revisionTypes)) {
+                    var $typeSel = $('#hdr-type');
+                    $typeSel.empty();
+                    data.revisionTypes.forEach(function (t) {
+                        $typeSel.append(`<option value="${t.id}">${t.name}</option>`);
+                    });
+                }
+                if (data.headsAllocation && Array.isArray(data.headsAllocation)) {
+                    data.headsAllocation.forEach(function (head) {
+                        if (head.head === 'Paygroup' && Array.isArray(head.options)) {
+                            var $pg = $('#head-proposed-paygroup');
+                            $pg.empty();
+                            head.options.forEach(function (o) { $pg.append(`<option value="${o}">${o}</option>`); });
+                        } else if (head.head === 'Project' && Array.isArray(head.options)) {
+                            var $prj = $('#head-proposed-project');
+                            $prj.empty();
+                            head.options.forEach(function (o) { $prj.append(`<option value="${o}">${o}</option>`); });
+                        } else if (head.head === 'Department' && Array.isArray(head.options)) {
+                            standardDepartments = head.options;
+                            var $dept = $('#head-proposed-department');
+                            $dept.empty().append('<option value="">-- Select Proposed Department --</option>');
+                            head.options.forEach(function (d) { $dept.append(`<option value="${d}">${d}</option>`); });
+                        } else if (head.head === 'Designation' && Array.isArray(head.options)) {
+                            standardDesignations = head.options;
+                            var $desig = $('#head-proposed-designation');
+                            $desig.empty().append('<option value="">-- Select Proposed Designation --</option>');
+                            head.options.forEach(function (d) { $desig.append(`<option value="${d}">${d}</option>`); });
+                        }
+                    });
+                }
+            })
+            .fail(function () {
+                $.getJSON('/api-assets2/host_company.json', function (data) {
+                    if (Array.isArray(data)) {
+                        hostCompaniesList = data;
+                        var $sel = $('#hdr-hostcompany');
+                        $sel.find('option:not(:first)').remove();
+                        data.forEach(function (h) {
+                            $sel.append(`<option value="${h.Id || h.id}" data-code="${h.Code || h.code || ''}" data-name="${h.Name || h.name || ''}">${h.Code || h.code} - ${h.Name || h.name}</option>`);
+                        });
+                    }
                 });
-            }
-        });
+            });
     }
 
     function loadEmployees() {

@@ -381,15 +381,20 @@
             return [];
         });
 
-        var hostPromise = $.getJSON('/api-assets2/host_company.json');
+        var commonPromise = $.getJSON('/api-assets2/common_master.json').then(function(res) {
+            return res;
+        }, function() {
+            return $.getJSON('/api-assets2/host_company.json').then(function(h) { return { hostCompanies: h }; });
+        });
         var contractsPromise = $.getJSON('/api-assets2/contract_assignments.json');
 
-        $.when(empPromise, hostPromise, contractsPromise).done(function(empRes, hostRes, cntRes) {
+        $.when(empPromise, commonPromise, contractsPromise).done(function(empRes, commonRes, cntRes) {
             var rawEmp = (empRes && empRes[0]) ? empRes[0] : empRes;
             employeesData = Array.isArray(rawEmp) ? rawEmp : (Array.isArray(empRes) ? empRes : []);
 
-            var rawHost = (hostRes && hostRes[0]) ? hostRes[0] : hostRes;
-            hostCompaniesData = Array.isArray(rawHost) ? rawHost : [];
+            var cData = (commonRes && commonRes[0]) ? commonRes[0] : commonRes;
+            hostCompaniesData = (cData && Array.isArray(cData.hostCompanies)) ? cData.hostCompanies : (Array.isArray(cData) ? cData : []);
+            contractTypesData = (cData && Array.isArray(cData.contractTypes)) ? cData.contractTypes : [];
 
             var rawCnt = (cntRes && cntRes[0]) ? cntRes[0] : cntRes;
             existingContractsData = Array.isArray(rawCnt) ? rawCnt : [];
@@ -410,6 +415,8 @@
         });
     }
 
+    var contractTypesData = [];
+
     function populateDropdowns() {
         // 1. Employee Dropdown (Live API)
         var empSelect = $('#hdr-employee');
@@ -424,15 +431,28 @@
         }
         empSelect.select2({ width: '100%' });
 
-        // 2. Host Company Dropdown (JSON: Id, Name, code, Category Code)
+        // 2. Host Company Dropdown (Common Master JSON: Id, Name, code, Category Code)
         var hostSelect = $('#hdr-hostcompany');
         hostSelect.empty().append('<option value="">Select Host Company...</option>');
         if (Array.isArray(hostCompaniesData)) {
             hostCompaniesData.forEach(function(h) {
-                hostSelect.append(`<option value="${h.id}" data-code="${h.code}" data-name="${h.name}">${h.code} - ${h.name} (${h.categoryCode})</option>`);
+                var hId = h.id || h.Id;
+                var hCode = h.code || h.Code;
+                var hName = h.name || h.Name;
+                var hCat = h.categoryCode || h.CategoryCode || '';
+                hostSelect.append(`<option value="${hId}" data-code="${hCode}" data-name="${hName}">${hCode} - ${hName}${hCat ? ' (' + hCat + ')' : ''}</option>`);
             });
         }
         hostSelect.select2({ width: '100%' });
+
+        // 3. Contract Type Dropdown (Common Master JSON)
+        var typeSelect = $('#hdr-contracttype');
+        if (Array.isArray(contractTypesData) && contractTypesData.length > 0) {
+            typeSelect.empty();
+            contractTypesData.forEach(function(ct) {
+                typeSelect.append(`<option value="${ct.id}">${ct.id} - ${ct.name}</option>`);
+            });
+        }
         
         $('#hdr-prevcontract').select2({ width: '100%' });
         onContractTypeChange();

@@ -385,16 +385,30 @@
     });
 
     function loadHostCompaniesFilter() {
-        $.getJSON('/api-assets2/host_company.json', function (data) {
-            if (Array.isArray(data)) {
-                hostCompanies = data;
-                var $sel = $('#filter-host-company');
-                $sel.find('option:not(:first)').remove();
-                data.forEach(function (h) {
-                    $sel.append(`<option value="${h.Id}">${h.Code} - ${h.Name}</option>`);
+        $.getJSON('/api-assets2/common_master.json')
+            .done(function (res) {
+                var data = (res && res.hostCompanies) ? res.hostCompanies : (Array.isArray(res) ? res : []);
+                populateHostCompanyFilter(data);
+            })
+            .fail(function () {
+                $.getJSON('/api-assets2/host_company.json', function (data) {
+                    populateHostCompanyFilter(data);
                 });
-            }
-        });
+            });
+    }
+
+    function populateHostCompanyFilter(data) {
+        if (Array.isArray(data)) {
+            hostCompanies = data;
+            var $sel = $('#filter-host-company');
+            $sel.find('option:not(:first)').remove();
+            data.forEach(function (h) {
+                var hId = h.id || h.Id;
+                var hCode = h.code || h.Code;
+                var hName = h.name || h.Name;
+                $sel.append(`<option value="${hId}">${hCode} - ${hName}</option>`);
+            });
+        }
     }
 
     function loadGridData() {

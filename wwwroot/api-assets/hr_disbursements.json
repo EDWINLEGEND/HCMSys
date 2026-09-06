@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "docNo": "DISB-08-26-00001",
+    "disbursementNo": "DISB-08-26-00001",
+    "date": "16-Aug-2026",
+    "postDate": "16-Aug-2026",
+    "employeeId": "1",
+    "employeeCode": "EMP-001",
+    "employeeName": "John Smith",
+    "department": "Engineering",
+    "designation": "Senior Developer",
+    "manager": "Jane Doe",
+    "remarks": "Company vehicle disbursed for regional projects.",
+    "status": "Disbursed",
+    "items": [
+      {
+        "reqNo": "CAR-08-26-1004",
+        "requestType": "Returnable",
+        "selectionName": "Office Car",
+        "qty": 1,
+        "remarks": "Toyota Hilux (Plate 45210)",
+        "status": "Disbursed"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "docNo": "DISB-08-26-00002",
+    "disbursementNo": "DISB-08-26-00002",
+    "date": "17-Aug-2026",
+    "postDate": "17-Aug-2026",
+    "employeeId": "36",
+    "employeeCode": "EMP001",
+    "employeeName": "Ajeev Chandrasekar",
+    "department": "BOTTLE MAKING",
+    "designation": "Rig Operator",
+    "manager": "Ajeev Chandrasekar",
+    "remarks": "Work laptop disbursed for remote support.",
+    "status": "Disbursed",
+    "items": [
+      {
+        "reqNo": "LAP-08-26-1001",
+        "requestType": "Returnable",
+        "selectionName": "Company Laptop",
+        "qty": 1,
+        "remarks": "Dell Latitude 5520 assigned",
+        "status": "Disbursed"
+      }
+    ]
+  }
+]

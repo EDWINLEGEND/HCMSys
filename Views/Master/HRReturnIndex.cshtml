@@ -195,30 +195,47 @@
         });
 
         function loadGridData() {
-            table.clear();
-            var savedData = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
-            var returnedItems = savedData.filter(function(i) { return i.status === 'Returned'; });
-            $('#stat-total').text(returnedItems.length);
+            function renderTable(savedData) {
+                table.clear();
+                var returnedItems = savedData.filter(function(i) { return i.status === 'Returned'; });
+                $('#stat-total').text(returnedItems.length);
 
-            returnedItems.reverse().forEach(function(item) {
-                var actionHtml = `
-                    <div class="action-btns" style="text-align:center;">
-                        <a href="#" class="edit-item-btn" data-req="${item.reqNo}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                        <a href="#" class="remove-item-btn" data-req="${item.reqNo}" title="Revert to Pending"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                    </div>
-                `;
-                table.row.add([
-                    actionHtml,
-                    item.returnDocNo || '-',
-                    item.returnDate || '-',
-                    item.employeeName || '-',
-                    item.reqNo || '-',
-                    item.selectionName || '-',
-                    item.qty || '1',
-                    item.returnRemarks || '-'
-                ]);
-            });
-            table.draw(false);
+                returnedItems.reverse().forEach(function(item) {
+                    var actionHtml = `
+                        <div class="action-btns" style="text-align:center;">
+                            <a href="#" class="edit-item-btn" data-req="${item.reqNo}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                            <a href="#" class="remove-item-btn" data-req="${item.reqNo}" title="Revert to Pending"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                        </div>
+                    `;
+                    table.row.add([
+                        actionHtml,
+                        item.returnDocNo || '-',
+                        item.returnDate || '-',
+                        item.employeeName || '-',
+                        item.reqNo || '-',
+                        item.selectionName || '-',
+                        item.qty || '1',
+                        item.returnRemarks || '-'
+                    ]);
+                });
+                table.draw(false);
+            }
+
+            var raw = localStorage.getItem('savedHRRequests');
+            if (!raw) {
+                $.getJSON('/api-assets/hr_requests.json').done(function(seed) {
+                    if (Array.isArray(seed)) {
+                        localStorage.setItem('savedHRRequests', JSON.stringify(seed));
+                        renderTable(seed);
+                    } else {
+                        renderTable([]);
+                    }
+                }).fail(function() {
+                    renderTable([]);
+                });
+            } else {
+                renderTable(JSON.parse(raw || '[]'));
+            }
         }
 
         loadGridData();

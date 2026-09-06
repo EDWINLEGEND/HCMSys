@@ -49,8 +49,9 @@ namespace HCMSys.Controllers
             catch { }
 
             var normalized = (employees ?? new List<EmployeeDto>()).Select(e => new {
-                id = e.Id > 0 ? e.Id : e.IMasterId,
+                id = e.IMasterId > 0 ? e.IMasterId : e.Id,
                 iMasterId = e.IMasterId > 0 ? e.IMasterId : e.Id,
+                empId = e.Id,
                 code = !string.IsNullOrEmpty(e.SCode) ? e.SCode : $"EMP-{e.Id:D3}",
                 sCode = !string.IsNullOrEmpty(e.SCode) ? e.SCode : $"EMP-{e.Id:D3}",
                 name = !string.IsNullOrEmpty(e.SName) ? e.SName : "",
@@ -388,7 +389,7 @@ namespace HCMSys.Controllers
         {
             try
             {
-                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "hr_requests.json");
+                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets", "hr_requests.json");
                 if (System.IO.File.Exists(filePath))
                 {
                     var json = await System.IO.File.ReadAllTextAsync(filePath);
@@ -404,7 +405,7 @@ namespace HCMSys.Controllers
         {
             try
             {
-                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "request_master.json");
+                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets", "request_master.json");
                 if (System.IO.File.Exists(filePath))
                 {
                     var json = await System.IO.File.ReadAllTextAsync(filePath);
@@ -420,7 +421,7 @@ namespace HCMSys.Controllers
         {
             try
             {
-                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets2", "common_master.json");
+                var filePath = System.IO.Path.Combine(_env.WebRootPath, "api-assets", "common_master.json");
                 if (System.IO.File.Exists(filePath))
                 {
                     var json = await System.IO.File.ReadAllTextAsync(filePath);
@@ -497,6 +498,11 @@ namespace HCMSys.Controllers
             return View();
         }
 
+        public ActionResult HRDisbursementIndex()
+        {
+            return View();
+        }
+
         public ActionResult HRReturnIndex()
         {
             return View();
@@ -519,6 +525,12 @@ namespace HCMSys.Controllers
         }
 
         public ActionResult HRRequest(int? id)
+        {
+            ViewBag.EditId = id ?? 0;
+            return View();
+        }
+
+        public ActionResult HRDisbursement(int? id)
         {
             ViewBag.EditId = id ?? 0;
             return View();

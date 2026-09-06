@@ -1,3 +1,7 @@
+@{
+    ViewData["Title"] = "HR Disbursement";
+}
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     html { font-size: 14px; }
@@ -13,7 +17,7 @@
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: calc(1.5em + .75rem);
     }
-    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
     .action-btns a:hover { opacity: 0.7; }
     .action-btns .fa-trash-alt { color: #e74a3b; }
     .page-title-bar {
@@ -63,6 +67,21 @@
     }
     .table th, .table td { vertical-align: middle; }
     .table td.num-col { text-align: right; }
+
+    .reqtype-badge {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .reqtype-returnable {
+        background-color: #fef8e7;
+        color: #b78103;
+        border: 1px solid #ffeeba;
+    }
 </style>
 
 <div class="container-fluid py-3">
@@ -71,26 +90,28 @@
     <div class="card shadow mb-3">
         <div class="card-header py-3">
             <div class="page-title-bar">
-                <div class="page-title-text">
-                    <i class="fas fa-undo fa-sm text-primary mr-2"></i> HR Return
+                <div class="page-title-text" id="page-header-title">
+                    <i class="fas fa-hand-holding-usd fa-sm text-primary mr-2"></i> HR Disbursement
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
-                    <a href="@Url.Action("HRReturnIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
+                    <a href="@Url.Action("HRDisbursementIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
                         <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
                     </a>
                     <button type="button" class="btn btn-info btn-sm shadow-sm ml-2" onclick="showReturnable()">
                         <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show Returnable
                     </button>
-                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveReturn()">
-                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
+                    <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" id="btn-save-disbursement" onclick="saveDisbursement()">
+                        <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save Disbursement
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <form id="returnForm" autocomplete="off">
-        <!-- COMMON HEADER CARD -->
+    <form id="disbursementForm" autocomplete="off">
+        <input type="hidden" id="hdr-edit-id" value="0" />
+
+        <!-- COMMON HEADER CARD WITH SAME VALIDATION -->
         <div class="card shadow mb-4">
             <div class="card-header card-header-custom">
                 <i class="fas fa-info-circle mr-2"></i>General Information
@@ -109,24 +130,29 @@
                         <label class="form-label">Post Date</label>
                         <input type="text" class="form-control datepicker" id="hdr-postdate" readonly />
                     </div>
+                    
+                    <!-- Employee dropdown: API-driven with JSON fallback -->
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
                         <select class="form-control" id="hdr-employee" required>
-                            <option value="">Select Employee...</option>
+                            <option value="">Loading Employees...</option>
                         </select>
                     </div>
+
+                    <!-- Auto-populated from Employee Profile -->
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Designation</label>
-                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto loaded" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Department</label>
-                        <input type="text" class="form-control" id="hdr-department" readonly />
+                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto loaded" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Reporting Manager</label>
-                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto loaded" />
                     </div>
+
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Remarks / Comments</label>
                         <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter remarks or comments..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
@@ -135,17 +161,18 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Attachment (Max 25MB)</label>
                         <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
-                        <small class="text-muted">Upload return document if any.</small>
+                        <small class="text-muted">Upload disbursement receipt or handover form if any.</small>
                     </div>
                 </div>
             </div>
         </div>
     </form>
 
+    <!-- USER GRID: DISBURSEMENT ITEMS DETAILED -->
     <div class="card shadow mb-4">
         <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-undo mr-2"></i>Returnable Items Detailed</span>
-            <small class="text-white-50">Click "Show Returnable" to select items</small>
+            <span><i class="fas fa-hand-holding-usd mr-2"></i>Disbursement Items Detailed</span>
+            <small class="text-white-50">Click "Show Returnable" to recall returnable requests for selected employee</small>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -157,11 +184,10 @@
                             <th class="num-col" style="width: 80px;">Qty</th>
                             <th>Remarks</th>
                             <th>Req No</th>
-                            <th>Disbursement No</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr id="empty-row"><td colspan="6" class="text-center text-muted py-3">No returnable items selected. Select an employee and click "Show Returnable".</td></tr>
+                        <tr id="empty-row"><td colspan="5" class="text-center text-muted py-3">No returnable items selected. Select an employee and click "Show Returnable".</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -175,55 +201,70 @@
 
 <script>
     var employeesData = [];
-    var pendingReturns = [];
+    var pendingDisbursements = [];
+    var editHeaderId = 0;
+    var isEditMode = false;
 
     $(document).ready(function() {
-        initHeader();
+        var urlParams = new URLSearchParams(window.location.search);
+        var paramId = urlParams.get('id') || '@ViewBag.EditId';
+        editHeaderId = parseInt(paramId) || 0;
+        isEditMode = editHeaderId > 0;
 
-        // Live API with no JSON fallback
-        $.getJSON('/Master/GetApiEmployees').done(function(empRes) {
-            var rawEmp = (empRes && empRes[0]) ? empRes[0] : empRes;
-            employeesData = Array.isArray(rawEmp) ? rawEmp : (Array.isArray(empRes) ? empRes : []);
-            populateDropdowns();
-            $('select.form-control').select2({ width: '100%' });
-        }).fail(function() {
-            if (typeof alertify !== 'undefined') {
-                alertify.log('Failed to fetch employee list from API.', 'error', 4000);
-            }
-            employeesData = [];
-            populateDropdowns();
-        });
+        if (isEditMode) {
+            $('#page-header-title').html('<i class="fas fa-edit fa-sm text-primary mr-2"></i> Edit HR Disbursement <span class="badge badge-primary font-weight-bold ml-2">Edit Mode</span>');
+            $('#btn-save-disbursement').html('<i class="fas fa-save fa-sm text-white-50 mr-1"></i> Update Disbursement');
+            $('#hdr-edit-id').val(editHeaderId);
+        }
 
-        $('#hdr-employee').change(onEmployeeChange);
+        initHeaderDocNo();
 
         flatpickr(".datepicker", {
             dateFormat: "d-M-Y",
             defaultDate: "today"
         });
+
+        // Load Employees: Direct API
+        $.getJSON('/Master/GetApiEmployees').done(function(empRes) {
+            var rawEmp = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(rawEmp) ? rawEmp : (Array.isArray(empRes) ? empRes : []);
+            populateDropdowns();
+
+            if (isEditMode) {
+                loadDisbursementForEdit(editHeaderId);
+            }
+        }).fail(function() {
+            alertify.log('Failed to fetch employee list from API.', 'error', 4000);
+        });
+
+        $('#hdr-employee').change(onEmployeeChange);
     });
 
-    function initHeader() {
+    function initHeaderDocNo() {
+        if (isEditMode) return;
+
         var d = new Date();
         var mm = String(d.getMonth() + 1).padStart(2, '0');
-        var dd = String(d.getDate()).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
-        var yyyy = d.getFullYear();
         var mmm = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
-        
-        var saved = JSON.parse(localStorage.getItem('savedHRReturns') || '[]');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var todayStr = dd + '-' + mmm + '-' + d.getFullYear();
+
+        $('#hdr-date').val(todayStr);
+        $('#hdr-postdate').val(todayStr);
+
+        var saved = JSON.parse(localStorage.getItem('savedHRDisbursements') || '[]');
         var maxNum = 0;
         saved.forEach(function(item) {
-            var dNo = item.docNo || '';
+            var dNo = item.docNo || item.disbursementNo || '';
             var match = dNo.match(/\d+$/);
             if (match) {
                 var n = parseInt(match[0], 10);
                 if (!isNaN(n) && n > maxNum) maxNum = n;
             }
         });
-        var seq = String(Math.max(maxNum, saved.length) + 1).padStart(5, '0');
-        $('#hdr-docno').val('RET-' + mm + '-' + yy + '-' + seq);
-        $('#hdr-date').val(dd + '-' + mmm + '-' + yyyy);
-        $('#hdr-postdate').val(dd + '-' + mmm + '-' + yyyy);
+        var nextSeq = Math.max(maxNum, saved.length) + 1;
+        $('#hdr-docno').val('DISB-' + mm + '-' + yy + '-' + String(nextSeq).padStart(5, '0'));
     }
 
     function populateDropdowns() {
@@ -231,19 +272,20 @@
         empSelect.empty().append('<option value="">Select Employee...</option>');
         if (Array.isArray(employeesData) && employeesData.length > 0) {
             employeesData.forEach(function(emp) {
-                var empId = emp.id || emp.iMasterId || '';
-                var empCode = emp.code || emp.sCode || '';
-                var empName = emp.name || emp.sName || '';
+                var empId = emp.iMasterId || emp.id || '';
+                var empCode = emp.sCode || emp.code || '';
+                var empName = emp.sName || emp.name || '';
                 empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
         }
+        empSelect.select2({ width: '100%' });
     }
 
     function onEmployeeChange() {
-        var empVal = $(this).val();
-        pendingReturns = [];
+        var empVal = $('#hdr-employee').val();
+        pendingDisbursements = [];
         renderGrid();
-        
+
         if (!empVal) {
             $('#hdr-designation, #hdr-department, #hdr-manager').val('');
             return;
@@ -255,185 +297,197 @@
             $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '-');
             $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || '-');
         }
-        
+
         showReturnable();
     }
 
     function checkFileSize(input) {
         if (input.files && input.files[0]) {
             if (input.files[0].size > 25 * 1024 * 1024) {
-                alertify.log('File size exceeds 25MB limit.', 'error', 5000);
+                alertify.log('File size exceeds 25MB limit.', 'error', 4000);
                 input.value = '';
             }
         }
     }
 
-    // "recall the link based on the qty for that employee where it is returnable from Disbursement Form"
+    // "recall the link based on the qty for that employee where it is returnable"
     function showReturnable() {
         var empId = $('#hdr-employee').val();
-        if(!empId) {
-            pendingReturns = [];
+        if (!empId) {
+            pendingDisbursements = [];
             renderGrid();
             alertify.log('Please select an Employee first.', 'error', 3000);
             return;
         }
 
-        function filterDisbursed(disbList, reqList) {
-            var items = [];
-
-            // 1. Recalled from HR Disbursement Form records
-            disbList.forEach(function(disb) {
-                var matchEmp = String(disb.employeeId) === String(empId) || (disb.employeeCode && disb.employeeCode === empId);
-                if (matchEmp && Array.isArray(disb.items)) {
-                    disb.items.forEach(function(it) {
-                        if (it.requestType === 'Returnable' && it.status !== 'Returned') {
-                            items.push({
-                                reqNo: it.reqNo || '-',
-                                requestType: it.requestType || 'Returnable',
-                                selectionName: it.selectionName || '',
-                                qty: it.qty || 1,
-                                remarks: it.remarks || '',
-                                disbursementNo: disb.disbursementNo || disb.docNo || 'DISB-REC'
-                            });
-                        }
-                    });
-                }
-            });
-
-            // 2. Also check savedHRRequests where status is 'Disbursed'
-            reqList.forEach(function(req) {
+        function filterRequests(requests) {
+            pendingDisbursements = requests.filter(function(req) {
                 var matchEmp = String(req.employeeId) === String(empId) || (req.employeeCode && req.employeeCode === empId);
-                if (matchEmp && req.requestType === 'Returnable' && req.status === 'Disbursed') {
-                    var exists = items.some(x => x.reqNo === req.reqNo);
-                    if (!exists) {
-                        items.push({
-                            reqNo: req.reqNo || '-',
-                            requestType: req.requestType || 'Returnable',
-                            selectionName: req.selectionName || '',
-                            qty: req.qty || 1,
-                            remarks: req.remarks || '',
-                            disbursementNo: req.disbursementNo || 'DISB-REF'
-                        });
-                    }
-                }
+                return matchEmp && req.requestType === 'Returnable' && req.status === 'Pending';
             });
-
-            pendingReturns = items;
             renderGrid();
-            if (pendingReturns.length === 0) {
-                alertify.log('No disbursed returnable items found for this employee.', 'log', 3000);
+            if (pendingDisbursements.length === 0) {
+                alertify.log('No pending returnable requests found for this employee.', 'log', 3000);
             } else {
-                alertify.log(`Found ${pendingReturns.length} returnable item(s) from Disbursement.`, 'success', 2500);
+                alertify.log(`Found ${pendingDisbursements.length} pending returnable item(s).`, 'success', 2500);
             }
         }
 
-        var rawDisb = localStorage.getItem('savedHRDisbursements');
-        var rawReq = localStorage.getItem('savedHRRequests');
-
-        var disbPromise = rawDisb ? $.Deferred().resolve(JSON.parse(rawDisb || '[]')) : $.getJSON('/api-assets/hr_disbursements.json');
-        var reqPromise = rawReq ? $.Deferred().resolve(JSON.parse(rawReq || '[]')) : $.getJSON('/api-assets/hr_requests.json');
-
-        $.when(disbPromise, reqPromise).done(function(dRes, rRes) {
-            var disbData = Array.isArray(dRes) ? dRes : (dRes && dRes[0] ? dRes[0] : []);
-            var reqData = Array.isArray(rRes) ? rRes : (rRes && rRes[0] ? rRes[0] : []);
-            filterDisbursed(disbData, reqData);
-        }).fail(function() {
-            filterDisbursed([], []);
-        });
+        var raw = localStorage.getItem('savedHRRequests');
+        if (!raw) {
+            $.getJSON('/api-assets/hr_requests.json').done(function(seed) {
+                if (Array.isArray(seed)) {
+                    localStorage.setItem('savedHRRequests', JSON.stringify(seed));
+                    filterRequests(seed);
+                } else {
+                    filterRequests([]);
+                }
+            }).fail(function() {
+                filterRequests([]);
+            });
+        } else {
+            filterRequests(JSON.parse(raw || '[]'));
+        }
     }
 
-    // User grid columns strictly: Request Type | Qty | Remarks | Req No | Disbusment No
+    // Grid columns strictly: Request Type | Qty | Remarks | Req No
     function renderGrid() {
         var uTbody = $('#user-grid-table tbody');
         uTbody.empty();
-        
-        if(pendingReturns.length === 0) {
-            uTbody.append('<tr><td colspan="6" class="text-center text-muted py-3">No returnable items found from Disbursement form for this employee.</td></tr>');
+
+        if (pendingDisbursements.length === 0) {
+            uTbody.append('<tr id="empty-row"><td colspan="5" class="text-center text-muted py-3">No returnable requests found for this employee.</td></tr>');
             return;
         }
 
-        pendingReturns.forEach(function(item, index) {
-            item.gridIndex = index;
-            var typeDisplay = item.selectionName ? `${item.requestType} (${item.selectionName})` : item.requestType;
-            var tr = `<tr>
+        pendingDisbursements.forEach(function(item, index) {
+            var typeName = item.selectionName ? `${item.requestType} (${item.selectionName})` : item.requestType;
+            var tr = `<tr id="row-disb-${index}">
                 <td class="action-btns" style="text-align:center;">
                     <a href="#" class="remove-item-btn" title="Remove from list" onclick="removeFromGrid(${index}); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                 </td>
-                <td><span class="reqtype-badge reqtype-returnable">${typeDisplay}</span></td>
+                <td><span class="reqtype-badge reqtype-returnable">${typeName}</span></td>
                 <td class="num-col font-weight-bold text-primary">${item.qty || 1}</td>
-                <td><input type="text" class="form-control form-control-sm return-remarks" data-idx="${index}" value="${item.remarks ? 'Return: ' + item.remarks : 'Returned in good condition'}" /></td>
+                <td>${item.remarks || '-'}</td>
                 <td><strong class="text-primary">${item.reqNo || '-'}</strong></td>
-                <td><span class="badge badge-info font-weight-bold">${item.disbursementNo || '-'}</span></td>
             </tr>`;
             uTbody.append(tr);
         });
     }
 
     function removeFromGrid(index) {
-        pendingReturns.splice(index, 1);
+        pendingDisbursements.splice(index, 1);
         renderGrid();
     }
 
-    function saveReturn() {
-        if (pendingReturns.length === 0) {
-            alertify.log('No items selected for return.', 'error', 5000);
+    function saveDisbursement() {
+        if (pendingDisbursements.length === 0) {
+            alertify.log('No items selected for disbursement.', 'error', 4500);
             return;
         }
 
-        if(!$('#hdr-employee').val()) {
-            alertify.log('Please select an Employee.', 'error', 5000);
+        var empId = $('#hdr-employee').val();
+        if (!empId) {
+            alertify.log('Please select an Employee.', 'error', 4000);
             return;
         }
 
+        var empOpt = $('#hdr-employee option:selected');
+        var empCode = empOpt.data('code') || '';
+        var empName = empOpt.data('name') || empOpt.text();
         var docNo = $('#hdr-docno').val();
         var date = $('#hdr-date').val();
+        var postDate = $('#hdr-postdate').val();
+        var comments = $('#hdr-comments').val() || '';
 
-        // 1. Update savedHRRequests
+        var fileInput = document.getElementById('hdr-attachment');
+        var attachFileName = (fileInput && fileInput.files.length > 0) ? fileInput.files[0].name : '';
+
+        // 1. Update matched items in savedHRRequests to status 'Disbursed'
         var allRequests = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
-        pendingReturns.forEach(function(item, idx) {
-            var inputRemark = $('.return-remarks[data-idx="'+idx+'"]').val();
-            var match = allRequests.find(a => a.reqNo === item.reqNo);
-            if(match) {
-                match.status = 'Returned';
-                match.returnDocNo = docNo;
-                match.returnDate = date;
-                match.returnRemarks = inputRemark;
+        pendingDisbursements.forEach(function(pItem) {
+            var match = allRequests.find(r => (r.reqNo && r.reqNo === pItem.reqNo) || (r.id && r.id === pItem.id));
+            if (match) {
+                match.status = 'Disbursed';
+                match.disbursementNo = docNo;
+                match.disbursementDate = date;
             }
         });
         localStorage.setItem('savedHRRequests', JSON.stringify(allRequests));
 
-        // 2. Update savedHRDisbursements
-        var allDisbs = JSON.parse(localStorage.getItem('savedHRDisbursements') || '[]');
-        pendingReturns.forEach(function(item) {
-            allDisbs.forEach(function(disb) {
-                if (Array.isArray(disb.items)) {
-                    var m = disb.items.find(i => i.reqNo === item.reqNo);
-                    if (m) m.status = 'Returned';
-                }
-            });
-        });
-        localStorage.setItem('savedHRDisbursements', JSON.stringify(allDisbs));
+        // 2. Save new record into savedHRDisbursements
+        var savedDisbs = JSON.parse(localStorage.getItem('savedHRDisbursements') || '[]');
+        if (isEditMode && editHeaderId) {
+            savedDisbs = savedDisbs.filter(d => d.id !== editHeaderId && d.docNo !== docNo);
+        }
 
-        // 3. Save Return Document
-        var savedReturns = JSON.parse(localStorage.getItem('savedHRReturns') || '[]');
-        var newReturn = {
-            id: Date.now(),
+        var newDisb = {
+            id: isEditMode ? editHeaderId : Date.now(),
             docNo: docNo,
+            disbursementNo: docNo,
             date: date,
-            employeeId: $('#hdr-employee').val(),
-            employeeName: $('#hdr-employee option:selected').text(),
-            remarks: $('#hdr-comments').val(),
-            items: pendingReturns
+            postDate: postDate,
+            employeeId: empId,
+            employeeCode: empCode,
+            employeeName: empName,
+            department: $('#hdr-department').val(),
+            designation: $('#hdr-designation').val(),
+            manager: $('#hdr-manager').val(),
+            remarks: comments,
+            status: 'Disbursed',
+            attachmentName: attachFileName,
+            items: pendingDisbursements.map(function(item) {
+                return {
+                    reqNo: item.reqNo,
+                    requestType: item.requestType,
+                    selectionName: item.selectionName,
+                    qty: item.qty || 1,
+                    remarks: item.remarks || '',
+                    status: 'Disbursed'
+                };
+            })
         };
-        savedReturns.push(newReturn);
-        localStorage.setItem('savedHRReturns', JSON.stringify(savedReturns));
 
-        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: `HR Return ${docNo} saved successfully!`, type: 'success' }));
-        var targetUrl = '@Url.Action("HRReturnIndex", "Master")';
+        savedDisbs.push(newDisb);
+        localStorage.setItem('savedHRDisbursements', JSON.stringify(savedDisbs));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({
+            msg: `HR Disbursement ${docNo} for ${empName} saved successfully!`,
+            type: 'success'
+        }));
+
+        var targetUrl = '@Url.Action("HRDisbursementIndex", "Master")';
         if (typeof loadPageContent === 'function') {
             loadPageContent(targetUrl, true);
         } else {
             window.location.href = targetUrl;
         }
+    }
+
+    function loadDisbursementForEdit(id) {
+        var saved = JSON.parse(localStorage.getItem('savedHRDisbursements') || '[]');
+        var match = saved.find(d => d.id === id || String(d.id) === String(id));
+        if (match) {
+            applyLoadedDisbursement(match);
+        } else {
+            $.getJSON('/api-assets/hr_disbursements.json').done(function(seed) {
+                if (Array.isArray(seed)) {
+                    var m = seed.find(d => d.id === id || String(d.id) === String(id));
+                    if (m) applyLoadedDisbursement(m);
+                }
+            });
+        }
+    }
+
+    function applyLoadedDisbursement(disb) {
+        $('#hdr-docno').val(disb.docNo || disb.disbursementNo || '');
+        $('#hdr-date').val(disb.date || '');
+        $('#hdr-postdate').val(disb.postDate || disb.date || '');
+        $('#hdr-comments').val(disb.remarks || disb.comments || '');
+        if (disb.remarks) $('#comments-counter').text(disb.remarks.length + '/250');
+
+        $('#hdr-employee').val(disb.employeeId).trigger('change');
+        pendingDisbursements = disb.items || [];
+        renderGrid();
     }
 </script>

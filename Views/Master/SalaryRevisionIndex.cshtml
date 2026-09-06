@@ -411,13 +411,13 @@
     });
 
     function loadHostCompaniesFilter() {
-        $.getJSON('/api-assets2/common_master.json')
+        $.getJSON('/api-assets/common_master.json')
             .done(function (res) {
                 var data = (res && res.hostCompanies) ? res.hostCompanies : (Array.isArray(res) ? res : []);
                 populateHostCompanyFilter(data);
             })
             .fail(function () {
-                $.getJSON('/api-assets2/host_company.json', function (data) {
+                $.getJSON('/api-assets/host_company.json', function (data) {
                     populateHostCompanyFilter(data);
                 });
             });
@@ -438,7 +438,7 @@
     }
 
     function loadGridData() {
-        $.getJSON('/api-assets2/salary_revisions.json')
+        $.getJSON('/api-assets/salary_revisions.json')
             .done(function (seedData) {
                 var seedList = Array.isArray(seedData) ? seedData : [];
                 var savedList = [];

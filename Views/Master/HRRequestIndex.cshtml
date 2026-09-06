@@ -96,7 +96,7 @@
             <div class="page-title-bar">
                 <div class="page-title-text">
                     <i class="fas fa-hand-holding fa-sm"></i>
-                    HR Request & Disbursement List
+                    HR Request List
                 </div>
                 <div class="btn-group-actions">
                     <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-sm shadow-sm">
@@ -425,7 +425,7 @@
         if (!rawSaved || JSON.parse(rawSaved || '[]').length === 0) {
             var isInitialized = localStorage.getItem('savedHRRequests_initialized');
             if (!isInitialized) {
-                $.getJSON('/api-assets2/hr_requests.json').done(function(seedData) {
+                $.getJSON('/api-assets/hr_requests.json').done(function(seedData) {
                     if (Array.isArray(seedData) && seedData.length > 0) {
                         localStorage.setItem('savedHRRequests', JSON.stringify(seedData));
                         localStorage.setItem('savedHRRequests_initialized', 'true');

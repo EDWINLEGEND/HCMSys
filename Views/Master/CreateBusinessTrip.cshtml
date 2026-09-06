@@ -277,9 +277,9 @@
 
         $.when(
             $.getJSON('/Master/GetApiEmployees'),
-            $.getJSON('/api-assets2/currency.json'),
-            $.getJSON('/api-assets2/city.json'),
-            $.getJSON('/api-assets2/city_rate_matrix.json')
+            $.getJSON('/api-assets/currency.json'),
+            $.getJSON('/api-assets/city.json'),
+            $.getJSON('/api-assets/city_rate_matrix.json')
         ).done(function(empRes, curRes, cityRes, rateRes) {
             var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
             employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];

@@ -578,7 +578,7 @@
     var commonMasterData = null;
 
     function loadCommonMaster() {
-        $.getJSON('/api-assets2/common_master.json')
+        $.getJSON('/api-assets/common_master.json')
             .done(function (data) {
                 commonMasterData = data;
                 if (data.hostCompanies && Array.isArray(data.hostCompanies)) {
@@ -624,7 +624,7 @@
                 }
             })
             .fail(function () {
-                $.getJSON('/api-assets2/host_company.json', function (data) {
+                $.getJSON('/api-assets/host_company.json', function (data) {
                     if (Array.isArray(data)) {
                         hostCompaniesList = data;
                         var $sel = $('#hdr-hostcompany');
@@ -695,7 +695,7 @@
         });
 
         // Load existing revisions data
-        $.getJSON('/api-assets2/salary_revisions.json', function (data) {
+        $.getJSON('/api-assets/salary_revisions.json', function (data) {
             existingRevisions = Array.isArray(data) ? data : [];
             if (isEditMode) {
                 loadRevisionForEdit(editId, queryDocNo);

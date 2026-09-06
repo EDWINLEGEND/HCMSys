@@ -200,6 +200,21 @@ namespace HCMSys.Services
                 formData.Add(new StringContent(docDateStr), "dDocDate");
                 formData.Add(new StringContent(postDateStr), "dPostDate");
 
+                // Defensive mapping: if sequence id was provided, map to iMasterId
+                if (payload.IEmpId > 0 && payload.IEmpId <= 3)
+                {
+                    try
+                    {
+                        var emps = await GetEmployeesAsync();
+                        var matched = emps.FirstOrDefault(e => e.Id == payload.IEmpId);
+                        if (matched != null && matched.IMasterId > 0)
+                        {
+                            payload.IEmpId = matched.IMasterId;
+                        }
+                    }
+                    catch { }
+                }
+
                 formData.Add(new StringContent(payload.IEmpId.ToString()), "iEmpId");
                 formData.Add(new StringContent(payload.ICompanyId.ToString()), "iCompanyId");
                 formData.Add(new StringContent(payload.IPayYearId.ToString()), "iPayYearId");
@@ -505,6 +520,21 @@ namespace HCMSys.Services
         {
             try
             {
+                // If employeeId is passed as local sequence id (1, 2, 3), map to remote iMasterId (41, 40, 36)
+                if (employeeId > 0 && employeeId <= 3)
+                {
+                    try
+                    {
+                        var emps = await GetEmployeesAsync();
+                        var matched = emps.FirstOrDefault(e => e.Id == employeeId);
+                        if (matched != null && matched.IMasterId > 0)
+                        {
+                            employeeId = matched.IMasterId;
+                        }
+                    }
+                    catch { }
+                }
+
                 var token = await GetAuthTokenAsync();
                 if (!string.IsNullOrEmpty(token) && employeeId > 0)
                 {
@@ -516,87 +546,57 @@ namespace HCMSys.Services
                         var jsonString = await response.Content.ReadAsStringAsync();
                         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
+                        List<EmployeeLeaveItemDto>? leaves = null;
+
                         // 1. Try envelope deserialization (Docs/API.pdf Section 10 structure)
                         try
                         {
                             var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<EmployeeLeavesEnvelope>>(jsonString, options);
-                            var leaves = envelope?.Data?.Employees?.Result?.Data?.Leaves;
-                            if (leaves != null && leaves.Count > 0)
-                            {
-                                try
-                                {
-                                    var transactions = await GetLeaveTransactionsAsync(1, 1);
-                                    foreach (var t in transactions)
-                                    {
-                                        var tLeaves = (t.Leaves ?? new List<LeaveTransactionBodyDto>()).Where(l => l.IEmployeeId == employeeId);
-                                        foreach (var tl in tLeaves)
-                                        {
-                                            var match = leaves.FirstOrDefault(l => (tl.ILeaveTypeId > 0 && l.ILeaveTypeId == tl.ILeaveTypeId) ||
-                                                                                   (!string.IsNullOrEmpty(tl.SLeaveTypeName) && string.Equals(l.SLeaveName, tl.SLeaveTypeName, StringComparison.OrdinalIgnoreCase)) ||
-                                                                                   (!string.IsNullOrEmpty(tl.SRemarks) && tl.SRemarks.IndexOf(l.SLeaveName, StringComparison.OrdinalIgnoreCase) >= 0));
-                                            if (match != null)
-                                            {
-                                                if (t.ITransTypeId == 0 || t.ITransTypeId == 1) // 0 = Opening Leaves, 1 = Eligibility
-                                                {
-                                                    match.OpeningLeaves += tl.FDuration;
-                                                }
-                                                else if (t.ITransTypeId == 2) // 2 = Applications / Adjustments
-                                                {
-                                                    match.LeavesApproved += tl.FDuration;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    foreach (var l in leaves)
-                                    {
-                                        // If no opening leaves have been configured yet in remote DB, credit standard statutory quota
-                                        if (l.OpeningLeaves <= 0)
-                                        {
-                                            if (l.ILeaveTypeId == 7 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Annual", StringComparison.OrdinalIgnoreCase) >= 0))
-                                                l.OpeningLeaves = 30; // 30 days Annual Leave for Expat & Senior Staff
-                                            else if (l.ILeaveTypeId == 8 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Sick", StringComparison.OrdinalIgnoreCase) >= 0))
-                                                l.OpeningLeaves = 15; // 15 days Sick Leave
-                                            else if (l.ILeaveTypeId == 12 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Paternity", StringComparison.OrdinalIgnoreCase) >= 0))
-                                                l.OpeningLeaves = 7;  // 7 days Paternity Leave
-                                            else if (l.ILeaveTypeId == 1017 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Maternity", StringComparison.OrdinalIgnoreCase) >= 0))
-                                                l.OpeningLeaves = 60; // 60 days Maternity Leave
-                                            else
-                                                l.OpeningLeaves = 30;
-                                        }
-
-                                        l.LeaveBalance = Math.Max(0, l.OpeningLeaves - l.LeavesApproved - l.LeavesPending);
-                                    }
-                                }
-                                catch { }
-
-                                return leaves;
-                            }
+                            leaves = envelope?.Data?.Employees?.Result?.Data?.Leaves;
                         }
                         catch { }
 
                         // 2. Try direct Data wrapper deserialization
-                        try
+                        if (leaves == null || leaves.Count == 0)
                         {
-                            var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<EmployeeLeavesDataDto>>(jsonString, options);
-                            if (envelope?.Data?.Leaves != null && envelope.Data.Leaves.Count > 0)
+                            try
                             {
-                                foreach (var l in envelope.Data.Leaves)
-                                {
-                                    if (l.OpeningLeaves <= 0)
-                                    {
-                                        if (l.ILeaveTypeId == 7 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Annual", StringComparison.OrdinalIgnoreCase) >= 0))
-                                            l.OpeningLeaves = 30;
-                                        else if (l.ILeaveTypeId == 8 || (l.SLeaveName != null && l.SLeaveName.IndexOf("Sick", StringComparison.OrdinalIgnoreCase) >= 0))
-                                            l.OpeningLeaves = 15;
-                                        else
-                                            l.OpeningLeaves = 30;
-                                    }
-                                    l.LeaveBalance = Math.Max(0, l.OpeningLeaves - l.LeavesApproved - l.LeavesPending);
-                                }
-                                return envelope.Data.Leaves;
+                                var envelope = JsonSerializer.Deserialize<ApiResponseEnvelope<EmployeeLeavesDataDto>>(jsonString, options);
+                                leaves = envelope?.Data?.Leaves;
                             }
+                            catch { }
                         }
-                        catch { }
+
+                        if (leaves != null && leaves.Count > 0)
+                        {
+                            // Account for any approved/applied leaves from transactions (iTransTypeId == 2)
+                            try
+                            {
+                                var transactions = await GetLeaveTransactionsAsync(1, 1);
+                                var appTxs = transactions.Where(t => t.ITransTypeId == 2);
+                                foreach (var t in appTxs)
+                                {
+                                    var tLeaves = (t.Leaves ?? new List<LeaveTransactionBodyDto>()).Where(l => l.IEmployeeId == employeeId);
+                                    foreach (var tl in tLeaves)
+                                    {
+                                        var match = leaves.FirstOrDefault(l => (tl.ILeaveTypeId > 0 && l.ILeaveTypeId == tl.ILeaveTypeId) ||
+                                                                               (!string.IsNullOrEmpty(tl.SLeaveTypeName) && string.Equals(l.SLeaveName, tl.SLeaveTypeName, StringComparison.OrdinalIgnoreCase)));
+                                        if (match != null)
+                                        {
+                                            match.LeavesApproved += tl.FDuration;
+                                        }
+                                    }
+                                }
+                            }
+                            catch { }
+
+                            foreach (var l in leaves)
+                            {
+                                l.LeaveBalance = Math.Max(0, l.OpeningLeaves - l.LeavesApproved - l.LeavesPending);
+                            }
+
+                            return leaves;
+                        }
                     }
                 }
             }
@@ -605,73 +605,57 @@ namespace HCMSys.Services
                 _logger.LogError(ex, "Error fetching Employee Leaves from API for emp {EmpId}", employeeId);
             }
 
-            // Calculate live balances for employee from active Leave Transactions (iTransTypeId 0 = Opening Leaves, 1 = Eligibility, 2 = Applications)
+            // If remote DB returned no leaves structure, calculate strictly from live Leave Transactions
             try
             {
                 var transactions = await GetLeaveTransactionsAsync(1, 1);
-                
-                // Standard baseline contractual leave entitlements (Annual: 30 days, Sick: 15 days, Paternity: 7 days, Maternity: 60 days)
-                var defaultTypes = new List<EmployeeLeaveItemDto>
+                var empTxs = transactions.Where(t => (t.Leaves ?? new List<LeaveTransactionBodyDto>()).Any(l => l.IEmployeeId == employeeId)).ToList();
+                if (empTxs.Count > 0)
                 {
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 7, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 7 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
-                };
-
-                foreach (var t in transactions)
-                {
-                    var tLeaves = (t.Leaves ?? new List<LeaveTransactionBodyDto>()).Where(l => l.IEmployeeId == employeeId);
-                    foreach (var l in tLeaves)
+                    var calculated = new List<EmployeeLeaveItemDto>();
+                    foreach (var t in empTxs)
                     {
-                        var match = defaultTypes.FirstOrDefault(dt => (l.ILeaveTypeId > 0 && dt.ILeaveTypeId == l.ILeaveTypeId) ||
-                                                                       (!string.IsNullOrEmpty(l.SLeaveTypeName) && string.Equals(dt.SLeaveName, l.SLeaveTypeName, StringComparison.OrdinalIgnoreCase)) ||
-                                                                       (!string.IsNullOrEmpty(l.SRemarks) && l.SRemarks.IndexOf(dt.SLeaveName, StringComparison.OrdinalIgnoreCase) >= 0));
-                        if (match == null && l.ILeaveTypeId > 0)
+                        var tLeaves = (t.Leaves ?? new List<LeaveTransactionBodyDto>()).Where(l => l.IEmployeeId == employeeId);
+                        foreach (var l in tLeaves)
                         {
-                            match = new EmployeeLeaveItemDto
+                            var match = calculated.FirstOrDefault(dt => (l.ILeaveTypeId > 0 && dt.ILeaveTypeId == l.ILeaveTypeId) ||
+                                                                        (!string.IsNullOrEmpty(l.SLeaveTypeName) && string.Equals(dt.SLeaveName, l.SLeaveTypeName, StringComparison.OrdinalIgnoreCase)));
+                            if (match == null)
                             {
-                                ILeaveTypeId = l.ILeaveTypeId,
-                                SLeaveName = !string.IsNullOrWhiteSpace(l.SLeaveTypeName) ? l.SLeaveTypeName : (!string.IsNullOrWhiteSpace(l.SRemarks) ? l.SRemarks : "Leave"),
-                                OpeningLeaves = 30,
-                                LeavesApproved = 0,
-                                LeavesPending = 0,
-                                LeaveBalance = 30
-                            };
-                            defaultTypes.Add(match);
-                        }
+                                match = new EmployeeLeaveItemDto
+                                {
+                                    ILeaveTypeId = l.ILeaveTypeId > 0 ? l.ILeaveTypeId : 7,
+                                    SLeaveName = !string.IsNullOrWhiteSpace(l.SLeaveTypeName) ? l.SLeaveTypeName : (!string.IsNullOrWhiteSpace(l.SRemarks) ? l.SRemarks : "Leave"),
+                                    OpeningLeaves = 0,
+                                    LeavesApproved = 0,
+                                    LeavesPending = 0,
+                                    LeaveBalance = 0
+                                };
+                                calculated.Add(match);
+                            }
 
-                        if (match != null)
-                        {
-                            if (t.ITransTypeId == 0 || t.ITransTypeId == 1) // 0 = Opening Leaves, 1 = Eligibility (credits)
+                            if (t.ITransTypeId == 0 || t.ITransTypeId == 1)
                             {
                                 match.OpeningLeaves += l.FDuration;
                             }
-                            else // 2 = Applications / Adjustments (deductions)
+                            else if (t.ITransTypeId == 2)
                             {
                                 match.LeavesApproved += l.FDuration;
                             }
                         }
                     }
-                }
 
-                foreach (var dt in defaultTypes)
-                {
-                    dt.LeaveBalance = Math.Max(0, dt.OpeningLeaves - dt.LeavesApproved - dt.LeavesPending);
-                }
+                    foreach (var dt in calculated)
+                    {
+                        dt.LeaveBalance = Math.Max(0, dt.OpeningLeaves - dt.LeavesApproved - dt.LeavesPending);
+                    }
 
-                return defaultTypes;
+                    return calculated;
+                }
             }
-            catch
-            {
-                return new List<EmployeeLeaveItemDto>
-                {
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 7, SLeaveName = "Annual Leave", OpeningLeaves = 30, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 30 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 8, SLeaveName = "Sick Leave", OpeningLeaves = 15, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 15 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 12, SLeaveName = "Paternity Leave", OpeningLeaves = 7, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 7 },
-                    new EmployeeLeaveItemDto { ILeaveTypeId = 1017, SLeaveName = "Maternity Leave", OpeningLeaves = 60, LeavesApproved = 0, LeavesPending = 0, LeaveBalance = 60 }
-                };
-            }
+            catch { }
+
+            return new List<EmployeeLeaveItemDto>();
         }
 
         public async Task<List<SaveLeaveTransactionDto>> GetLeaveTransactionsAsync(int companyId = 1, int payYearId = 1)
@@ -794,6 +778,27 @@ namespace HCMSys.Services
                 formData.Add(new StringContent(payload.IPayYearId.ToString()), "iPayYearId");
                 formData.Add(new StringContent(string.IsNullOrWhiteSpace(payload.SComments) ? "Leave application" : payload.SComments), "sComments");
                 formData.Add(new StringContent(payload.ITransTypeId.ToString()), "iTransTypeId");
+
+                // Map any employee sequence ids (1..3) to iMasterId
+                if (payload.Leaves != null && payload.Leaves.Any(l => l.IEmployeeId > 0 && l.IEmployeeId <= 3))
+                {
+                    try
+                    {
+                        var emps = await GetEmployeesAsync();
+                        foreach (var l in payload.Leaves)
+                        {
+                            if (l.IEmployeeId > 0 && l.IEmployeeId <= 3)
+                            {
+                                var matched = emps.FirstOrDefault(e => e.Id == l.IEmployeeId);
+                                if (matched != null && matched.IMasterId > 0)
+                                {
+                                    l.IEmployeeId = matched.IMasterId;
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
 
                 // Serialized JSON string array for Leaves field: [{"iEmployeeId":36,"iLeaveTypeId":8,"iAdjType":1,"fDuration":180,"sRemarks":"..."}]
                 var leaveItems = (payload.Leaves ?? new List<LeaveTransactionBodyDto>()).Select(l => new {

@@ -1,3 +1,7 @@
+@{
+    ViewData["Title"] = "HR Document Issue";
+}
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     html { font-size: 14px; }
@@ -13,7 +17,7 @@
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: calc(1.5em + .75rem);
     }
-    .action-btns a { margin: 0 3px; transition: opacity 0.15s; }
+    .action-btns a { margin: 0 3px; transition: opacity 0.15s; cursor: pointer; }
     .action-btns a:hover { opacity: 0.7; }
     .action-btns .fa-trash-alt { color: #e74a3b; }
     .page-title-bar {
@@ -63,6 +67,21 @@
     }
     .table th, .table td { vertical-align: middle; }
     .table td.num-col { text-align: right; }
+
+    .reqtype-badge {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .reqtype-documents {
+        background-color: #eef2fd;
+        color: #2e59d9;
+        border: 1px solid #c2d4f8;
+    }
 </style>
 
 <div class="container-fluid py-3">
@@ -79,7 +98,7 @@
                         <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Back to List
                     </a>
                     <button type="button" class="btn btn-info btn-sm shadow-sm ml-2" onclick="showDocuments()">
-                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show Pending
+                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Show
                     </button>
                     <button type="button" class="btn btn-success btn-sm shadow-sm ml-2" onclick="saveIssue()">
                         <i class="fas fa-save fa-sm text-white-50 mr-1"></i> Save
@@ -90,7 +109,7 @@
     </div>
 
     <form id="issueForm" autocomplete="off">
-        <!-- COMMON HEADER CARD -->
+        <!-- COMMON HEADER CARD WITH SAME VALIDATION -->
         <div class="card shadow mb-4">
             <div class="card-header card-header-custom">
                 <i class="fas fa-info-circle mr-2"></i>General Information
@@ -112,21 +131,29 @@
                     <div class="col-6 col-md-3 mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
                         <select class="form-control" id="hdr-employee" required>
-                            <option value="">Select Employee...</option>
+                            <option value="">Loading Employees...</option>
                         </select>
                     </div>
-                    <div class="col-md-4 mb-3">
+
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Designation</label>
-                        <input type="text" class="form-control" id="hdr-designation" readonly />
+                        <input type="text" class="form-control" id="hdr-designation" readonly placeholder="Auto loaded" />
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Department</label>
-                        <input type="text" class="form-control" id="hdr-department" readonly />
+                        <input type="text" class="form-control" id="hdr-department" readonly placeholder="Auto loaded" />
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Reporting Manager</label>
-                        <input type="text" class="form-control" id="hdr-manager" readonly />
+                        <input type="text" class="form-control" id="hdr-manager" readonly placeholder="Auto loaded" />
                     </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Sponsor / Host Company <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hdr-sponsor" required onchange="onSponsorChange()">
+                            <option value="">Loading Sponsors...</option>
+                        </select>
+                    </div>
+
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Remarks / Comments</label>
                         <textarea class="form-control" id="hdr-comments" rows="2" maxlength="250" placeholder="Enter remarks or comments..." onkeyup="document.getElementById('comments-counter').innerText = this.value.length + '/250'"></textarea>
@@ -135,17 +162,18 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Attachment (Max 25MB)</label>
                         <input type="file" class="form-control p-1" id="hdr-attachment" accept="image/*,.pdf,text/plain,.doc,.docx,.xls,.xlsx" onchange="checkFileSize(this)" />
-                        <small class="text-muted">Upload document file if any.</small>
+                        <small class="text-muted">Upload document file or request proof if any.</small>
                     </div>
                 </div>
             </div>
         </div>
     </form>
 
+    <!-- USER GRID: PENDING DOCUMENT REQUESTS -->
     <div class="card shadow mb-4">
         <div class="card-header card-header-custom bg-secondary d-flex justify-content-between align-items-center">
             <span><i class="fas fa-file-export mr-2"></i>Pending Document Requests</span>
-            <small class="text-white-50">Click "Show Pending" to select requests</small>
+            <small class="text-white-50">Click "Show" to recall document requests for the selected employee</small>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -153,13 +181,15 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width: 60px; text-align:center;">Action</th>
+                            <th>Request Type</th>
+                            <th class="num-col" style="width: 80px;">Qty</th>
+                            <th>Remarks</th>
                             <th>Req No</th>
-                            <th>Request Type (Name)</th>
-                            <th>Original Remarks</th>
                             <th>Generated Doc No</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <tr id="empty-row"><td colspan="6" class="text-center text-muted py-3">No document requests found. Select an employee and click "Show".</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -169,20 +199,41 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="~/alertify.js/alertify.min.js"></script>
+
 <script>
     var employeesData = [];
+    var hostCompaniesData = [];
     var pendingDocs = [];
 
     $(document).ready(function() {
         initHeader();
 
-        $.getJSON('/Master/GetApiEmployees').done(function(empRes) {
-            var empArr = (empRes && empRes[0]) ? empRes[0] : empRes;
-            employeesData = Array.isArray(empArr) ? (Array.isArray(empArr[0]) ? empArr[0] : empArr) : [];
+        // 1. Load Employees (Live API with no JSON fallback)
+        var empPromise = $.getJSON('/Master/GetApiEmployees').then(function(res) {
+            return Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : (res && res.data ? res.data : []);
+        }, function() {
+            if (typeof alertify !== 'undefined') {
+                alertify.log('Failed to fetch employee list from API.', 'error', 4000);
+            }
+            return [];
+        });
+
+        // 2. Load Host Companies / Sponsors
+        var hostPromise = $.getJSON('/api-assets/host_company.json').then(function(res) {
+            return Array.isArray(res) ? res : [];
+        }, function() {
+            return [];
+        });
+
+        $.when(empPromise, hostPromise).done(function(empRes, hostRes) {
+            var rawEmp = (empRes && empRes[0]) ? empRes[0] : empRes;
+            employeesData = Array.isArray(rawEmp) ? rawEmp : (Array.isArray(empRes) ? empRes : []);
+
+            var rawHost = (hostRes && hostRes[0]) ? hostRes[0] : hostRes;
+            hostCompaniesData = Array.isArray(rawHost) ? rawHost : (Array.isArray(hostRes) ? hostRes : []);
+
             populateDropdowns();
-            $('select.form-control').select2({ width: '100%' });
-        }).fail(function() {
-            alertify.log('Failed to load employee data.', 'error', 5000);
         });
 
         $('#hdr-employee').change(onEmployeeChange);
@@ -201,23 +252,52 @@
         var dd = String(d.getDate()).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
         var yyyy = d.getFullYear();
+        var todayStr = dd + '-' + mmm + '-' + yyyy;
         
+        $('#hdr-date').val(todayStr);
+        $('#hdr-postdate').val(todayStr);
+
         var saved = JSON.parse(localStorage.getItem('savedHRDocumentIssues') || '[]');
-        var seq = String(saved.length + 1).padStart(5, '0');
+        var maxNum = 0;
+        saved.forEach(function(item) {
+            var dNo = item.docNo || '';
+            var match = dNo.match(/\d+$/);
+            if (match) {
+                var n = parseInt(match[0], 10);
+                if (!isNaN(n) && n > maxNum) maxNum = n;
+            }
+        });
+        var seq = String(Math.max(maxNum, saved.length) + 1).padStart(5, '0');
         $('#hdr-docno').val('ISU-' + mm + '-' + yy + '-' + seq);
     }
 
     function populateDropdowns() {
+        // Employee Dropdown
         var empSelect = $('#hdr-employee');
         empSelect.empty().append('<option value="">Select Employee...</option>');
-        if (Array.isArray(employeesData)) {
+        if (Array.isArray(employeesData) && employeesData.length > 0) {
             employeesData.forEach(function(emp) {
                 var empId = emp.id || emp.iMasterId || '';
                 var empCode = emp.code || emp.sCode || '';
                 var empName = emp.name || emp.sName || '';
-                empSelect.append(`<option value="${empId}">${empCode} - ${empName}</option>`);
+                empSelect.append(`<option value="${empId}" data-code="${empCode}" data-name="${empName}">${empCode} - ${empName}</option>`);
             });
         }
+        empSelect.select2({ width: '100%' });
+
+        // Sponsor / Host Company Dropdown
+        var sponsorSelect = $('#hdr-sponsor');
+        sponsorSelect.empty();
+        if (Array.isArray(hostCompaniesData) && hostCompaniesData.length > 0) {
+            hostCompaniesData.forEach(function(h) {
+                var code = h.code || ('HOST-' + h.id);
+                var name = h.name || '';
+                sponsorSelect.append(`<option value="${code}">${code} - ${name}</option>`);
+            });
+        } else {
+            sponsorSelect.append('<option value="NEO-TECH">NEO-TECH - Neoxis Technologies LLC</option>');
+        }
+        sponsorSelect.select2({ width: '100%' });
     }
 
     function onEmployeeChange() {
@@ -230,15 +310,19 @@
             return;
         }
 
-        var emp = employeesData.find(e => e.id == empVal || e.iMasterId == empVal || e.code == empVal || e.sCode == empVal);
+        var emp = employeesData.find(e => String(e.id) === String(empVal) || String(e.iMasterId) === String(empVal) || String(e.code) === String(empVal) || String(e.sCode) === String(empVal));
         if (emp) {
-            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '');
-            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '');
-            $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || emp.reportingManagerName || emp.sReportingManager || '');
+            $('#hdr-designation').val(emp.designation || emp.designationName || emp.sDesignationName || '-');
+            $('#hdr-department').val(emp.department || emp.departmentName || emp.sDepartmentName || '-');
+            $('#hdr-manager').val(emp.sReportingToName || emp.reportingToName || emp.reportingManager || emp.manager || '-');
         }
 
-        // Auto-fetch pending items
         showDocuments();
+    }
+
+    function onSponsorChange() {
+        // Regenerate doc numbers on grid when sponsor changes
+        renderGrid();
     }
 
     function checkFileSize(input) {
@@ -250,26 +334,32 @@
         }
     }
 
+    // "recall the link based on the qty for that empployee where it is docuemnts"
     function showDocuments() {
         var empId = $('#hdr-employee').val();
-        if(!empId) {
+        if (!empId) {
             pendingDocs = [];
             renderGrid();
+            alertify.log('Please select an Employee first.', 'error', 3000);
             return;
         }
 
         function filterAndRender(allRequests) {
             pendingDocs = allRequests.filter(function(req) {
-                return (String(req.employeeId) === String(empId) || (req.employeeCode && req.employeeCode === empId)) && 
-                       req.requestType === 'Documents' && 
-                       req.status === 'Pending';
+                var matchEmp = String(req.employeeId) === String(empId) || (req.employeeCode && req.employeeCode === empId);
+                return matchEmp && req.requestType === 'Documents' && req.status === 'Pending';
             });
             renderGrid();
+            if (pendingDocs.length === 0) {
+                alertify.log('No pending document requests found for this employee.', 'log', 3000);
+            } else {
+                alertify.log(`Found ${pendingDocs.length} pending document request(s).`, 'success', 2500);
+            }
         }
 
         var raw = localStorage.getItem('savedHRRequests');
         if (!raw) {
-            $.getJSON('/api-assets2/hr_requests.json').done(function(seed) {
+            $.getJSON('/api-assets/hr_requests.json').done(function(seed) {
                 if (Array.isArray(seed)) {
                     localStorage.setItem('savedHRRequests', JSON.stringify(seed));
                     filterAndRender(seed);
@@ -284,35 +374,39 @@
         }
     }
 
+    // User grid: Request Type | Qty | Remarks | Req No | Generated Doc No
+    // Generate document number based on: Sponser Code-mm-yy-ReqPrefix-00001
     function renderGrid() {
         var uTbody = $('#user-grid-table tbody');
         uTbody.empty();
         
-        if(pendingDocs.length === 0) {
-            uTbody.append('<tr><td colspan="5" class="text-center">No requests found</td></tr>');
+        if (pendingDocs.length === 0) {
+            uTbody.append('<tr><td colspan="6" class="text-center text-muted py-3">No document requests found. Select an employee and click "Show".</td></tr>');
             return;
         }
 
         var d = new Date();
         var mm = String(d.getMonth() + 1).padStart(2, '0');
         var yy = String(d.getFullYear()).slice(-2);
+        var sponsorCode = $('#hdr-sponsor').val() || 'NEO-TECH';
         
         pendingDocs.forEach(function(item, index) {
             item.gridIndex = index;
-            // Generate DOC NO: Sponsor Code-mm-yy-ReqPrefix-00001
-            var sponsorCode = 'SPC'; // Mocked as it's not in employee.json
+            // Strict pattern: Sponser Code-mm-yy-ReqPrefix-00001
             var prefix = item.prefix || 'DOC';
             var seq = String(index + 1).padStart(5, '0');
             var generatedDocNo = sponsorCode + '-' + mm + '-' + yy + '-' + prefix + '-' + seq;
+            var typeDisplay = item.selectionName ? `${item.requestType} (${item.selectionName})` : item.requestType;
             
             var tr = `<tr>
                 <td class="action-btns" style="text-align:center;">
                     <a href="#" class="remove-item-btn" title="Remove from list" onclick="removeFromGrid(${index}); return false;"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
                 </td>
-                <td>${item.reqNo || '-'}</td>
-                <td>${item.selectionName || '-'}</td>
+                <td><span class="reqtype-badge reqtype-documents">${typeDisplay}</span></td>
+                <td class="num-col font-weight-bold text-primary">${item.qty || 1}</td>
                 <td>${item.remarks || '-'}</td>
-                <td><input type="text" class="form-control form-control-sm issue-docno" data-idx="${index}" value="${generatedDocNo}" readonly /></td>
+                <td><strong class="text-primary">${item.reqNo || '-'}</strong></td>
+                <td><input type="text" class="form-control form-control-sm issue-docno font-weight-bold text-success" data-idx="${index}" value="${generatedDocNo}" readonly /></td>
             </tr>`;
             uTbody.append(tr);
         });
@@ -329,30 +423,71 @@
             return;
         }
 
-        if(!$('#hdr-employee').val()) {
-            alertify.log('Please fill required Header fields (Employee).', 'error', 5000);
+        if (!$('#hdr-employee').val()) {
+            alertify.log('Please select an Employee.', 'error', 5000);
             return;
         }
 
         var issueDocNo = $('#hdr-docno').val();
         var date = $('#hdr-date').val();
+        var postDate = $('#hdr-postdate').val();
+        var sponsorCode = $('#hdr-sponsor').val() || 'NEO-TECH';
+        var comments = $('#hdr-comments').val() || '';
+        var empName = $('#hdr-employee option:selected').text();
 
+        var fileInput = document.getElementById('hdr-attachment');
+        var attachFileName = (fileInput && fileInput.files.length > 0) ? fileInput.files[0].name : '';
+
+        // 1. Update matching requests in savedHRRequests
         var allRequests = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
         
         pendingDocs.forEach(function(item, idx) {
             var genDocNo = $('.issue-docno[data-idx="'+idx+'"]').val();
             var match = allRequests.find(a => a.reqNo === item.reqNo && a.status === 'Pending');
-            if(match) {
+            if (match) {
                 match.status = 'Issued';
                 match.issueDocNo = issueDocNo;
                 match.issueDate = date;
+                match.sponsorCode = sponsorCode;
                 match.generatedDocNo = genDocNo;
             }
         });
-
         localStorage.setItem('savedHRRequests', JSON.stringify(allRequests));
 
-        sessionStorage.setItem('pendingAlert', JSON.stringify({ msg: 'Document Issue saved successfully!', type: 'success' }));
+        // 2. Save into savedHRDocumentIssues
+        var savedIssues = JSON.parse(localStorage.getItem('savedHRDocumentIssues') || '[]');
+        var newIssue = {
+            id: Date.now(),
+            docNo: issueDocNo,
+            date: date,
+            postDate: postDate,
+            employeeId: $('#hdr-employee').val(),
+            employeeName: empName,
+            sponsorCode: sponsorCode,
+            department: $('#hdr-department').val(),
+            designation: $('#hdr-designation').val(),
+            manager: $('#hdr-manager').val(),
+            comments: comments,
+            attachmentName: attachFileName,
+            items: pendingDocs.map(function(item, idx) {
+                return {
+                    reqNo: item.reqNo,
+                    requestType: item.requestType,
+                    selectionName: item.selectionName,
+                    qty: item.qty || 1,
+                    remarks: item.remarks || '',
+                    generatedDocNo: $('.issue-docno[data-idx="'+idx+'"]').val()
+                };
+            })
+        };
+        savedIssues.push(newIssue);
+        localStorage.setItem('savedHRDocumentIssues', JSON.stringify(savedIssues));
+
+        sessionStorage.setItem('pendingAlert', JSON.stringify({ 
+            msg: `HR Document Issue ${issueDocNo} saved successfully!`, 
+            type: 'success' 
+        }));
+
         var targetUrl = '@Url.Action("HRDocumentIssueIndex", "Master")';
         if (typeof loadPageContent === 'function') {
             loadPageContent(targetUrl, true);

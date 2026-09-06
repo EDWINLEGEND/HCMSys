@@ -381,12 +381,12 @@
             return [];
         });
 
-        var commonPromise = $.getJSON('/api-assets2/common_master.json').then(function(res) {
+        var commonPromise = $.getJSON('/api-assets/common_master.json').then(function(res) {
             return res;
         }, function() {
-            return $.getJSON('/api-assets2/host_company.json').then(function(h) { return { hostCompanies: h }; });
+            return $.getJSON('/api-assets/host_company.json').then(function(h) { return { hostCompanies: h }; });
         });
-        var contractsPromise = $.getJSON('/api-assets2/contract_assignments.json');
+        var contractsPromise = $.getJSON('/api-assets/contract_assignments.json');
 
         $.when(empPromise, commonPromise, contractsPromise).done(function(empRes, commonRes, cntRes) {
             var rawEmp = (empRes && empRes[0]) ? empRes[0] : empRes;

@@ -234,7 +234,7 @@
     $(document).ready(function() {
         initHeader();
 
-        $.getJSON('/api-assets2/loan_disbursements.json', function(res) {
+        $.getJSON('/api-assets/loan_disbursements.json', function(res) {
             var staticDisbs = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
             var savedDisbs = JSON.parse(localStorage.getItem('savedLoanDisbursements') || '[]');
             disbursementsData = savedDisbs.concat(staticDisbs);

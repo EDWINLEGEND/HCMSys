@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "HR Request & Disbursement";
+    ViewData["Title"] = "HR Request";
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -107,7 +107,7 @@
         <div class="card-header py-3">
             <div class="page-title-bar">
                 <div class="page-title-text" id="page-header-title">
-                    <i class="fas fa-file-invoice fa-sm text-primary mr-2"></i> HR Request & Disbursement
+                    <i class="fas fa-hand-holding fa-sm text-primary mr-2"></i> HR Request
                 </div>
                 <div class="ml-auto mt-2 mt-sm-0">
                     <a href="@Url.Action("HRRequestIndex", "Master")" class="btn btn-secondary btn-sm shadow-sm">
@@ -198,15 +198,13 @@
                         <label class="form-label">Request Type</label>
                         <input type="text" class="form-control font-weight-bold text-dark" id="dtl-requesttype" readonly placeholder="Auto from JSON master" />
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control number-align font-weight-bold" id="dtl-qty" value="1" min="1" max="999" />
-                    </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-5 mb-3">
                         <label class="form-label">Remarks</label>
                         <input type="text" class="form-control" id="dtl-remarks" placeholder="Optional line remarks..." />
                     </div>
-                    
+
+                    <!-- Quantity: Preload with 1 and hide as specified -->
+                    <input type="hidden" id="dtl-qty" value="1" />
                     <input type="hidden" id="dtl-prefix" value="" />
                     
                     <div class="col-md-12 text-right mt-2" id="grid-btn-container">
@@ -284,7 +282,7 @@
         });
 
         // 1. LIVE API: Load Employees from live API endpoint
-        // 2. JSON: Load Request Master catalog from /api-assets2/request_master.json
+        // 2. JSON: Load Request Master catalog from /api-assets/request_master.json
         function loadMasters() {
             var empPromise = $.getJSON('/Master/GetApiEmployees').then(function(res) {
                 var empList = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : (res && res.data ? res.data : []);
@@ -296,7 +294,7 @@
                 return [];
             });
 
-            var reqPromise = $.getJSON('/api-assets2/request_master.json').then(function(res) {
+            var reqPromise = $.getJSON('/api-assets/request_master.json').then(function(res) {
                 return Array.isArray(res) ? res : [];
             }, function() {
                 return $.getJSON('/Master/GetApiRequestMaster');
@@ -626,7 +624,7 @@
         if (records.length > 0) {
             applyLoadedRecords(records);
         } else {
-            $.getJSON('/api-assets2/hr_requests.json').done(function(seedData) {
+            $.getJSON('/api-assets/hr_requests.json').done(function(seedData) {
                 if (Array.isArray(seedData)) {
                     var seedRecords = seedData.filter(r => (docNo && r.docNo === docNo) || (id && (r.id === id || String(r.id) === String(id))));
                     if (seedRecords.length > 0) {

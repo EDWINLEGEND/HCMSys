@@ -190,29 +190,46 @@
         });
 
         function loadGridData() {
-            table.clear();
-            var savedData = JSON.parse(localStorage.getItem('savedHRRequests') || '[]');
-            var issuedDocs = savedData.filter(function(i) { return i.status === 'Issued'; });
-            $('#stat-total').text(issuedDocs.length);
+            function renderTable(savedData) {
+                table.clear();
+                var issuedDocs = savedData.filter(function(i) { return i.status === 'Issued'; });
+                $('#stat-total').text(issuedDocs.length);
 
-            issuedDocs.reverse().forEach(function(item) {
-                var actionHtml = `
-                    <div class="action-btns" style="text-align:center;">
-                        <a href="#" class="edit-item-btn" data-req="${item.reqNo}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
-                        <a href="#" class="remove-item-btn" data-req="${item.reqNo}" title="Revert to Pending"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
-                    </div>
-                `;
-                table.row.add([
-                    actionHtml,
-                    item.issueDocNo || '-',
-                    item.issueDate || '-',
-                    item.employeeName || '-',
-                    item.reqNo || '-',
-                    item.selectionName || '-',
-                    item.generatedDocNo || '-'
-                ]);
-            });
-            table.draw(false);
+                issuedDocs.reverse().forEach(function(item) {
+                    var actionHtml = `
+                        <div class="action-btns" style="text-align:center;">
+                            <a href="#" class="edit-item-btn" data-req="${item.reqNo}" title="Edit"><i class="fas fa-edit fa-sm fa-fw"></i></a>
+                            <a href="#" class="remove-item-btn" data-req="${item.reqNo}" title="Revert to Pending"><i class="fas fa-trash-alt fa-sm fa-fw"></i></a>
+                        </div>
+                    `;
+                    table.row.add([
+                        actionHtml,
+                        item.issueDocNo || '-',
+                        item.issueDate || '-',
+                        item.employeeName || '-',
+                        item.reqNo || '-',
+                        item.selectionName || '-',
+                        item.generatedDocNo || '-'
+                    ]);
+                });
+                table.draw(false);
+            }
+
+            var raw = localStorage.getItem('savedHRRequests');
+            if (!raw) {
+                $.getJSON('/api-assets/hr_requests.json').done(function(seed) {
+                    if (Array.isArray(seed)) {
+                        localStorage.setItem('savedHRRequests', JSON.stringify(seed));
+                        renderTable(seed);
+                    } else {
+                        renderTable([]);
+                    }
+                }).fail(function() {
+                    renderTable([]);
+                });
+            } else {
+                renderTable(JSON.parse(raw || '[]'));
+            }
         }
 
         loadGridData();

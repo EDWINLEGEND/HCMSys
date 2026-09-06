@@ -109,5 +109,48 @@
     "qty": 2,
     "remarks": "High-visibility jacket and steel-toe boots (Size M)",
     "status": "Pending"
+  },
+  {
+    "id": 106,
+    "docNo": "HRR-09-26-00006",
+    "date": "01-Sep-2026",
+    "postDate": "01-Sep-2026",
+    "employeeId": "36",
+    "employeeCode": "EMP001",
+    "employeeName": "Ajeev Chandrasekar",
+    "department": "BOTTLE MAKING",
+    "designation": "Rig Operator",
+    "manager": "Ajeev Chandrasekar",
+    "comments": "Required for embassy visa appointment",
+    "reqNo": "SAL-09-26-1006",
+    "selectionCode": "REQ-01",
+    "selectionName": "Salary Certificate",
+    "requestType": "Documents",
+    "prefix": "SAL",
+    "qty": 1,
+    "remarks": "Addressed to Embassy with salary breakdown",
+    "status": "Pending"
+  },
+  {
+    "id": 107,
+    "docNo": "HRR-09-26-00007",
+    "date": "02-Sep-2026",
+    "postDate": "02-Sep-2026",
+    "employeeId": "1",
+    "employeeCode": "EMP-001",
+    "employeeName": "John Smith",
+    "department": "Engineering",
+    "designation": "Senior Developer",
+    "manager": "Jane Doe",
+    "comments": "Academic and engineering council accreditation",
+    "reqNo": "EXP-09-26-1007",
+    "selectionCode": "REQ-02",
+    "selectionName": "Experience Letter",
+    "requestType": "Documents",
+    "prefix": "EXP",
+    "qty": 1,
+    "remarks": "Stating 5+ years seniority and responsibilities",
+    "status": "Pending"
   }
 ]
+

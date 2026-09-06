@@ -1,0 +1,1432 @@
+                               API Documentation HCMSys
+1. Document Information
+Field                               Details
+Project                             HCMSys HRMS API
+Document                            REST API Specification
+Version                             1.1
+Date                                17-Aug-2026
+Authentication                      JWT Bearer Token
+Base URL                            https://neoxisktj-001-site1.ftempurl.com
+
+
+
+2. Authentication API
+Login
+Endpoint
+
+POST /api/auth/login
+
+Description
+
+Authenticates the user and returns JWT Bearer Token.
+
+Request Header
+
+Content-Type: application/json
+
+Request Body
+
+{
+    "username": "edwin",
+    "password": "123"
+}
+
+Response - Success (200)
+
+{
+    "success": true,
+    "message": "Login successful",
+    "data": {
+      "token": "eyJhbGciOiJIUzI1NiIs...",
+      "expires": "2026-07-29T12:00:00Z"
+    }
+}
+Response - Error (401)
+
+{
+    "success": false,
+    "statusCode": 401,
+    "message": "Invalid username or password"
+}
+
+
+
+3. Employee API
+Get Employee List
+Endpoint
+
+GET /api/common/employees
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+Response
+
+{
+
+     "success": true,
+
+     "message": "Success",
+
+     "data": {
+
+       "employees": [
+
+         {
+
+             "iMasterId": 41,
+
+             "id": 1,
+
+             "sCode": "EMP003",
+
+             "sName": "Test",
+
+             "joiningDate": "2026-01-01T00:00:00",
+
+             "revisionDate": "2026-01-01T00:00:00",
+
+             "effectiveDate": "2026-01-01T00:00:00",
+
+             "iCategory": 2,
+     "sCategoryName": "Expat Worker",
+
+     "iDesignation": 0,
+
+     "sDesignationCode": "",
+
+     "sDesignationName": "",
+
+     "sDepartmentCode": "",
+
+     "sDepartmentName": "",
+
+     "iEmployeeStatus": 0,
+
+     "sEmployeeStatusName": "",
+
+     "iStatus": 0,
+
+     "timesheetType": 0,
+
+     "sStatus": "Active",
+
+     "iCreatedBy": 1,
+
+     "createdDate": "2026-04-30T04:49:10.47",
+
+     "createdBy": "Admin",
+
+     "modifiedDate": "2026-04-30T04:50:30.927",
+
+     "modifiedBy": "Admin",
+
+     "iModifiedBy": 1,
+
+     "iRevision": 0
+
+},
+
+{
+
+     "iMasterId": 40,
+
+     "id": 2,
+
+     "sCode": "EMP002",
+
+     "sName": "Expat Worker",
+
+     "joiningDate": "2026-01-01T00:00:00",
+
+     "revisionDate": "2026-01-01T00:00:00",
+
+     "effectiveDate": "2026-04-01T00:00:00",
+
+     "iCategory": 2,
+
+     "sCategoryName": "Expat Worker",
+
+     "iDesignation": 0,
+
+     "sDesignationCode": "",
+
+     "sDesignationName": "",
+
+     "sDepartmentCode": "",
+     "sDepartmentName": "",
+
+     "iEmployeeStatus": 2,
+
+     "sEmployeeStatusName": "On Duty",
+
+     "iStatus": 0,
+
+     "timesheetType": 0,
+
+     "sStatus": "Active",
+
+     "iCreatedBy": 1,
+
+     "createdDate": "2026-04-26T05:05:47.237",
+
+     "createdBy": "Admin",
+
+     "modifiedDate": "2026-04-30T04:15:54.34",
+
+     "modifiedBy": "Admin",
+
+     "iModifiedBy": 1,
+
+     "iRevision": 0
+
+},
+
+{
+
+     "iMasterId": 36,
+
+     "id": 3,
+
+     "sCode": "EMP001",
+
+     "sName": "Ajeev Chandrasekar",
+
+     "joiningDate": "2023-03-26T00:00:00",
+
+     "revisionDate": "2026-01-01T00:00:00",
+
+     "effectiveDate": "2026-01-01T00:00:00",
+
+     "iCategory": 2,
+
+     "sCategoryName": "Expat Worker",
+
+     "iDesignation": 3,
+
+     "sDesignationCode": "D003",
+
+     "sDesignationName": "Rig Operator",
+
+     "sDepartmentCode": "BOTTLE MAKING",
+
+     "sDepartmentName": "BOTTLE MAKING",
+
+     "iEmployeeStatus": 2,
+
+     "sEmployeeStatusName": "On Duty",
+
+     "iStatus": 0,
+
+     "timesheetType": 0,
+                "sStatus": "Active",
+
+                "iCreatedBy": 1,
+
+                "createdDate": "2025-08-03T13:24:12.347",
+
+                "createdBy": "Admin",
+
+                "modifiedDate": "2026-04-29T22:54:15.123",
+
+                "modifiedBy": "Admin",
+
+                "iModifiedBy": 1,
+
+                "iRevision": 0
+
+            }
+
+        ]
+
+    }
+
+}
+
+
+4. Asset Category API
+Get Asset Category List
+Endpoint
+
+GET /api/asset/AssetCategories
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+Response
+
+{
+
+    "success": true,
+
+    "message": "Success",
+
+    "data": {
+
+        "assetCategories": [
+
+            {
+
+                "iMasterId": 1,
+
+                "sName": "Computers & Laptops",
+     "sCode": "IT001",
+
+     "iStatus": 0,
+
+     "createdDate": "2026-07-28T00:00:00",
+
+     "iCreatedBy": 1,
+
+     "modifiedDate": "2026-07-28T00:00:00",
+
+     "iModifiedBy": 1
+
+},
+
+{
+
+     "iMasterId": 2,
+
+     "sName": "Monitors",
+
+     "sCode": "IT002",
+
+     "iStatus": 0,
+
+     "createdDate": "2026-07-28T00:00:00",
+
+     "iCreatedBy": 1,
+
+     "modifiedDate": "2026-07-28T00:00:00",
+
+     "iModifiedBy": 1
+
+},
+
+{
+
+     "iMasterId": 3,
+
+     "sName": "Printers & Scanners",
+
+     "sCode": "IT003",
+
+     "iStatus": 0,
+
+     "createdDate": "2026-07-28T00:00:00",
+
+     "iCreatedBy": 1,
+
+     "modifiedDate": "2026-07-28T00:00:00",
+
+     "iModifiedBy": 1
+
+},
+
+{
+
+     "iMasterId": 4,
+
+     "sName": "Networking Equipment",
+
+     "sCode": "IT004",
+
+     "iStatus": 0,
+
+     "createdDate": "2026-07-28T00:00:00",
+     "iCreatedBy": 1,
+
+     "modifiedDate": "2026-07-28T00:00:00",
+
+     "iModifiedBy": 1
+
+},
+
+{
+
+     "iMasterId": 5,
+
+     "sName": "Office Furniture",
+
+     "sCode": "IT005",
+
+     "iStatus": 0,
+
+     "createdDate": "2026-07-28T00:00:00",
+
+     "iCreatedBy": 1,
+
+     "modifiedDate": "2026-07-28T00:00:00",
+
+     "iModifiedBy": 1
+
+},
+
+{
+
+     "iMasterId": 6,
+
+     "sName": "Tablets",
+
+     "sCode": "IT006",
+
+     "iStatus": 0,
+
+     "createdDate": "2026-07-28T00:00:00",
+
+     "iCreatedBy": 1,
+
+     "modifiedDate": "2026-07-28T00:00:00",
+
+     "iModifiedBy": 1
+
+},
+
+{
+
+     "iMasterId": 7,
+
+     "sName": "Office Furniture",
+
+     "sCode": "IT007",
+
+     "iStatus": 0,
+
+     "createdDate": "2026-07-28T00:00:00",
+
+     "iCreatedBy": 1,
+
+     "modifiedDate": "2026-07-28T00:00:00",
+
+     "iModifiedBy": 1
+            }
+
+        ]
+
+    }
+
+}
+
+
+4. Asset API
+Get Asset List
+Endpoint
+
+GET /api/asset/Assets
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+Response
+
+{
+
+    "success": true,
+
+    "message": "Success",
+
+    "data": {
+
+        "assets": [
+
+            {
+
+                "iMasterId": 1,
+
+                "sName": "Dell Latitude 7440",
+
+                "sCode": "AST0001",
+
+                "iCategoryId": 1,
+
+                "sCategoryCode": "IT001",
+
+                "sCategoryName": "Computers & Laptops",
+
+                "sTagNumber": "JHJK-96576",
+
+                "iStatus": 0,
+
+                "createdDate": "2026-07-28T00:00:00",
+
+                "iCreatedBy": 1,
+             "modifiedDate": "2026-07-28T00:00:00",
+
+             "iModifiedBy": 1
+
+        },
+
+        {
+
+             "iMasterId": 2,
+
+             "sName": "HP LaserJet Pro M404",
+
+             "sCode": "AST0002",
+
+             "iCategoryId": 1,
+
+             "sCategoryCode": "IT001",
+
+             "sCategoryName": "Computers & Laptops",
+
+             "sTagNumber": "JHJK-45476",
+
+             "iStatus": 0,
+
+             "createdDate": "2026-07-28T00:00:00",
+
+             "iCreatedBy": 1,
+
+             "modifiedDate": "2026-07-28T00:00:00",
+
+             "iModifiedBy": 1
+
+        },
+
+        {
+
+             "iMasterId": 3,
+
+             "sName": "Samsung Galaxy S25",
+
+             "sCode": "AST0003",
+
+             "iCategoryId": 2,
+
+             "sCategoryCode": "IT002",
+
+             "sCategoryName": "Monitors",
+
+             "sTagNumber": "ASDS-476776",
+
+             "iStatus": 0,
+
+             "createdDate": "2026-07-28T00:00:00",
+
+             "iCreatedBy": 1,
+
+             "modifiedDate": "2026-07-28T00:00:00",
+
+             "iModifiedBy": 1
+
+        }
+
+    ]
+
+}
+}
+
+
+5. Save Asset Allocation API
+Save Asset Allocation
+Endpoint
+
+POST /api/asset/saveassetallocation
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+Content-Type: application/json
+
+
+Request Body
+
+
+
+
+Response
+
+{
+
+    "success": true,
+
+    "statusCode": 200,
+
+    "message": "Asset allocation saved successfully.",
+
+    "data": "AST000002"
+
+}
+6. Get Asset Allocation API
+Get asset allocation with id
+Endpoint
+
+GET /api/asset/GetAssetAllocation/1
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+Response
+
+{
+
+    "success": true,
+
+    "statusCode": 200,
+
+    "message": "Asset allocation retrieved successfully.",
+
+    "data": {
+
+      "iHeaderId": 1,
+
+      "sDocNo": "AST000001",
+
+      "dDocDate": "2026-07-30T00:00:00",
+
+      "dPostDate": "2026-07-30T00:00:00",
+
+      "iEmpId": 36,
+
+      "sComments": "Test allocation",
+
+      "sEmployeeCode": "EMP001",
+
+      "sEmployeeName": "Ajeev Chandrasekar",
+
+      "sDepartmentCode": "BOTTLE MAKING",
+
+      "sDepartmentName": "BOTTLE MAKING",
+
+      "sDesignationCode": "D003",
+
+      "sDesignationName": "Rig Operator",
+
+      "sReportingToCode": "EMP001",
+
+      "sReportingToName": "Ajeev Chandrasekar",
+
+      "iCompanyId": 1,
+"iPayYearId": 1,
+
+"iStatus": 1,
+
+"iAuthStatus": 0,
+
+"iCreatedBy": 1,
+
+"iModifiedBy": 1,
+
+"iApprovedBy": 0,
+
+"assets": [
+
+  {
+
+       "iBodyId": 1,
+
+       "iHeaderId": 1,
+
+       "sDocNo": "AST000001",
+
+       "iAssetId": 1,
+
+       "sAssetCode": "AST0001",
+
+       "sAssetName": "Dell Latitude 7440",
+
+       "sCategoryCode": "IT001",
+
+       "sCategoryName": "Computers & Laptops",
+
+       "sTagNumber": "JHJK-96576",
+
+       "fQuantity": 1,
+
+       "sRemarks": "Dell Laptop"
+
+  },
+
+  {
+
+       "iBodyId": 2,
+
+       "iHeaderId": 1,
+
+       "sDocNo": "AST000001",
+
+       "iAssetId": 2,
+
+       "sAssetCode": "AST0002",
+
+       "sAssetName": "HP LaserJet Pro M404",
+
+       "sCategoryCode": "IT001",
+
+       "sCategoryName": "Computers & Laptops",
+
+       "sTagNumber": "JHJK-45476",
+
+       "fQuantity": 1,
+
+       "sRemarks": "Wireless Mouse"
+             }
+
+        ],
+
+        "assetFile": {
+
+             "iHeaderId": 1,
+
+             "iFileId": 0,
+
+      "sAttachmentFilePath": "https://localhost:7172/uploads\\AssetAllocation\\66ef9caf-3c98-4c26-b063-
+d947f5f024d0.jpg",
+
+             "sAttachmentFileName": "PHOTO-2026-07-28-14-18-56 (1).jpg",
+
+             "sContentType": "image/jpeg"
+
+        }
+
+    }
+
+}
+
+
+7. Get Asset Allocation List API
+Get asset allocation with year and company
+Endpoint
+
+GET /api/asset/GetAssetAllocation?iCompanyId=1&iPayYearId=1
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+Authorization: Bearer {token}
+
+Response
+{
+
+    "success": true,
+
+    "statusCode": 200,
+
+    "message": "Asset allocation retrieved successfully.",
+
+    "data": [
+
+        {
+
+             "iHeaderId": 1,
+
+             "sDocNo": "AST000001",
+
+             "dDocDate": "2026-07-30T00:00:00",
+"dPostDate": "2026-07-30T00:00:00",
+
+"iEmpId": 36,
+
+"sComments": "Test allocation",
+
+"sEmployeeCode": "EMP001",
+
+"sEmployeeName": "Ajeev Chandrasekar",
+
+"sDepartmentCode": "BOTTLE MAKING",
+
+"sDepartmentName": "BOTTLE MAKING",
+
+"sDesignationCode": "D003",
+
+"sDesignationName": "Rig Operator",
+
+"sReportingToCode": "EMP001",
+
+"sReportingToName": "Ajeev Chandrasekar",
+
+"iCompanyId": 1,
+
+"iPayYearId": 1,
+
+"iStatus": 1,
+
+"iAuthStatus": 0,
+
+"iCreatedBy": 1,
+
+"iModifiedBy": 1,
+
+"iApprovedBy": 0,
+
+"assets": [
+
+  {
+
+       "iBodyId": 1,
+
+       "iHeaderId": 1,
+
+       "sDocNo": "AST000001",
+
+       "iAssetId": 1,
+
+       "sAssetCode": "AST0001",
+
+       "sAssetName": "Dell Latitude 7440",
+
+       "sCategoryCode": "IT001",
+
+       "sCategoryName": "Computers & Laptops",
+
+       "sTagNumber": "JHJK-96576",
+
+       "fQuantity": 1,
+
+       "sRemarks": "Dell Laptop"
+
+  },
+
+  {
+
+       "iBodyId": 2,
+
+       "iHeaderId": 1,
+                  "sDocNo": "AST000001",
+
+                  "iAssetId": 2,
+
+                  "sAssetCode": "AST0002",
+
+                  "sAssetName": "HP LaserJet Pro M404",
+
+                  "sCategoryCode": "IT001",
+
+                  "sCategoryName": "Computers & Laptops",
+
+                  "sTagNumber": "JHJK-45476",
+
+                  "fQuantity": 1,
+
+                  "sRemarks": "Wireless Mouse"
+
+              }
+
+         ],
+
+         "assetFile": {
+
+              "iHeaderId": 1,
+
+              "iFileId": 0,
+
+        "sAttachmentFilePath": "https://localhost:7172/uploads\\AssetAllocation\\66ef9caf-3c98-4c26-b063-
+d947f5f024d0.jpg",
+
+              "sAttachmentFileName": "PHOTO-2026-07-28-14-18-56 (1).jpg",
+
+              "sContentType": "image/jpeg"
+
+         }
+
+    },
+
+    {
+
+         "iHeaderId": 2,
+
+         "sDocNo": "AST000002",
+
+         "dDocDate": "2026-07-30T00:00:00",
+
+         "dPostDate": "2026-07-30T00:00:00",
+
+         "iEmpId": 36,
+
+         "sComments": "Test allocation",
+
+         "sEmployeeCode": "EMP001",
+
+         "sEmployeeName": "Ajeev Chandrasekar",
+
+         "sDepartmentCode": "BOTTLE MAKING",
+
+         "sDepartmentName": "BOTTLE MAKING",
+
+         "sDesignationCode": "D003",
+
+         "sDesignationName": "Rig Operator",
+
+         "sReportingToCode": "EMP001",
+
+         "sReportingToName": "Ajeev Chandrasekar",
+"iCompanyId": 1,
+
+"iPayYearId": 1,
+
+"iStatus": 1,
+
+"iAuthStatus": 0,
+
+"iCreatedBy": 1,
+
+"iModifiedBy": 1,
+
+"iApprovedBy": 0,
+
+"assets": [
+
+     {
+
+          "iBodyId": 3,
+
+          "iHeaderId": 2,
+
+          "sDocNo": "AST000002",
+
+          "iAssetId": 1,
+
+          "sAssetCode": "AST0001",
+
+          "sAssetName": "Dell Latitude 7440",
+
+          "sCategoryCode": "IT001",
+
+          "sCategoryName": "Computers & Laptops",
+
+          "sTagNumber": "JHJK-96576",
+
+          "fQuantity": 1,
+
+          "sRemarks": "Dell Laptop"
+
+     },
+
+     {
+
+          "iBodyId": 4,
+
+          "iHeaderId": 2,
+
+          "sDocNo": "AST000002",
+
+          "iAssetId": 2,
+
+          "sAssetCode": "AST0002",
+
+          "sAssetName": "HP LaserJet Pro M404",
+
+          "sCategoryCode": "IT001",
+
+          "sCategoryName": "Computers & Laptops",
+
+          "sTagNumber": "JHJK-45476",
+
+          "fQuantity": 1,
+
+          "sRemarks": "Wireless Mouse"
+
+     }
+
+],
+            "assetFile": {
+
+                "iHeaderId": 2,
+
+                "iFileId": 0,
+
+        "sAttachmentFilePath": "https://localhost:7172/uploads\\AssetAllocation\\8a34be87-14b5-4264-8325-
+b476f3a29d3a.jpg",
+
+                "sAttachmentFileName": "PHOTO-2026-07-28-14-18-56 (1).jpg",
+
+                "sContentType": "image/jpeg"
+
+            }
+
+        }
+
+    ]
+
+}
+
+
+8. Update Asset Allocation API
+Update existing asset allocation
+Endpoint
+
+POST /api/asset/updateassetallocation
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+Authorization: Bearer {token}
+Content-Type: application/json
+
+
+Request Body
+Response
+
+{
+
+    "success": true,
+
+    "statusCode": 200,
+
+    "message": "Asset allocation updated successfully.",
+
+    "data": "AST000001"
+
+}
+
+
+9. Get Assets By Category
+Get assets by category
+Endpoint
+
+GET /api/asset/GetAssetByCategory/1
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+Response
+
+{
+    "success": true,
+    "message": "Success",
+    "data": {
+      "assets": [
+        {
+            "iMasterId": 1,
+            "sName": "Dell Latitude 7440",
+            "sCode": "AST0001",
+            "iCategoryId": 1,
+            "sCategoryCode": "IT001",
+            "sCategoryName": "Computers & Laptops",
+            "sTagNumber": "JHJK-96576",
+            "iStatus": 0,
+            "createdDate": "2026-07-28T00:00:00",
+            "iCreatedBy": 1,
+            "modifiedDate": "2026-07-28T00:00:00",
+                 "iModifiedBy": 1
+            },
+            {
+                 "iMasterId": 2,
+                 "sName": "HP LaserJet Pro M404",
+                 "sCode": "AST0002",
+                 "iCategoryId": 1,
+                 "sCategoryCode": "IT001",
+                 "sCategoryName": "Computers & Laptops",
+                 "sTagNumber": "JHJK-45476",
+                 "iStatus": 0,
+                 "createdDate": "2026-07-28T00:00:00",
+                 "iCreatedBy": 1,
+                 "modifiedDate": "2026-07-28T00:00:00",
+                 "iModifiedBy": 1
+            }
+        ]
+    }
+}
+
+
+
+
+10. Get Employee Leaves
+Get employee leaves by employee id
+Endpoint
+
+GET /api/Leaves/EmployeeLeaves/36
+
+Authorization
+
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+
+{
+    "success": true,
+    "message": "Success",
+    "data": {
+        "employees": {
+          "result": {
+                 "success": true,
+                 "statusCode": 200,
+                 "message": "Employee leaves retrieved successfully.",
+                 "data": {
+                   "iEmployeeId": 36,
+                   "sEmployeeCode": "EMP001",
+      "sEmployeeName": "Ajeev Chandrasekar",
+      "sCategoryName": "Expat Worker",
+      "sDepartmentName": "BOTTLE MAKING",
+      "sDesignationName": "Rig Operator",
+      "sReportingToName": "Ajeev Chandrasekar",
+      "iRevision": 0,
+      "iCompanyId": 1,
+      "iPayYearId": 1,
+      "leaves": [
+          {
+               "iLeaveTypeId": 1017,
+               "sLeaveName": "Maternity Leave",
+               "openingLeaves": 0.00,
+               "leavesApproved": 0.0,
+               "leavesPending": 0.0,
+               "leaveBalance": 0
+          },
+          {
+               "iLeaveTypeId": 8,
+               "sLeaveName": "Sick Leave",
+               "openingLeaves": 0.00,
+               "leavesApproved": 0.0,
+               "leavesPending": 0.0,
+               "leaveBalance": 0
+          },
+          {
+               "iLeaveTypeId": 12,
+               "sLeaveName": "Paternity Leave",
+               "openingLeaves": 0.00,
+               "leavesApproved": 0.0,
+               "leavesPending": 0.0,
+               "leaveBalance": 0
+          },
+          {
+               "iLeaveTypeId": 7,
+               "sLeaveName": "Annual Leave",
+               "openingLeaves": 0.00,
+               "leavesApproved": 0.0,
+               "leavesPending": 0.0,
+               "leaveBalance": 0
+          }
+      ]
+  }
+},
+"id": 1,
+"exception": null,
+"status": 5,
+"isCanceled": false,
+"isCompleted": true,
+"isCompletedSuccessfully": true,
+"creationOptions": 0,
+            "asyncState": null,
+            "isFaulted": false
+        }
+    }
+}
+
+
+11. Save Leave Transactions
+Save opening leaves, eligibility and adjustments
+Endpoint
+
+POST /api/Leaves/SaveLeaveTransaction
+
+Authorization
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+Content-Type: application/json
+
+
+Request Body
+
+
+
+
+Leaves text should be
+[{"iEmployeeId":36,"iLeaveTypeId":8,"iAdjType":1,"fDuration":180,"sRemarks":"Sick
+Leave"},{"iEmployeeId":36,"iLeaveTypeId":7,"iAdjType":1,"fDuration":35.5,"sRemarks":"Annual
+Leave"}]
+Note:
+
+You can use the same api to save leave eligibility and leave adjustments. If you have – leave in
+adjustment pass iAdjType=-1 or for all + values keep iAdjType to 1
+For leave opening leaves - iTransTypeId =0
+For leave leaves adjustments - iTransTypeId =1
+For leave leaves adjustments - iTransTypeId =2
+
+
+
+12. Update Leave Transactions
+Update opening leaves, eligibility and adjustments
+Endpoint
+
+POST /api/Leaves/UpdateLeaveTransaction
+
+Authorization
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+Content-Type: application/json
+
+
+Request Body
+
+
+
+
+Leaves text should be
+[{"iEmployeeId":36,"iLeaveTypeId":8,"iAdjType":1,"fDuration":180,"sRemarks":"Sick
+Leave"},{"iEmployeeId":36,"iLeaveTypeId":7,"iAdjType":1,"fDuration":35.5,"sRemarks":"Annual
+Leave"}]
+
+Note:
+
+You can use the same api to save leave eligibility and leave adjustments. If you have – leave in
+adjustment pass iAdjType=-1 or for all + values keep iAdjType to 1
+For leave opening leaves - iTransTypeId =0
+For leave leaves adjustments - iTransTypeId =1
+For leave leaves adjustments - iTransTypeId =2
+
+
+
+13. Delete Leave Transactions
+Delete opening leaves, eligibility and adjustments
+Endpoint
+
+DELETE /api/Leaves/DeleteLeaveTransaction/3
+
+
+Authorization
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+14. Get Leave Transactions List API
+Get leave transactions with year and company
+Endpoint
+
+GET /api/leaves/GetLeaveTransactions?iCompanyId=1&iPayYearId=1
+
+Authorization
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+Response
+
+{
+     "success": true,
+     "statusCode": 200,
+     "message": "Leave transaction retrieved successfully.",
+     "data": [
+          {
+               "iHeaderId": 4,
+               "sDocNo": "LVS000001",
+               "dDocDate": "2026-01-01T00:00:00",
+               "dPostDate": "2026-07-30T00:00:00",
+               "iTransTypeId": 0,
+               "sComments": "Test opening leave",
+               "iCompanyId": 1,
+               "iPayYearId": 1,
+               "iStatus": 1,
+               "iAuthStatus": 1,
+               "iCreatedBy": 1,
+               "iModifiedBy": 1,
+               "iApprovedBy": 1,
+               "leaves": [
+                   {
+                          "iBodyId": 11,
+                          "iHeaderId": 4,
+                          "sDocNo": "LVS000001",
+                          "iTransTypeId": 0,
+                          "iEmployeeId": 36,
+                          "sEmployeeCode": "EMP001",
+                          "sEmployeeName": "Ajeev Chandrasekar",
+                          "sDepartmentName": "BOTTLE MAKING",
+                          "sDesignationName": "Rig Operator",
+                          "sReportingToName": "Ajeev Chandrasekar",
+                          "iRevisionId": 0,
+                     "iLeaveTypeId": 0,
+                     "sLeaveTypeName": "Sick Leave",
+                     "iAdjType": 1,
+                     "fDuration": 180.00,
+                     "sRemarks": "Sick Leave"
+                },
+                {
+                     "iBodyId": 12,
+                     "iHeaderId": 4,
+                     "sDocNo": "LVS000001",
+                     "iTransTypeId": 0,
+                     "iEmployeeId": 36,
+                     "sEmployeeCode": "EMP001",
+                     "sEmployeeName": "Ajeev Chandrasekar",
+                     "sDepartmentName": "BOTTLE MAKING",
+                     "sDesignationName": "Rig Operator",
+                     "sReportingToName": "Ajeev Chandrasekar",
+                     "iRevisionId": 0,
+                     "iLeaveTypeId": 0,
+                     "sLeaveTypeName": "Sick Leave",
+                     "iAdjType": 1,
+                     "fDuration": 35.50,
+                     "sRemarks": "Annual Leave"
+                },
+                {
+                     "iBodyId": 13,
+                     "iHeaderId": 4,
+                     "sDocNo": "LVS000001",
+                     "iTransTypeId": 0,
+                     "iEmployeeId": 36,
+                     "sEmployeeCode": "EMP001",
+                     "sEmployeeName": "Ajeev Chandrasekar",
+                     "sDepartmentName": "BOTTLE MAKING",
+                     "sDesignationName": "Rig Operator",
+                     "sReportingToName": "Ajeev Chandrasekar",
+                     "iRevisionId": 0,
+                     "iLeaveTypeId": 0,
+                     "sLeaveTypeName": "Sick Leave",
+                     "iAdjType": 1,
+                     "fDuration": 10.00,
+                     "sRemarks": "Paternity Leave"
+                }
+           ],
+           "leaveFile": {
+               "iHeaderId": 4,
+                "iFileId": 0,
+                "sAttachmentFilePath": "https://neoxisktj-001-
+site1.ftempurl.com/uploads\\LeaveTransactions\\6b3993f9-91b2-4658-b491-
+6089a5b90eae.txt",
+                "sAttachmentFileName": "file.txt",
+                "sContentType": "text/plain"
+               }
+          }
+     ]
+}
+
+
+15. Get Leave Transaction with transaction id
+Get leave transaction with id to edit the record
+Endpoint
+
+GET /api/leaves/GetLeaveTransaction/4
+
+Authorization
+Bearer Token Required
+
+Request Header
+
+Authorization: Bearer {token}
+
+Response
+
+{
+     "success": true,
+     "statusCode": 200,
+     "message": "Leave transaction retrieved successfully.",
+     "data": [
+          {
+               "iHeaderId": 4,
+               "sDocNo": "LVS000001",
+               "dDocDate": "2026-01-01T00:00:00",
+               "dPostDate": "2026-07-30T00:00:00",
+               "iTransTypeId": 0,
+               "sComments": "Test opening leave",
+               "iCompanyId": 1,
+               "iPayYearId": 1,
+               "iStatus": 1,
+               "iAuthStatus": 1,
+               "iCreatedBy": 1,
+               "iModifiedBy": 1,
+               "iApprovedBy": 1,
+               "leaves": [
+                   {
+                          "iBodyId": 11,
+                          "iHeaderId": 4,
+                          "sDocNo": "LVS000001",
+                          "iTransTypeId": 0,
+                          "iEmployeeId": 36,
+                          "sEmployeeCode": "EMP001",
+        "sEmployeeName": "Ajeev Chandrasekar",
+        "sDepartmentName": "BOTTLE MAKING",
+        "sDesignationName": "Rig Operator",
+        "sReportingToName": "Ajeev Chandrasekar",
+        "iRevisionId": 0,
+        "iLeaveTypeId": 0,
+        "sLeaveTypeName": "Sick Leave",
+        "iAdjType": 1,
+        "fDuration": 180.00,
+        "sRemarks": "Sick Leave"
+   },
+   {
+        "iBodyId": 12,
+        "iHeaderId": 4,
+        "sDocNo": "LVS000001",
+        "iTransTypeId": 0,
+        "iEmployeeId": 36,
+        "sEmployeeCode": "EMP001",
+        "sEmployeeName": "Ajeev Chandrasekar",
+        "sDepartmentName": "BOTTLE MAKING",
+        "sDesignationName": "Rig Operator",
+        "sReportingToName": "Ajeev Chandrasekar",
+        "iRevisionId": 0,
+        "iLeaveTypeId": 0,
+        "sLeaveTypeName": "Sick Leave",
+        "iAdjType": 1,
+        "fDuration": 35.50,
+        "sRemarks": "Annual Leave"
+   },
+   {
+        "iBodyId": 13,
+        "iHeaderId": 4,
+        "sDocNo": "LVS000001",
+        "iTransTypeId": 0,
+        "iEmployeeId": 36,
+        "sEmployeeCode": "EMP001",
+        "sEmployeeName": "Ajeev Chandrasekar",
+        "sDepartmentName": "BOTTLE MAKING",
+        "sDesignationName": "Rig Operator",
+        "sReportingToName": "Ajeev Chandrasekar",
+        "iRevisionId": 0,
+        "iLeaveTypeId": 0,
+        "sLeaveTypeName": "Sick Leave",
+        "iAdjType": 1,
+        "fDuration": 10.00,
+        "sRemarks": "Paternity Leave"
+   }
+],
+"leaveFile": {
+   "iHeaderId": 4,
+   "iFileId": 0,
+                "sAttachmentFilePath": "https://neoxisktj-001-
+site1.ftempurl.com/uploads\\LeaveTransactions\\6b3993f9-91b2-4658-b491-
+6089a5b90eae.txt",
+                "sAttachmentFileName": "file.txt",
+                "sContentType": "text/plain"
+            }
+        }
+    ]
+}
+

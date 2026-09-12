@@ -23,7 +23,9 @@ builder.Logging.AddConsole();
 // Add services to the container
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IHcmsApiService, HcmsApiService>();
+builder.Services.AddHttpClient<IJibbleApiService, JibbleApiService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddSession(options =>

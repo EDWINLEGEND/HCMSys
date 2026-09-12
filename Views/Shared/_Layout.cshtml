@@ -231,6 +231,7 @@
                 var isLeavesActive = currentAction.StartsWith("Leave") || currentAction.StartsWith("OpeningLeaves");
                 var isHrActive = currentAction.StartsWith("Claim") || currentAction.StartsWith("BusinessTrip") || currentAction.StartsWith("HR") || currentAction.StartsWith("ContractAssignment") || currentAction.StartsWith("SalaryRevision");
                 var isAssetsActive = currentAction.StartsWith("Asset");
+                var isTimeAttendanceActive = currentController == "TimeAttendance";
             }
 
             <!-- Masters Group -->
@@ -315,6 +316,22 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item @(currentAction.StartsWith("AssetAllocation") ? "active" : "")" href="@Url.Action("AssetAllocationIndex", "Master")">Asset Allocation</a>
                         <a class="collapse-item @(currentAction.StartsWith("AssetDeAllocation") ? "active" : "")" href="@Url.Action("AssetDeAllocationIndex", "Master")">Asset De-Allocation</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Time & Attendance Group (Jibble API) -->
+            <li class="nav-item @(isTimeAttendanceActive ? "active" : "")">
+                <a class="nav-link @(isTimeAttendanceActive ? "" : "collapsed")" href="#" data-toggle="collapse" data-target="#collapseTimeAttendance"
+                   aria-expanded="@(isTimeAttendanceActive ? "true" : "false")" aria-controls="collapseTimeAttendance">
+                    <i class="fas fa-fw fa-clock"></i>
+                    <span>Time & Attendance</span>
+                </a>
+                <div id="collapseTimeAttendance" class="collapse @(isTimeAttendanceActive ? "show" : "")" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item @(currentController == "TimeAttendance" && currentAction == "Index" ? "active" : "")" href="@Url.Action("Index", "TimeAttendance")">
+                            <i class="fas fa-calendar-check mr-2 text-gray-500"></i>Timesheets
+                        </a>
                     </div>
                 </div>
             </li>

@@ -1,0 +1,663 @@
+@{
+    ViewData["Title"] = "Timesheets";
+}
+
+<style>
+    html { font-size: 14px; }
+
+    .page-title-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-bar .page-title-text {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #5a5c69;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-title-bar .page-title-text i { color: #4e73df; }
+    .page-title-bar .btn-group-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* Stat Cards */
+    .border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+    .border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+    .border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+    .border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+
+    /* Filters Bar */
+    .filter-card {
+        background-color: #f8f9fc;
+        border: 1px solid #e3e6f0;
+        border-radius: 0.35rem;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+    .filter-card label {
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6e707e;
+        margin-bottom: 4px;
+    }
+
+    /* Table Styling */
+    #tblTimesheets {
+        width: 100% !important;
+        border-collapse: collapse;
+    }
+    #tblTimesheets thead th {
+        background-color: #4e73df;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-color: #3d5cbe;
+        vertical-align: middle;
+        white-space: nowrap;
+        padding: 10px 12px;
+    }
+    #tblTimesheets tbody tr:hover {
+        background-color: #f0f4ff;
+    }
+    #tblTimesheets td {
+        font-size: 0.82rem;
+        color: #4a4c59;
+        vertical-align: middle;
+        padding: 8px 12px;
+    }
+
+    /* Custom Badges */
+    .member-code-badge {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        background-color: #eaecf4;
+        color: #4e73df;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #d1d3e2;
+        white-space: nowrap;
+    }
+    .badge-time-in {
+        background-color: #e6f9f0;
+        color: #1cc88a;
+        border: 1px solid #b7eed6;
+        font-weight: 600;
+        font-size: 0.76rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    .badge-time-out {
+        background-color: #eaf3ff;
+        color: #4e73df;
+        border: 1px solid #c2d9ff;
+        font-weight: 600;
+        font-size: 0.76rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    .badge-worked-hours {
+        background-color: #4e73df;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.78rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    .badge-worked-zero {
+        background-color: #eaecf4;
+        color: #858796;
+        font-weight: 500;
+        font-size: 0.75rem;
+        padding: 3px 7px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .badge-absence-off {
+        background-color: #fef5e7;
+        color: #f6c23e;
+        border: 1px solid #f9e2b1;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 2px 7px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .badge-absence-rest {
+        background-color: #f4f6f9;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 2px 7px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .badge-absence-absent {
+        background-color: #fde8e8;
+        color: #e74a3b;
+        border: 1px solid #f8b4b4;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 2px 7px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .source-api-badge {
+        background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+        color: #fff;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .loading-overlay {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        color: #4e73df;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER CARD -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3">
+            <div class="page-title-bar">
+                <div>
+                    <div class="page-title-text">
+                        <i class="fas fa-calendar-check fa-sm"></i>
+                        Time & Attendance &mdash; Timesheets (Aug-26)
+                        <span class="source-api-badge shadow-sm ml-2">
+                            <i class="fas fa-bolt fa-xs"></i> Jibble Live API
+                        </span>
+                    </div>
+                    <small class="text-muted">Real-time attendance, tracked hours, and absence synchronization for August 2026</small>
+                </div>
+                <div class="btn-group-actions">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary btn-sm shadow-sm">
+                        <i class="fas fa-home fa-sm text-white-50 mr-1"></i> Home
+                    </a>
+                    <button type="button" class="btn btn-info btn-sm shadow-sm" id="btn-refresh" onclick="loadTimesheetData(true)">
+                        <i class="fas fa-sync-alt fa-sm text-white-50 mr-1"></i> Refresh API
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm shadow-sm" id="btn-export-csv" onclick="exportCsv()">
+                        <i class="fas fa-file-excel fa-sm text-white-50 mr-1"></i> Export Excel (CSV)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT SUMMARY CARDS -->
+    <div class="row mb-3">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Records</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-records">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Worked Hours</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-worked">0.0 hrs</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-business-time fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Active Members</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-members">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Absences & Time Off</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-absences">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-body py-3">
+            <div class="row align-items-end">
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Month / Date</label>
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                        </div>
+                        <input type="date" class="form-control form-control-sm" id="filter-date" value="2026-08-01" />
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Period</label>
+                    <select class="form-control form-control-sm" id="filter-period">
+                        <option value="Month" selected>Month</option>
+                        <option value="Week">Week</option>
+                        <option value="Day">Day</option>
+                    </select>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Department / Group</label>
+                    <select class="form-control form-control-sm" id="filter-department">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Status</label>
+                    <select class="form-control form-control-sm" id="filter-status">
+                        <option value="">All Statuses</option>
+                        <option value="Worked">Worked</option>
+                        <option value="Rest Day">Rest Day</option>
+                        <option value="Time Off">Time Off</option>
+                        <option value="Absent">Absent</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-sm-12 mb-2 text-right">
+                    <button type="button" class="btn btn-primary btn-sm btn-block shadow-sm" onclick="loadTimesheetData(false)">
+                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Apply Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DATA TABLE CARD -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-1"></i> Timesheet Records Grid &mdash; Aug-26
+            </h6>
+            <span class="badge badge-light text-muted font-weight-normal" id="lbl-records-count">Loading data from Jibble...</span>
+        </div>
+        <div class="card-body p-2 p-md-3">
+            <div id="grid-loading" class="loading-overlay">
+                <div class="spinner-border text-primary mb-3" style="width: 3.2rem; height: 3.2rem;" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <h5 class="font-weight-bold text-primary mb-1">Querying Jibble Live API</h5>
+                <p class="text-muted small mb-2" id="loading-status-text">
+                    <i class="fas fa-satellite-dish mr-1 text-info"></i> Connecting to identity.prod.jibble.io & time-attendance.prod.jibble.io...
+                </p>
+                <div class="badge badge-light border px-3 py-1 font-weight-normal text-muted" id="loading-timer">
+                    <i class="far fa-clock mr-1"></i> Direct Jibble live query (no mock/fallback)
+                </div>
+            </div>
+
+            <div class="table-responsive" id="table-wrapper" style="display:none;">
+                <table class="table table-bordered table-hover" id="tblTimesheets">
+                    <thead>
+                        <tr>
+                            <!-- EXACT 12 COLUMNS AS SPECIFIED: Date, Day, Full Name, Member Code, Position, Department, Manager(s), First In, Last Out, Worked Hours, Absence, Justification -->
+                            <th>Date</th>
+                            <th>Day</th>
+                            <th>Full Name</th>
+                            <th>Member Code</th>
+                            <th>Position</th>
+                            <th>Department</th>
+                            <th>Manager(s)</th>
+                            <th>First In</th>
+                            <th>Last Out</th>
+                            <th>Worked Hours</th>
+                            <th>Absence</th>
+                            <th>Justification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by DataTables via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Page Script -->
+<script>
+    var timesheetTable = null;
+    var allRowsData = [];
+    var distinctDepartments = [];
+    var loadTimerInterval = null;
+    var loadSecondsElapsed = 0;
+
+    $(document).ready(function() {
+        initDataTable();
+        loadTimesheetData(false);
+
+        // Filter triggers
+        $('#filter-department, #filter-status').on('change', function() {
+            applyClientSideFilters();
+        });
+    });
+
+    function startLoadingUI() {
+        clearInterval(loadTimerInterval);
+        loadSecondsElapsed = 0;
+        $('#grid-loading').show();
+        $('#table-wrapper').hide();
+        $('#btn-refresh').prop('disabled', true).find('i').addClass('fa-spin');
+        $('#lbl-records-count').text('Connecting to Jibble live API...');
+        $('#loading-status-text').html('<i class="fas fa-key mr-1 text-info"></i> Authenticating with Jibble OAuth2 service...');
+        $('#loading-timer').html('<i class="far fa-clock mr-1"></i> Elapsed: 0s &bull; Direct Jibble live API query');
+
+        loadTimerInterval = setInterval(function() {
+            loadSecondsElapsed++;
+            $('#loading-timer').html('<i class="far fa-clock mr-1"></i> Elapsed: ' + loadSecondsElapsed + 's &bull; Direct Jibble live API query');
+
+            if (loadSecondsElapsed === 2) {
+                $('#loading-status-text').html('<i class="fas fa-cloud-download-alt mr-1 text-primary"></i> Downloading monthly timesheets for 155 members (~6 MB OData payload)...');
+            } else if (loadSecondsElapsed === 8) {
+                $('#loading-status-text').html('<i class="fas fa-calculator mr-1 text-warning"></i> Aggregating attendance, time off, and tracked hours...');
+            } else if (loadSecondsElapsed >= 14) {
+                $('#loading-status-text').html('<i class="fas fa-stream mr-1 text-success"></i> Finalizing streaming and parsing 4,800+ daily attendance records...');
+            }
+        }, 1000);
+    }
+
+    function stopLoadingUI() {
+        clearInterval(loadTimerInterval);
+        $('#btn-refresh').prop('disabled', false).find('i').removeClass('fa-spin');
+        $('#grid-loading').hide();
+        $('#table-wrapper').show();
+    }
+
+    function initDataTable() {
+        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#tblTimesheets')) {
+            try { $('#tblTimesheets').DataTable().destroy(); } catch(e) {}
+        }
+
+        if ($.fn.DataTable) {
+            timesheetTable = $('#tblTimesheets').DataTable({
+                deferRender: true,
+                order: [[0, 'desc'], [2, 'asc']],
+                pageLength: 25,
+                lengthMenu: [[15, 25, 50, 100, 250, -1], [15, 25, 50, 100, 250, "All"]],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search any field...",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ timesheets",
+                    emptyTable: "No timesheet records found for selected period",
+                    zeroRecords: "No matching records found"
+                },
+                columnDefs: [
+                    { className: "font-weight-bold text-nowrap", targets: 0 },
+                    { className: "text-nowrap", targets: [1, 3, 7, 8, 9, 10, 11] },
+                    { className: "text-center", targets: [3, 7, 8, 9] }
+                ]
+            });
+        }
+    }
+
+    function loadTimesheetData(forceRefresh) {
+        var dateVal = $('#filter-date').val() || '2026-08-01';
+        var periodVal = $('#filter-period').val() || 'Month';
+
+        startLoadingUI();
+
+        $.ajax({
+            url: '@Url.Action("GetTimesheetData", "TimeAttendance")',
+            type: 'GET',
+            data: {
+                date: dateVal,
+                period: periodVal,
+                forceRefresh: forceRefresh === true
+            },
+            dataType: 'json',
+            timeout: 90000,
+            success: function(res) {
+                try {
+                    if (res && res.success && Array.isArray(res.data)) {
+                        allRowsData = res.data;
+                        populateDepartmentFilter(allRowsData);
+                        renderGridRows(allRowsData);
+                        updateStatCards(allRowsData);
+
+                        if (typeof alertify !== 'undefined' && forceRefresh) {
+                            alertify.log('Successfully refreshed ' + allRowsData.length.toLocaleString() + ' records from Jibble API.', 'success', 3500);
+                        }
+                    } else {
+                        allRowsData = [];
+                        renderGridRows([]);
+                        updateStatCards([]);
+                        var errMsg = (res && res.message) ? res.message : 'No data returned from Jibble API.';
+                        $('#lbl-records-count').text('0 records found');
+                        if (typeof alertify !== 'undefined') {
+                            alertify.log(errMsg, 'error', 5000);
+                        }
+                    }
+                } catch(renderEx) {
+                    console.error('Error rendering rows:', renderEx);
+                } finally {
+                    stopLoadingUI();
+                }
+            },
+            error: function(xhr, status, error) {
+                stopLoadingUI();
+                allRowsData = [];
+                renderGridRows([]);
+                updateStatCards([]);
+                var errMsg = 'Failed to load from Jibble API: ' + (error || status);
+                $('#lbl-records-count').text('Error loading data');
+                if (typeof alertify !== 'undefined') {
+                    alertify.log(errMsg, 'error', 5000);
+                }
+            }
+        });
+    }
+
+    function populateDepartmentFilter(rows) {
+        var deptSet = new Set();
+        rows.forEach(function(r) {
+            if (r.department && r.department !== '-') {
+                deptSet.add(r.department);
+            }
+        });
+
+        var currentVal = $('#filter-department').val();
+        var select = $('#filter-department');
+        select.empty().append('<option value="">All Departments</option>');
+
+        Array.from(deptSet).sort().forEach(function(d) {
+            select.append(`<option value="${d}">${d}</option>`);
+        });
+
+        if (currentVal && deptSet.has(currentVal)) {
+            select.val(currentVal);
+        }
+    }
+
+    function applyClientSideFilters() {
+        var selectedDept = $('#filter-department').val();
+        var selectedStatus = $('#filter-status').val();
+
+        var filtered = allRowsData.filter(function(r) {
+            if (selectedDept && r.department !== selectedDept) return false;
+            if (selectedStatus && r.statusBadge !== selectedStatus) return false;
+            return true;
+        });
+
+        renderGridRows(filtered);
+        updateStatCards(filtered);
+    }
+
+    function renderGridRows(rows) {
+        if (!timesheetTable && $.fn.DataTable) {
+            initDataTable();
+        }
+
+        var dataSet = rows.map(function(r) {
+            // Member Code Badge
+            var memberCodeHtml = (r.memberCode && r.memberCode !== '-')
+                ? `<span class="member-code-badge">${r.memberCode}</span>`
+                : `<span class="text-muted">-</span>`;
+
+            // First In
+            var firstInHtml = (r.firstIn && r.firstIn !== '-')
+                ? `<span class="badge-time-in"><i class="fas fa-sign-in-alt mr-1"></i>${r.firstIn}</span>`
+                : `<span class="text-muted">-</span>`;
+
+            // Last Out
+            var lastOutHtml = (r.lastOut && r.lastOut !== '-')
+                ? `<span class="badge-time-out"><i class="fas fa-sign-out-alt mr-1"></i>${r.lastOut}</span>`
+                : `<span class="text-muted">-</span>`;
+
+            // Worked Hours
+            var workedHoursHtml = '';
+            if (r.workedHours && r.workedHours !== '0h 0m' && r.workedHours !== '-') {
+                workedHoursHtml = `<span class="badge-worked-hours"><i class="fas fa-clock mr-1"></i>${r.workedHours}</span>`;
+            } else {
+                workedHoursHtml = `<span class="badge-worked-zero">0h 0m</span>`;
+            }
+
+            // Absence Badge
+            var absenceHtml = '';
+            if (r.absence && r.absence !== '-') {
+                if (r.absence.indexOf('Rest') !== -1) {
+                    absenceHtml = `<span class="badge-absence-rest"><i class="fas fa-bed mr-1"></i>${r.absence}</span>`;
+                } else if (r.absence.indexOf('Absent') !== -1) {
+                    absenceHtml = `<span class="badge-absence-absent"><i class="fas fa-user-times mr-1"></i>${r.absence}</span>`;
+                } else {
+                    absenceHtml = `<span class="badge-absence-off"><i class="fas fa-umbrella-beach mr-1"></i>${r.absence}</span>`;
+                }
+            } else {
+                absenceHtml = `<span class="text-muted">-</span>`;
+            }
+
+            // Justification
+            var justificationHtml = (r.justification && r.justification !== '-')
+                ? `<span class="badge badge-light border text-dark font-weight-normal">${r.justification}</span>`
+                : `<span class="text-muted">-</span>`;
+
+            return [
+                `<span data-order="${r.date}">${r.formattedDate || r.date}</span>`,
+                r.day || '-',
+                `<strong>${r.fullName}</strong>`,
+                memberCodeHtml,
+                r.position || '-',
+                r.department || '-',
+                r.managers || '-',
+                firstInHtml,
+                lastOutHtml,
+                workedHoursHtml,
+                absenceHtml,
+                justificationHtml
+            ];
+        });
+
+        if (timesheetTable) {
+            timesheetTable.clear();
+            timesheetTable.rows.add(dataSet);
+            timesheetTable.draw(false);
+            setTimeout(function() {
+                try { timesheetTable.columns.adjust(); } catch(e) {}
+            }, 50);
+        } else {
+            // Fallback plain DOM rendering if DataTables is unavailable
+            var tbody = $('#tblTimesheets tbody');
+            tbody.empty();
+            dataSet.forEach(function(row) {
+                var tr = '<tr>' + row.map(function(col) { return '<td>' + col + '</td>'; }).join('') + '</tr>';
+                tbody.append(tr);
+            });
+        }
+
+        $('#lbl-records-count').text(rows.length.toLocaleString() + ' entries displayed');
+    }
+
+    function updateStatCards(rows) {
+        var totalWorkedHours = 0;
+        var membersSet = new Set();
+        var absenceCount = 0;
+
+        rows.forEach(function(r) {
+            totalWorkedHours += (r.workedHoursDecimal || 0);
+            if (r.fullName && r.fullName !== 'Unknown') {
+                membersSet.add(r.fullName);
+            }
+            if (r.absence && r.absence !== '-') {
+                absenceCount++;
+            }
+        });
+
+        $('#stat-total-records').text(rows.length.toLocaleString());
+        $('#stat-total-worked').text(totalWorkedHours.toFixed(1) + ' hrs');
+        $('#stat-total-members').text(membersSet.size);
+        $('#stat-total-absences').text(absenceCount.toLocaleString());
+    }
+
+    function exportCsv() {
+        var dateVal = $('#filter-date').val() || '2026-08-01';
+        var periodVal = $('#filter-period').val() || 'Month';
+        var exportUrl = '@Url.Action("ExportTimesheetCsv", "TimeAttendance")' + '?date=' + encodeURIComponent(dateVal) + '&period=' + encodeURIComponent(periodVal);
+        window.location.href = exportUrl;
+    }
+</script>

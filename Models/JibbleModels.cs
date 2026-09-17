@@ -179,5 +179,6 @@ namespace HCMSys.Models
         public double WorkedHoursDecimal { get; set; }             // e.g. 9.80
         public string Absence { get; set; } = string.Empty;        // e.g. "Shift off (8h)" or "Rest Day" or "Absent" or "-"
         public string StatusBadge { get; set; } = string.Empty;    // "Worked", "Rest Day", "Time Off", "Absent"
+        public bool IsAbsenceOrTimeOff { get; set; }               // true if record represents Absence, Rest Day, or Time Off
     }
 }

@@ -211,17 +211,17 @@
                     <button type="button" class="btn btn-info btn-sm shadow-sm" id="btn-refresh" onclick="loadTimesheetData(true)">
                         <i class="fas fa-sync-alt fa-sm text-white-50 mr-1"></i> Refresh API
                     </button>
-                    <button type="button" class="btn btn-success btn-sm shadow-sm" id="btn-export-csv" onclick="exportCsv()">
-                        <i class="fas fa-file-excel fa-sm text-white-50 mr-1"></i> Export Excel (CSV)
+                    <button type="button" class="btn btn-success btn-sm shadow-sm" id="btn-export-excel" onclick="exportExcel()">
+                        <i class="fas fa-file-excel fa-sm text-white-50 mr-1"></i> Export to Excel (.xlsx)
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- STAT SUMMARY CARDS -->
+    <!-- STAT SUMMARY CARDS (3 Cards: Total Worked Hours removed as requested) -->
     <div class="row mb-3">
-        <div class="col-xl-3 col-md-6 mb-3">
+        <div class="col-xl-4 col-md-4 mb-3">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body py-2">
                     <div class="row no-gutters align-items-center">
@@ -236,22 +236,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body py-2">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Worked Hours</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stat-total-worked">0.0 hrs</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-business-time fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
+        <div class="col-xl-4 col-md-4 mb-3">
             <div class="card border-left-info shadow h-100 py-2">
                 <div class="card-body py-2">
                     <div class="row no-gutters align-items-center">
@@ -266,7 +251,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
+        <div class="col-xl-4 col-md-4 mb-3">
             <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body py-2">
                     <div class="row no-gutters align-items-center">
@@ -283,34 +268,41 @@
         </div>
     </div>
 
-    <!-- FILTER CARD -->
+    <!-- FILTER CARD (Date Range, Employee, Department, Status, Absence Only) -->
     <div class="card shadow mb-4">
         <div class="card-body py-3">
             <div class="row align-items-end">
-                <div class="col-md-3 col-sm-6 mb-2">
-                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Month / Date</label>
+                <div class="col-lg-2 col-md-3 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">From Date</label>
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                        </div>
+                        <input type="date" class="form-control form-control-sm" id="filter-from-date" value="2026-08-01" />
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">To Date</label>
                     <div class="input-group input-group-sm">
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
                         </div>
-                        <input type="date" class="form-control form-control-sm" id="filter-date" value="2026-08-01" />
+                        <input type="date" class="form-control form-control-sm" id="filter-to-date" value="2026-08-31" />
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-6 mb-2">
-                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Period</label>
-                    <select class="form-control form-control-sm" id="filter-period">
-                        <option value="Month" selected>Month</option>
-                        <option value="Week">Week</option>
-                        <option value="Day">Day</option>
+                <div class="col-lg-3 col-md-3 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Employee</label>
+                    <select class="form-control form-control-sm" id="filter-employee">
+                        <option value="">All Employees</option>
                     </select>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-2">
-                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Department / Group</label>
+                <div class="col-lg-2 col-md-3 col-sm-6 mb-2">
+                    <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Department</label>
                     <select class="form-control form-control-sm" id="filter-department">
                         <option value="">All Departments</option>
                     </select>
                 </div>
-                <div class="col-md-2 col-sm-6 mb-2">
+                <div class="col-lg-3 col-md-6 col-sm-6 mb-2">
                     <label class="font-weight-bold text-uppercase text-xs text-muted mb-1">Status</label>
                     <select class="form-control form-control-sm" id="filter-status">
                         <option value="">All Statuses</option>
@@ -320,9 +312,20 @@
                         <option value="Absent">Absent</option>
                     </select>
                 </div>
-                <div class="col-md-2 col-sm-12 mb-2 text-right">
-                    <button type="button" class="btn btn-primary btn-sm btn-block shadow-sm" onclick="loadTimesheetData(false)">
-                        <i class="fas fa-search fa-sm text-white-50 mr-1"></i> Apply Filter
+                <div class="col-lg-6 col-md-6 col-sm-12 mb-2 d-flex align-items-center">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="filter-only-absence">
+                        <label class="custom-control-label font-weight-bold text-xs text-danger cursor-pointer" for="filter-only-absence">
+                            <i class="fas fa-user-clock mr-1"></i> Absence & Time Off Only
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 mb-2 d-flex justify-content-end align-items-center" style="gap: 8px;">
+                    <button type="button" class="btn btn-secondary btn-sm shadow-sm" id="btn-reset-filters" onclick="resetFilters()">
+                        <i class="fas fa-undo fa-sm mr-1"></i> Reset Filters
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="applyClientSideFilters()">
+                        <i class="fas fa-filter fa-sm mr-1"></i> Apply Filters
                     </button>
                 </div>
             </div>
@@ -384,7 +387,6 @@
 <script>
     var timesheetTable = null;
     var allRowsData = [];
-    var distinctDepartments = [];
     var loadTimerInterval = null;
     var loadSecondsElapsed = 0;
 
@@ -393,7 +395,7 @@
         loadTimesheetData(false);
 
         // Filter triggers
-        $('#filter-department, #filter-status').on('change', function() {
+        $('#filter-from-date, #filter-to-date, #filter-employee, #filter-department, #filter-status, #filter-only-absence').on('change', function() {
             applyClientSideFilters();
         });
     });
@@ -437,7 +439,8 @@
         if ($.fn.DataTable) {
             timesheetTable = $('#tblTimesheets').DataTable({
                 deferRender: true,
-                order: [[0, 'desc'], [2, 'asc']],
+                // Order by Date ascending (col 0), then by Full Name ascending (col 2)
+                order: [[0, 'asc'], [2, 'asc']],
                 pageLength: 25,
                 lengthMenu: [[15, 25, 50, 100, 250, -1], [15, 25, 50, 100, 250, "All"]],
                 language: {
@@ -458,8 +461,8 @@
     }
 
     function loadTimesheetData(forceRefresh) {
-        var dateVal = $('#filter-date').val() || '2026-08-01';
-        var periodVal = $('#filter-period').val() || 'Month';
+        var dateVal = $('#filter-from-date').val() || '2026-08-01';
+        var periodVal = 'Month';
 
         startLoadingUI();
 
@@ -477,9 +480,8 @@
                 try {
                     if (res && res.success && Array.isArray(res.data)) {
                         allRowsData = res.data;
-                        populateDepartmentFilter(allRowsData);
-                        renderGridRows(allRowsData);
-                        updateStatCards(allRowsData);
+                        populateFilters(allRowsData);
+                        applyClientSideFilters();
 
                         if (typeof alertify !== 'undefined' && forceRefresh) {
                             alertify.log('Successfully refreshed ' + allRowsData.length.toLocaleString() + ' records from Jibble API.', 'success', 3500);
@@ -514,39 +516,76 @@
         });
     }
 
-    function populateDepartmentFilter(rows) {
+    function populateFilters(rows) {
         var deptSet = new Set();
+        var empMap = new Map();
+
         rows.forEach(function(r) {
             if (r.department && r.department !== '-') {
                 deptSet.add(r.department);
             }
+            if (r.fullName && r.fullName !== 'Unknown' && r.fullName !== '-') {
+                if (!empMap.has(r.fullName)) {
+                    empMap.set(r.fullName, r.memberCode || '');
+                }
+            }
         });
 
-        var currentVal = $('#filter-department').val();
-        var select = $('#filter-department');
-        select.empty().append('<option value="">All Departments</option>');
-
+        // Populate Department dropdown
+        var currentDept = $('#filter-department').val();
+        var deptSelect = $('#filter-department');
+        deptSelect.empty().append('<option value="">All Departments</option>');
         Array.from(deptSet).sort().forEach(function(d) {
-            select.append(`<option value="${d}">${d}</option>`);
+            deptSelect.append(`<option value="${d}">${d}</option>`);
         });
+        if (currentDept && deptSet.has(currentDept)) {
+            deptSelect.val(currentDept);
+        }
 
-        if (currentVal && deptSet.has(currentVal)) {
-            select.val(currentVal);
+        // Populate Employee dropdown
+        var currentEmp = $('#filter-employee').val();
+        var empSelect = $('#filter-employee');
+        empSelect.empty().append('<option value="">All Employees</option>');
+        Array.from(empMap.keys()).sort().forEach(function(name) {
+            var code = empMap.get(name);
+            var label = code && code !== '-' ? `${name} (${code})` : name;
+            empSelect.append(`<option value="${name}">${label}</option>`);
+        });
+        if (currentEmp && empMap.has(currentEmp)) {
+            empSelect.val(currentEmp);
         }
     }
 
     function applyClientSideFilters() {
+        var fromDate = $('#filter-from-date').val();
+        var toDate = $('#filter-to-date').val();
+        var selectedEmp = $('#filter-employee').val();
         var selectedDept = $('#filter-department').val();
         var selectedStatus = $('#filter-status').val();
+        var onlyAbsence = $('#filter-only-absence').is(':checked');
 
         var filtered = allRowsData.filter(function(r) {
+            if (fromDate && r.date < fromDate) return false;
+            if (toDate && r.date > toDate) return false;
+            if (selectedEmp && r.fullName !== selectedEmp && r.memberCode !== selectedEmp) return false;
             if (selectedDept && r.department !== selectedDept) return false;
             if (selectedStatus && r.statusBadge !== selectedStatus) return false;
+            if (onlyAbsence && !r.isAbsenceOrTimeOff) return false;
             return true;
         });
 
         renderGridRows(filtered);
         updateStatCards(filtered);
+    }
+
+    function resetFilters() {
+        $('#filter-from-date').val('2026-08-01');
+        $('#filter-to-date').val('2026-08-31');
+        $('#filter-employee').val('');
+        $('#filter-department').val('');
+        $('#filter-status').val('');
+        $('#filter-only-absence').prop('checked', false);
+        applyClientSideFilters();
     }
 
     function renderGridRows(rows) {
@@ -634,30 +673,42 @@
     }
 
     function updateStatCards(rows) {
-        var totalWorkedHours = 0;
         var membersSet = new Set();
         var absenceCount = 0;
 
         rows.forEach(function(r) {
-            totalWorkedHours += (r.workedHoursDecimal || 0);
-            if (r.fullName && r.fullName !== 'Unknown') {
+            if (r.fullName && r.fullName !== 'Unknown' && r.fullName !== '-') {
                 membersSet.add(r.fullName);
             }
-            if (r.absence && r.absence !== '-') {
+            if (r.isAbsenceOrTimeOff) {
                 absenceCount++;
             }
         });
 
         $('#stat-total-records').text(rows.length.toLocaleString());
-        $('#stat-total-worked').text(totalWorkedHours.toFixed(1) + ' hrs');
         $('#stat-total-members').text(membersSet.size);
         $('#stat-total-absences').text(absenceCount.toLocaleString());
     }
 
-    function exportCsv() {
-        var dateVal = $('#filter-date').val() || '2026-08-01';
-        var periodVal = $('#filter-period').val() || 'Month';
-        var exportUrl = '@Url.Action("ExportTimesheetCsv", "TimeAttendance")' + '?date=' + encodeURIComponent(dateVal) + '&period=' + encodeURIComponent(periodVal);
-        window.location.href = exportUrl;
+    function exportExcel() {
+        var fromDate = $('#filter-from-date').val() || '';
+        var toDate = $('#filter-to-date').val() || '';
+        var employee = $('#filter-employee').val() || '';
+        var department = $('#filter-department').val() || '';
+        var status = $('#filter-status').val() || '';
+        var onlyAbsence = $('#filter-only-absence').is(':checked');
+
+        var params = new URLSearchParams({
+            fromDate: fromDate,
+            toDate: toDate,
+            employee: employee,
+            department: department,
+            status: status,
+            onlyAbsence: onlyAbsence,
+            date: '2026-08-01',
+            period: 'Month'
+        });
+
+        window.location.href = '@Url.Action("ExportTimesheetExcel", "TimeAttendance")' + '?' + params.toString();
     }
 </script>

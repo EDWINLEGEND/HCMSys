@@ -227,13 +227,14 @@ namespace HCMSys.Services
                         WorkedHours = workedDisplay,
                         WorkedHoursDecimal = Math.Round(workedDecimal, 2),
                         Absence = absence,
-                        StatusBadge = statusBadge
+                        StatusBadge = statusBadge,
+                        IsAbsenceOrTimeOff = statusBadge != "Worked" || (absence != "-" && !string.IsNullOrWhiteSpace(absence))
                     });
                 }
             }
 
-            // Order by Date descending, then Full Name ascending
-            return result.OrderByDescending(r => r.Date).ThenBy(r => r.FullName).ToList();
+            // Order by Date ascending, then Full Name ascending
+            return result.OrderBy(r => r.Date).ThenBy(r => r.FullName).ToList();
         }
 
         private string FormatTime(string? timeOffsetStr, string? timeOfDayStr)

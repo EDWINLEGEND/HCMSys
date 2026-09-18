@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using HCMSys.Models;
 
 namespace HCMSys.Services

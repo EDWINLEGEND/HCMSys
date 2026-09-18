@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace HCMSys.Models
@@ -160,7 +163,7 @@ namespace HCMSys.Models
 
     /// <summary>
     /// Flattened DTO tailored precisely to the 12 columns requested by the user:
-    /// Date | Day | Full Name | Member Code | Position | Department | Manager(s) | Justification | First In | Last Out | Worked Hours | Absence
+    /// Date | Day | Full Name | Member Code | Position | Department | Manager(s) | First In | Last Out | Worked Hours | Absence | Justification
     /// </summary>
     public class JibbleTimesheetGridRowDto
     {
@@ -172,7 +175,7 @@ namespace HCMSys.Models
         public string Position { get; set; } = string.Empty;       // e.g. "Call Center Agent" or "-"
         public string Department { get; set; } = string.Empty;     // e.g. "Call Center Agent" or "-"
         public string Managers { get; set; } = string.Empty;       // e.g. "Manager Name" or "-"
-        public string Justification { get; set; } = string.Empty;  // e.g. "Shift off" or "Rest Day" or "-"
+        public string Justification { get; set; } = string.Empty;  // e.g. "Shift off" or "Rest Day" or employee note
         public string FirstIn { get; set; } = string.Empty;        // e.g. "02:42 PM" or "-"
         public string LastOut { get; set; } = string.Empty;        // e.g. "11:18 PM" or "-"
         public string WorkedHours { get; set; } = string.Empty;    // e.g. "9h 48m" or "-"
@@ -180,5 +183,71 @@ namespace HCMSys.Models
         public string Absence { get; set; } = string.Empty;        // e.g. "Shift off (8h)" or "Rest Day" or "Absent" or "-"
         public string StatusBadge { get; set; } = string.Empty;    // "Worked", "Rest Day", "Time Off", "Absent"
         public bool IsAbsenceOrTimeOff { get; set; }               // true if record represents Absence, Rest Day, or Time Off
+    }
+
+    public class JibbleWorkspacePersonModel
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+
+        [JsonPropertyName("code")]
+        public string? Code { get; set; }
+
+        [JsonPropertyName("fullName")]
+        public string? FullName { get; set; }
+
+        [JsonPropertyName("managers")]
+        public List<object>? Managers { get; set; }
+
+        [JsonPropertyName("unitManagers")]
+        public List<JibbleUnitManagerModel>? UnitManagers { get; set; }
+
+        [JsonPropertyName("group")]
+        public JibbleWorkspaceGroupModel? Group { get; set; }
+    }
+
+    public class JibbleUnitManagerModel
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("fullName")]
+        public string? FullName { get; set; }
+    }
+
+    public class JibbleWorkspaceGroupModel
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("unitManagers")]
+        public List<JibbleUnitManagerModel>? UnitManagers { get; set; }
+    }
+
+    public class JibbleTimeEntryModel
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("personId")]
+        public string? PersonId { get; set; }
+
+        [JsonPropertyName("time")]
+        public string? Time { get; set; }
+
+        [JsonPropertyName("belongsToDate")]
+        public string? BelongsToDate { get; set; }
+
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+
+        [JsonPropertyName("note")]
+        public string? Note { get; set; }
     }
 }
